@@ -1,0 +1,13 @@
+<launch>
+  <arg name="viz" default="false" />
+
+  <node pkg="mimosa" type="mimosa_node" name="mimosa_node" output="screen" clear_params="true"> # launch-prefix="gdb -ex run --args">
+    <remap from="/mimosa_node/imu/manager/imu_in" to="/ouster/imu" />
+    <remap from="/mimosa_node/lidar/manager/points_in" to="/ouster/points" />
+
+    <rosparam file="$(find mimosa)/config/enwide/params.yaml"/>
+    <rosparam file="$(find mimosa)/config/enwide/os_enwide.json" command="load" ns="lidar/sensor"/>
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
+</launch>

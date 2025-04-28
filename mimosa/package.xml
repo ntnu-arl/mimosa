@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mimosa</name>
+  <version>1.0.0</version>
+  <description>mimosa</description>
+
+  <maintainer email="nikhil.v.khedekar@ntnu.no">Nikhil Khedekar</maintainer>
+  <maintainer email="konstantinos.alexis@ntnu.no">Kostas Alexis</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>nav_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>tf2_ros</depend>
+  <depend>mimosa_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>config_utilities</depend>
+  <depend>cv_bridge</depend>
+  <depend>visualization_msgs</depend>
+  <depend>rosbag</depend>
+  <exec_depend>message_runtime</exec_depend>
+</package>

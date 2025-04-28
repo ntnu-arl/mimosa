@@ -1,0 +1,539 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab containers="1" tab_name="Graph Manager">
+   <Container>
+    <DockSplitter sizes="0.143088;0.14228;0.143088;0.143088;0.143088;0.14228;0.143088" count="7" orientation="-">
+     <DockArea name="Accelerometer Bias">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="0.344790" bottom="-0.333832" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/acc_bias/x"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/acc_bias/y"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/debug/acc_bias/z"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Gyroscope Bias">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="0.044420" bottom="-0.039314" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/gyro_bias/x"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/gyro_bias/y"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/debug/gyro_bias/z"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Diff against IMU Prior (cm)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="1.535681" bottom="-0.034913" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/diff_against_imu_prior_rot_deg"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/diff_against_imu_prior_trans_cm"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Linear Velocity (m/s)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="4.171496" bottom="-2.419083" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/twist/twist/linear/x"/>
+       <curve color="#d62728" name="/mimosa_node/graph/odometry/twist/twist/linear/y"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/odometry/twist/twist/linear/z"/>
+      </plot>
+     </DockArea>
+     <DockArea name="IMU Factor Localizability Rotation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="0.100000" bottom="-0.100000" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/imu_localizability_rot[0]"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/imu_localizability_rot[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/debug/imu_localizability_rot[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="IMU Factor Localizability Translation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="0.100000" bottom="-0.100000" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/imu_localizability_trans[0]"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/imu_localizability_trans[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/debug/imu_localizability_trans[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Gravity">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="1.566617" bottom="-0.823475" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/debug/gravity/x"/>
+       <curve color="#d62728" name="/mimosa_node/graph/debug/gravity/y"/>
+       <curve color="#1ac938" name="/mimosa_node/graph/debug/gravity/z"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="LiDAR Manager">
+   <Container>
+    <DockSplitter sizes="1" count="1" orientation="-">
+     <DockArea name="Time">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.314446" top="70.954685" bottom="-1.730602" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/manager/debug/t_calculate_estimate"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/manager/debug/t_clear_reserve"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/manager/debug/t_declare"/>
+       <curve color="#ff7f0e" name="/mimosa_node/lidar/manager/debug/t_define"/>
+       <curve color="#f14cc1" name="/mimosa_node/lidar/manager/debug/t_deskew"/>
+       <curve color="#9467bd" name="/mimosa_node/lidar/manager/debug/t_factor_prep"/>
+       <curve color="#17becf" name="/mimosa_node/lidar/manager/debug/t_full"/>
+       <curve color="#bcbd22" name="/mimosa_node/lidar/manager/debug/t_pcl_conversion"/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/manager/debug/t_post_define_update"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/manager/debug/t_preprocess"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/manager/debug/t_preprocess_filter"/>
+       <curve color="#ff7f0e" name="/mimosa_node/lidar/manager/debug/t_preprocess_geo_photo"/>
+       <curve color="#f14cc1" name="/mimosa_node/lidar/manager/debug/t_publish_results"/>
+       <curve color="#9467bd" name="/mimosa_node/lidar/manager/debug/t_update"/>
+       <curve color="#17becf" name="/mimosa_node/lidar/manager/debug/t_update_map"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="LiDAR Geometric">
+   <Container>
+    <DockSplitter sizes="0.333602;0.332796;0.333602" count="3" orientation="-">
+     <DockArea name="Number of points">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="6766.025000" bottom="-165.025000" right="1099081.975747"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/n_correspondances"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/n_points_in"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/n_points_in_sm_ds"/>
+       <curve color="#ff7f0e" name="/mimosa_node/lidar/geometric/debug/n_points_in_ss_ds"/>
+       <curve color="#f14cc1" name="/mimosa_node/lidar/geometric/debug/n_rejected_eigensolver_fail"/>
+       <curve color="#9467bd" name="/mimosa_node/lidar/geometric/debug/n_rejected_line"/>
+       <curve color="#17becf" name="/mimosa_node/lidar/geometric/debug/n_rejected_max_corres_dist"/>
+       <curve color="#bcbd22" name="/mimosa_node/lidar/geometric/debug/n_rejected_max_error"/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/n_rejected_plane"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/n_unprocessed"/>
+      </plot>
+     </DockArea>
+     <DockSplitter sizes="0.502311;0.497689" count="2" orientation="|">
+      <DockArea name="Localizability Rot Comp">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="0.000000" top="154.543477" bottom="-3.769353" right="1.000000"/>
+        <limitY/>
+       </plot>
+      </DockArea>
+      <DockArea name="Localizability Trans Comp">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="0.000000" top="115.673282" bottom="-2.821300" right="1.000000"/>
+        <limitY/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+     <DockSplitter sizes="0.502311;0.497689" count="2" orientation="|">
+      <DockArea name="Localizability Rot FInal">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="1098458.214535" top="5161.867468" bottom="-125.899207" right="1099081.975747"/>
+        <limitY/>
+        <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[0]"/>
+        <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[1]"/>
+        <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[2]"/>
+       </plot>
+      </DockArea>
+      <DockArea name="Localizability Trans Final">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="1098458.214535" top="975.682010" bottom="-23.797122" right="1099081.975747"/>
+        <limitY/>
+        <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[0]"/>
+        <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[1]"/>
+        <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[2]"/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="LiDAR Photometric">
+   <Container>
+    <DockSplitter sizes="0.50161;0.49839" count="2" orientation="-">
+     <DockArea name="Number of Points">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.320907" top="61.500000" bottom="-1.500000" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/photometric/debug/n_correspondances"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/photometric/debug/n_rejected_center_point_project_undistorted"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/photometric/debug/n_rejected_point_mask"/>
+       <curve color="#ff7f0e" name="/mimosa_node/lidar/photometric/debug/n_rejected_point_max_error"/>
+       <curve color="#f14cc1" name="/mimosa_node/lidar/photometric/debug/n_rejected_point_project"/>
+       <curve color="#9467bd" name="/mimosa_node/lidar/photometric/debug/n_rejected_point_range"/>
+       <curve color="#17becf" name="/mimosa_node/lidar/photometric/debug/n_rejected_point_range_diff"/>
+      </plot>
+     </DockArea>
+     <DockSplitter sizes="0.502311;0.497689" count="2" orientation="|">
+      <DockArea name="Localizability Rot Final">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="1098458.320907" top="2761.037048" bottom="145.493745" right="1099081.981055"/>
+        <limitY/>
+        <curve color="#1f77b4" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[0]">
+         <transform name="Outlier Removal" alias="/mimosa_node/lidar/photometric/debug/localizability_rot_final[0][Outlier Removal]">
+          <options value="10"/>
+         </transform>
+        </curve>
+        <curve color="#d62728" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[1]">
+         <transform name="Outlier Removal" alias="/mimosa_node/lidar/photometric/debug/localizability_rot_final[1][Outlier Removal]">
+          <options value="10"/>
+         </transform>
+        </curve>
+        <curve color="#1ac938" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[2]">
+         <transform name="Outlier Removal" alias="/mimosa_node/lidar/photometric/debug/localizability_rot_final[2][Outlier Removal]">
+          <options value="10"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="Localizabilty Trans Final">
+       <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+        <range left="1098458.320907" top="724.834215" bottom="65.952085" right="1099081.981055"/>
+        <limitY/>
+        <curve color="#1f77b4" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[0]"/>
+        <curve color="#d62728" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[1]"/>
+        <curve color="#1ac938" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[2]"/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Radar Manager">
+   <Container>
+    <DockSplitter sizes="0.50161;0.49839" count="2" orientation="-">
+     <DockArea name="Time">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="8.782291" bottom="-0.201635" right="1.000000"/>
+       <limitY/>
+      </plot>
+     </DockArea>
+     <DockArea name="Number of Points">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="135.300000" bottom="-3.300000" right="1.000000"/>
+       <limitY/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="SensorSync">
+   <Container>
+    <DockSplitter sizes="1" count="1" orientation="-">
+     <DockArea name="...">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="0.000000" top="322.175000" bottom="-147.175000" right="1.000000"/>
+       <limitY/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Localizability Comparisons">
+   <Container>
+    <DockSplitter sizes="0.166397;0.167205;0.166397;0.166397;0.167205;0.166397" count="6" orientation="-">
+     <DockArea name="IMU Translation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="602.432445" bottom="495.401723" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/imu/manager/debug/imu_localizability_trans[0]"/>
+       <curve color="#d62728" name="/mimosa_node/imu/manager/debug/imu_localizability_trans[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/imu/manager/debug/imu_localizability_trans[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="IMU Rotation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="124.787612" bottom="116.665589" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/imu/manager/debug/imu_localizability_rot[0]"/>
+       <curve color="#d62728" name="/mimosa_node/imu/manager/debug/imu_localizability_rot[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/imu/manager/debug/imu_localizability_rot[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="LiDAR Geometric Translation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="975.682010" bottom="-23.797122" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[0]"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/localizability_trans_final[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="LiDAR Geometric Rotation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="5161.867468" bottom="-125.899207" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[0]"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/localizability_rot_final[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="LiDAR Photometric Translation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="724.834215" bottom="65.952085" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[0]"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/photometric/debug/localizability_trans_final[2]"/>
+      </plot>
+     </DockArea>
+     <DockArea name="LiDAR Photometric Rotation">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.214535" top="2761.037048" bottom="145.493745" right="1099081.981055"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[0]"/>
+       <curve color="#d62728" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[1]"/>
+       <curve color="#1ac938" name="/mimosa_node/lidar/photometric/debug/localizability_rot_final[2]"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="IMU Rate Odometry Comparison (Pose)">
+   <Container>
+    <DockSplitter sizes="1" count="1" orientation="-">
+     <DockSplitter sizes="0.5;0.5" count="2" orientation="|">
+      <DockSplitter sizes="0.143897;0.14228;0.143088;0.143088;0.143088;0.143088;0.141471" count="7" orientation="-">
+       <DockArea name="Position X">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="152.611567" bottom="-3.754497" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/position/x"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/position/x"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Position Y">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="20.634122" bottom="-13.351077" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/position/y"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/position/y"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Position Z">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="21.097284" bottom="-0.555584" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/position/z"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/position/z"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Orientation Quaternion X">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="0.262081" bottom="-0.250034" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/orientation/x"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/orientation/x"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Orientation Quaternion Y">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="0.141042" bottom="-0.205485" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/orientation/y"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/orientation/y"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Orientation Quaternion Z">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="1.049728" bottom="-1.039141" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/orientation/z"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/orientation/z"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Orientation Quaternion W">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="1.049996" bottom="-1.049882" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/orientation/w"/>
+         <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/pose/pose/orientation/w"/>
+        </plot>
+       </DockArea>
+      </DockSplitter>
+      <DockSplitter sizes="0.5;0.5" count="2" orientation="-">
+       <DockArea name="Position Difference (m)">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="0.026835" bottom="-0.000370" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="imu_rate_odom_pos_diff"/>
+        </plot>
+       </DockArea>
+       <DockArea name="Orientation Difference (degrees)">
+        <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+         <range left="1098458.314446" top="1.173518" bottom="-0.025611" right="1099081.990503"/>
+         <limitY/>
+         <curve color="#1f77b4" name="imu_rate_odom_rot_diff_deg"/>
+        </plot>
+       </DockArea>
+      </DockSplitter>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="IMU Rate Odometry Comparison (Velocity)">
+   <Container>
+    <DockSplitter sizes="0.25;0.25;0.25;0.25" count="4" orientation="-">
+     <DockArea name="Velocity X (m/s)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.314446" top="4.190804" bottom="-1.945084" right="1099081.990503"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/twist/twist/linear/x"/>
+       <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/twist/twist/linear/x"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Velocity Y (m/s)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.314446" top="3.149692" bottom="-2.402654" right="1099081.990503"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/twist/twist/linear/y"/>
+       <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/twist/twist/linear/y"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Velocity Z (m/s)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.314446" top="1.023114" bottom="-0.604727" right="1099081.990503"/>
+       <limitY/>
+       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/twist/twist/linear/z"/>
+       <curve color="#d62728" name="/mimosa_node/imu/manager/odometry/twist/twist/linear/z"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Velocity difference (m/s)">
+      <plot flip_x="false" style="Lines" mode="TimeSeries" flip_y="false">
+       <range left="1098458.314446" top="0.179690" bottom="-0.002912" right="1099081.990503"/>
+       <limitY/>
+       <curve color="#1f77b4" name="imu_rate_odom_vel_diff"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="2"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <parameters time_axis="" delimiter="0"/>
+  </plugin>
+  <plugin ID="DataLoad MCAP"/>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+   <boolean_strings_to_number value="true"/>
+   <remove_suffix_from_strings value="true"/>
+   <selected_topics value="/vectornav_driver_node/filter/data;/vectornav_driver_node/imu/data;/vectornav_driver_node/imu/mag;/vectornav_driver_node/pressure;/vectornav_driver_node/temperature"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+   <boolean_strings_to_number value="true"/>
+   <remove_suffix_from_strings value="true"/>
+   <selected_topics value="/mimosa_node/graph/debug;/mimosa_node/graph/odometry;/mimosa_node/imu/manager/debug;/mimosa_node/imu/manager/odometry;/mimosa_node/lidar/geometric/debug;/mimosa_node/lidar/manager/debug;/mimosa_node/lidar/photometric/debug;/mimosa_node/radar/manager/debug"/>
+  </plugin>
+  <plugin ID="UDP Server"/>
+  <plugin ID="WebSocket Server"/>
+  <plugin ID="ZMQ Subscriber"/>
+  <plugin ID="Fast Fourier Transform"/>
+  <plugin ID="Quaternion to RPY"/>
+  <plugin ID="Reactive Script Editor">
+   <library code="--[[ Helper function to create a series from arrays&#xa;&#xa; new_series: a series previously created with ScatterXY.new(name)&#xa; prefix:     prefix of the timeseries, before the index of the array&#xa; suffix_X:   suffix to complete the name of the series containing the X value. If [nil], use the index of the array.&#xa; suffix_Y:   suffix to complete the name of the series containing the Y value&#xa; timestamp:   usually the tracker_time variable&#xa;              &#xa; Example:&#xa; &#xa; Assuming we have multiple series in the form:&#xa; &#xa;   /trajectory/node.{X}/position/x&#xa;   /trajectory/node.{X}/position/y&#xa;   &#xa; where {N} is the index of the array (integer). We can create a reactive series from the array with:&#xa; &#xa;   new_series = ScatterXY.new(&quot;my_trajectory&quot;) &#xa;   CreateSeriesFromArray( new_series, &quot;/trajectory/node&quot;, &quot;position/x&quot;, &quot;position/y&quot;, tracker_time );&#xa;--]]&#xa;&#xa;function CreateSeriesFromArray( new_series, prefix, suffix_X, suffix_Y, timestamp )&#xa;  &#xa;  --- clear previous values&#xa;  new_series:clear()&#xa;  &#xa;  --- Append points to new_series&#xa;  index = 0&#xa;  while(true) do&#xa;&#xa;    x = index;&#xa;    -- if not nil, get the X coordinate from a series&#xa;    if suffix_X ~= nil then &#xa;      series_x = TimeseriesView.find( string.format( &quot;%s.%d/%s&quot;, prefix, index, suffix_X) )&#xa;      if series_x == nil then break end&#xa;      x = series_x:atTime(timestamp)&#x9; &#xa;    end&#xa;    &#xa;    series_y = TimeseriesView.find( string.format( &quot;%s.%d/%s&quot;, prefix, index, suffix_Y) )&#xa;    if series_y == nil then break end &#xa;    y = series_y:atTime(timestamp)&#xa;    &#xa;    new_series:push_back(x,y)&#xa;    index = index+1&#xa;  end&#xa;end&#xa;&#xa;--[[ Similar to the built-in function GetSeriesNames(), but select only the names with a give prefix. --]]&#xa;&#xa;function GetSeriesNamesByPrefix(prefix)&#xa;  -- GetSeriesNames(9 is a built-in function&#xa;  all_names = GetSeriesNames()&#xa;  filtered_names = {}&#xa;  for i, name in ipairs(all_names)  do&#xa;    -- check the prefix&#xa;    if name:find(prefix, 1, #prefix) then&#xa;      table.insert(filtered_names, name);&#xa;    end&#xa;  end&#xa;  return filtered_names&#xa;end&#xa;&#xa;--[[ Modify an existing series, applying offsets to all their X and Y values&#xa;&#xa; series: an existing timeseries, obtained with TimeseriesView.find(name)&#xa; delta_x: offset to apply to each x value&#xa; delta_y: offset to apply to each y value &#xa;  &#xa;--]]&#xa;&#xa;function ApplyOffsetInPlace(series, delta_x, delta_y)&#xa;  -- use C++ indeces, not Lua indeces&#xa;  for index=0, series:size()-1 do&#xa;    x,y = series:at(index)&#xa;    series:set(index, x + delta_x, y + delta_y)&#xa;  end&#xa;end&#xa;"/>
+   <scripts/>
+  </plugin>
+  <plugin ID="CSV Exporter"/>
+  <plugin ID="ROS /rosout Visualization"/>
+  <plugin ID="ROS Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations>
+  <snippet name="imu_rate_odom_pos_diff">
+   <global></global>
+   <function>local dx = v3 - value
+local dy = v4 - v1
+local dz = v5 - v2
+return math.sqrt(dx * dx + dy * dy + dz * dz)</function>
+   <linked_source>/mimosa_node/graph/odometry/pose/pose/position/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/pose/pose/position/y</v1>
+    <v2>/mimosa_node/graph/odometry/pose/pose/position/z</v2>
+    <v3>/mimosa_node/imu/manager/odometry/pose/pose/position/x</v3>
+    <v4>/mimosa_node/imu/manager/odometry/pose/pose/position/y</v4>
+    <v5>/mimosa_node/imu/manager/odometry/pose/pose/position/z</v5>
+   </additional_sources>
+  </snippet>
+  <snippet name="imu_rate_odom_vel_diff">
+   <global></global>
+   <function>local dx = v3 - value
+local dy = v4 - v1
+local dz = v5 - v2
+return math.sqrt(dx * dx + dy * dy + dz * dz)</function>
+   <linked_source>/mimosa_node/graph/odometry/twist/twist/linear/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/twist/twist/linear/y</v1>
+    <v2>/mimosa_node/graph/odometry/twist/twist/linear/z</v2>
+    <v3>/mimosa_node/imu/manager/odometry/twist/twist/linear/x</v3>
+    <v4>/mimosa_node/imu/manager/odometry/twist/twist/linear/y</v4>
+    <v5>/mimosa_node/imu/manager/odometry/twist/twist/linear/z</v5>
+   </additional_sources>
+  </snippet>
+  <snippet name="imu_rate_odom_rot_diff_deg">
+   <global></global>
+   <function>x1 = value
+y1 = v1
+z1 = v2
+w1 = v3
+x2 = v4
+y2 = v5
+z2 = v6
+w2 = v7
+
+-- Normalize the first quaternion
+local norm1 = math.sqrt(w1*w1 + x1*x1 + y1*y1 + z1*z1)
+local qw1 = w1 / norm1
+local qx1 = x1 / norm1
+local qy1 = y1 / norm1
+local qz1 = z1 / norm1
+
+-- Normalize the second quaternion
+local norm2 = math.sqrt(w2*w2 + x2*x2 + y2*y2 + z2*z2)
+local qw2 = w2 / norm2
+local qx2 = x2 / norm2
+local qy2 = y2 / norm2
+local qz2 = z2 / norm2
+
+-- Compute the dot product between the two unit quaternions
+local dot = qw1*qw2 + qx1*qx2 + qy1*qy2 + qz1*qz2
+-- Clamp dot to the range [-1, 1] to avoid numerical errors
+dot = math.max(-1, math.min(1, dot))
+
+-- Calculate the angle (in radians) between the two rotations
+local angle = 2 * math.acos(math.abs(dot))
+
+-- Convert to degrees
+return angle * 180 / math.pi</function>
+   <linked_source>/mimosa_node/graph/odometry/pose/pose/orientation/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/pose/pose/orientation/y</v1>
+    <v2>/mimosa_node/graph/odometry/pose/pose/orientation/z</v2>
+    <v3>/mimosa_node/graph/odometry/pose/pose/orientation/w</v3>
+    <v4>/mimosa_node/imu/manager/odometry/pose/pose/orientation/x</v4>
+    <v5>/mimosa_node/imu/manager/odometry/pose/pose/orientation/y</v5>
+    <v6>/mimosa_node/imu/manager/odometry/pose/pose/orientation/z</v6>
+    <v7>/mimosa_node/imu/manager/odometry/pose/pose/orientation/w</v7>
+   </additional_sources>
+  </snippet>
+ </customMathEquations>
+ <snippets/>
+ <!-- - - - - - - - - - - - - - - -->
+</root>

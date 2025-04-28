@@ -1,0 +1,17 @@
+Header header
+
+float32 t_preprocess
+float32 t_get_factors
+float32 t_update_map
+
+int32 n_rejected_point_project_undistorted
+int32 n_rejected_point_range
+int32 n_rejected_point_project
+int32 n_rejected_point_mask
+int32 n_rejected_point_mask_margin
+int32 n_rejected_point_range_diff
+int32 n_rejected_point_max_error
+int32 n_correspondances
+
+float32[3] localizability_trans_final
+float32[3] localizability_rot_final
