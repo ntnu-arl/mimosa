@@ -127,6 +127,22 @@ To run on your own data, you need to set up the following:
 
 This project is licensed under the BSD-3-Clause License - see the [LICENSE](LICENSE) file for details. Intended for civilian use.
 
+## Citing
+
+If you use this work in your research, please cite the following publications:
+
+```
+@misc{khedekar2025pgliophotometricgeometricfusionrobust,
+      title={PG-LIO: Photometric-Geometric fusion for Robust LiDAR-Inertial Odometry}, 
+      author={Nikhil Khedekar and Kostas Alexis},
+      year={2025},
+      eprint={2506.18583},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2506.18583}, 
+}
+```
+
 ## Questions
 
 You can open an issue or contact us for any questions:
