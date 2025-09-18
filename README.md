@@ -28,7 +28,7 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
   cd src_installs
 
   # config_utilities
-  git clone git@github.com:ntnu-arl/config_utilities.git
+  git clone git@github.com:ntnu-arl/config_utilities.git  -b dev/mimosa
   cd config_utilities/config_utilities
   mkdir build && cd build
   cmake -DCMAKE_BUILD_TYPE=Release ..
