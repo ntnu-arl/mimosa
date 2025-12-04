@@ -13,9 +13,17 @@
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <sensor_msgs/PointCloud2.h>
 
 // GTSAM
 #include <gtsam/geometry/Pose3.h>
+#include <gtsam/inference/Symbol.h>
+
+// PCL
+#include <pcl/point_cloud.h>
+
+// pcl_conversions
+#include <pcl_conversions/pcl_conversions.h>
 
 // config_utilities
 #include "config_utilities/config.h"          // Enables declare_config().
@@ -100,6 +108,7 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> MX1D;
 typedef Eigen::MatrixX3d MX3D;
 typedef Eigen::Matrix<double, 6, 6> M6D;
 typedef Eigen::Matrix<double, 6, 1> V6D;
+inline auto& gdkf = gtsam::DefaultKeyFormatter;
 
 inline std::unique_ptr<spdlog::logger> createLogger(
   const std::string & log_path, const std::string & logger_name, const std::string & level,
@@ -159,6 +168,40 @@ constexpr T rad2deg(const T rad)
   return rad * static_cast<T>(180.0) / static_cast<T>(M_PI);
 }
 
+inline bool fieldsMatch(
+  const std::vector<sensor_msgs::PointField> & a,
+  const std::vector<sensor_msgs::PointField> & b, const bool allow_extra_fields_in_a = true)
+{
+  // Assumption: 'a' is the point fields from the incoming point cloud message
+  //             'b' is the point fields from the expected point type
+  // Hence iteration must be carried out to match all fields in 'b'
+  // The parameter 'allow_extra_fields_in_a' allows 'a' to have extra fields not in 'b'
+  if (a.size() < b.size()) {
+    return false;
+  }
+
+  if (!allow_extra_fields_in_a && a.size() != b.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < b.size(); ++i) {
+    if (a[i].name != b[i].name || a[i].datatype != b[i].datatype) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template <typename PointT>
+inline std::vector<sensor_msgs::PointField> getFieldsFromPointType()
+{
+  pcl::PointCloud<PointT> cloud;
+  sensor_msgs::PointCloud2 ros_cloud;
+  pcl::toROSMsg(cloud, ros_cloud);
+  return ros_cloud.fields;
+}
+
 inline geometry_msgs::Point toGeometryMsgs(const V3D & v)
 {
   geometry_msgs::Point p;
@@ -209,6 +252,21 @@ inline void broadcastTransform(
   tf2_broadcaster.sendTransform(ts_frame_child);
 }
 
+inline gtsam::Point3 toGtsam(const geometry_msgs::Point & gm_p)
+{
+  return gtsam::Point3(gm_p.x, gm_p.y, gm_p.z);
+}
+
+inline gtsam::Quaternion toGtsam(const geometry_msgs::Quaternion & gm_q)
+{
+  return gtsam::Quaternion(gm_q.w, gm_q.x, gm_q.y, gm_q.z);
+}
+
+inline gtsam::Pose3 toGtsam(const geometry_msgs::Pose & gm_p)
+{
+  return gtsam::Pose3(gtsam::Rot3(toGtsam(gm_p.orientation)), toGtsam(gm_p.position));
+}
+
 inline void convert(const gtsam::Pose3 & T, geometry_msgs::Pose & pose)
 {
   pose.position = toGeometryMsgs(T.translation());
@@ -225,6 +283,18 @@ inline void publishPath(
   convert(T, pose.pose);
   path.poses.push_back(pose);
   pub.publish(path);
+}
+
+template <typename PointT>
+inline void publishCloud(
+  ros::Publisher & pub, const pcl::PointCloud<PointT> & cloud, const std::string & frame_id,
+  const double ts)
+{
+  sensor_msgs::PointCloud2 msg;
+  pcl::toROSMsg(cloud, msg);
+  msg.header.stamp.fromSec(ts);
+  msg.header.frame_id = frame_id;
+  pub.publish(msg);
 }
 
 template <typename ExceptionType>

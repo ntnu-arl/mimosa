@@ -27,6 +27,7 @@ Geometric::Geometric(ros::NodeHandle & pnh)
   ivox_map_->underlying()->voxel_insertion_setting().set_min_dist_in_cell(
     config.scan_to_map.target_ivox_map_min_dist_in_voxel);
 
+  pub_sm_cloud_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/geometric/sm_cloud", 1);
   pub_sm_cloud_ds_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/geometric/sm_cloud_ds", 1);
   pub_sm_correspondances_ma_ =
     pnh.advertise<visualization_msgs::MarkerArray>("lidar/geometric/sm_correspondances_ma", 1);
@@ -136,6 +137,10 @@ void Geometric::preprocess(
     auto & p = Be_cloud_->points.emplace_back(points_deskewed[idx]);
     p.getVector3fMap() = R_B_L * p.getVector3fMap() + t_B_L;
   });
+
+  if (pub_sm_cloud_.getNumSubscribers()) {
+    publishCloud(pub_sm_cloud_, *Be_cloud_, config.body_frame, ts_);
+  }
 
   // Set the sizes since these are invalidated by the above loop that works directly on the points
   Be_cloud_->width = Be_cloud_->size();
@@ -421,11 +426,7 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
                     map_poses_[min_diff_index].rotation().between(T_W_Be.rotation()) *
                     config.T_B_L.rotation();
 
-    // Assumption: The lidar is 360
-    // Therefore we only care about the pitch and roll diff
-    // We do not care about the yaw diff
     V3D ypr = rot_diff.ypr().cwiseAbs();
-    ypr[0] = 0;
 
     // Rules for global map update:
     // 1. First update should always happen
@@ -454,6 +455,8 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
     }
     gtsam_points::PointCloudCPU::Ptr frame =
       std::make_shared<gtsam_points::PointCloudCPU>(W_points);
+    // Reset the map to a new map
+    ivox_map_ = std::make_shared<IncrementalVoxelMapPCL>(*ivox_map_);
     ivox_map_->underlying()->insert(*frame);
     debug_msg_.t_insertion = sw.lapMs();
 

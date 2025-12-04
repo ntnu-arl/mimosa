@@ -61,7 +61,6 @@ struct ManagerConfig
   gtsam::Pose3 T_B_I = gtsam::Pose3::Identity();
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
-  float max_ts_diff_for_imu_breaking = 0.0025;  // s
   float max_measurement_latency = 0.1;          // s
   SmootherConfig smoother;
 };
@@ -80,6 +79,7 @@ public:
     FAILURE_OLDER_THAN_INITIALIZATION,
     FAILURE_OLDER_THAN_LAG,
     FAILURE_OLDER_THAN_MAX_LATENCY,
+    FAILURE_CANNOT_HANDLE_OUT_OF_ORDER,
     SUCCESS_INITIALIZED,
     SUCCESS_SAME_KEY,
     SUCCESS_OUT_OF_ORDER,
@@ -89,6 +89,7 @@ public:
 private:
   const ManagerConfig config_;
   std::unique_ptr<spdlog::logger> logger_;
+  std::unique_ptr<spdlog::logger> trajectory_logger_;
 
   // Member variables
   mimosa::imu::Manager::Ptr imu_manager_;
@@ -96,8 +97,8 @@ private:
   bool initialized_;
 
   State state_;
-  gtsam::Key internal_key_ =
-    0;  // Setting this here to avoid accidentally changing it in any other function apart from getnextkey() and resetKey()
+  gtsam::Key internal_key_;
+
 #if SMOOTHER_IFL
   std::unique_ptr<gtsam::IncrementalFixedLagSmoother> smoother_;
 #else
@@ -119,16 +120,24 @@ private:
 
 public:
   Manager(ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager);
-  DeclarationResult declare(const double ts, gtsam::Key & key, const bool use_to_init = true);
+  // The one step factors are for things that do not require the two step process. Eg. Radar
+  DeclarationResult declare(
+    const double ts, gtsam::Key & key, const bool use_to_init,
+    const gtsam::NonlinearFactorGraph & one_step_factors = {});
   void getCurrentState(State & state);
   void getStateUpto(const double ts, State & state);
-  void getStateUptoNoLock(const double ts, State & state);
   void define(
     const gtsam::NonlinearFactorGraph & graph, gtsam::Values & optimized_values,
     const DeclarationResult result);
-  inline gtsam::Pose3 getPoseAt(const gtsam::Key key) const
+  inline gtsam::Pose3 getPoseAt(const gtsam::Key key)
   {
+    std::lock_guard<std::mutex> lock(graph_mutex_);
     return optimized_values_.at<gtsam::Pose3>(X(key));
+  }
+  inline gtsam::Values getCurrentOptimizedValues()
+  {
+    std::lock_guard<std::mutex> lock(graph_mutex_);
+    return optimized_values_;
   }
   inline const gtsam::NonlinearFactorGraph & getFactors() const
   {
@@ -143,14 +152,21 @@ private:
   gtsam::ISAM2Params getISAM2Params() const;
   void initializeGraph(
     const double ts, const gtsam::Key key, const gtsam::Pose3 & T_W_B, const V3D & vel,
-    const gtsam::imuBias::ConstantBias & bias);
-  void updatePreintegrationTo(
-    const double ts_start, const double ts_end, const gtsam::imuBias::ConstantBias & imu_bias);
-  void updatePreintegrationTo(const double ts);
+    const gtsam::imuBias::ConstantBias & bias,
+    const gtsam::NonlinearFactorGraph & additional_factors = {});
+  void getStateUptoNoLock(const double ts, State & state);
+  void rekeyOneStepFactors(
+    const gtsam::NonlinearFactorGraph & one_step_factors, const gtsam::Key new_key,
+    gtsam::NonlinearFactorGraph & rekeyed_one_step_factors);
+  void defineNoLock(
+    const gtsam::NonlinearFactorGraph & graph, gtsam::Values & optimized_values,
+    const DeclarationResult result);
+  std::vector<double> getSmootherTimestampsNoLock();
   void updateStateToKeyTs(const gtsam::Key key, const double ts);
   void publishResults();
   inline gtsam::Key getNextKey() { return internal_key_++; }
-  inline void resetKey() { internal_key_ = 0; }
+  inline void discardCurrentKey() { internal_key_--; }
+  inline void resetKey() { internal_key_ = 1; }
 };
 
 }  // namespace graph

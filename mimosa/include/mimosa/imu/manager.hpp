@@ -28,7 +28,7 @@
 
 namespace mimosa
 {
-typedef std::pair<double, V6D> ImuMeasurement;
+typedef std::pair<double, V6D> ImuMeasurement; // < time, (acc, omega)> 
 typedef std::deque<ImuMeasurement> ImuBuffer;
 
 namespace imu
@@ -80,6 +80,7 @@ private:
   // Member variables
   ImuBuffer buffer_;
   std::mutex buffer_mutex_;
+  bool has_recieved_first_message_ = false;
   std::shared_ptr<gtsam::PreintegrationParams> preintegrator_params_;
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> preintegrator_;
   std::mutex preintegrator_mutex_;
@@ -117,11 +118,13 @@ public:
   {
     return preintegrator_params_;
   }
+  inline bool hasRecievedFirstMessage() const { return has_recieved_first_message_; }
   void callback(const sensor_msgs::Imu::ConstPtr & msg);
   bool estimateAttitude(gtsam::Rot3 & R_W_B, V3D & estimated_acc_bias, V3D & estimated_gyro_bias);
   void getInterpolatedMeasurements(
-    const double ts_start, const double ts_end, ImuBuffer & measurements);
-
+    const double ts_start, const double ts_end, ImuBuffer & measurements,
+    const bool dont_interpolate_first_measurement = false);
+  size_t getNumMeasurementsBetween(const double t1, const double t2);
   void addImuFactor(
     const double ts_0, const double ts_1, const gtsam::imuBias::ConstantBias & bias_0,
     const gtsam::Key key_0, const gtsam::Key key_1, gtsam::NonlinearFactorGraph & graph);
@@ -131,6 +134,7 @@ public:
 
   const ManagerConfig & config() const { return config_; }
   void setPropagationBaseState(const State & state);
+  inline std::string getSubscribedTopic() const { return sub_.getTopic(); }
 };
 
 }  // namespace imu

@@ -129,7 +129,7 @@ public:
   {
     // This function is ignored since it only serves to increase computational cost
     std::cout << "\033[1;31mCalling Error on Key: \033[0m\n"
-              << gtsam::DefaultKeyFormatter(keys()[0])
+              << gdkf(keys()[0])
               << "with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
     return 0.0;
   }
@@ -140,7 +140,7 @@ public:
     // into the b frame and compared to the b image. The error is the Least squares NCC
     // between the feature patch and the image intensities at the projected locations
 
-    // std::cout << "Linearizing photometric with key: " << gtsam::DefaultKeyFormatter(keys()[0])
+    // std::cout << "Linearizing photometric with key: " << gdkf(keys()[0])
     //           << "\n";
 
     const gtsam::Pose3 & T_W_Be_b = c.at<gtsam::Pose3>(keys()[0]);

@@ -27,8 +27,7 @@ imu:
 graph:
   manager:
     log_level: trace
-    max_ts_diff_for_imu_breaking: 0.005
-    max_measurement_latency: 0.1
+    max_measurement_latency: 0.25 # seconds # measurements that are older than this (wrt the latest state in the lag) will be discarded. Should be approximately half the lag time.
     smoother:
       lag: 0.5
       wildfire_threshold: 0.001
@@ -64,6 +63,7 @@ lidar:
     enabled: true
     use_to_init: true
     initial_skip: 0 # number of initial pointclouds to drop
+    transpose_pointcloud: false # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
     ts_offset: 0
     range_min: 0.2
     range_max: 100

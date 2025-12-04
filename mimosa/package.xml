@@ -20,5 +20,7 @@
   <depend>cv_bridge</depend>
   <depend>visualization_msgs</depend>
   <depend>rosbag</depend>
+  <depend>gtsam</depend>
+  <depend>gtsam_points</depend>
   <exec_depend>message_runtime</exec_depend>
 </package>

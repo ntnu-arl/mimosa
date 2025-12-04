@@ -1,0 +1,22 @@
+<launch>
+  <arg name="bag_name"/>
+  <arg name="s" default="0" />
+  <arg name="viz" default="false" />
+  <arg name="lidar_collection_delay" default="0.113" /> # Delay in seconds to account for the fact that the rosbag was rewritten with header timestamps
+
+  <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true"> # launch-prefix="gdb -ex run --args">
+    <remap from="/mimosa_node/imu/manager/imu_in" to="/vectornav_driver_node/imu/data" />
+    <remap from="/mimosa_node/lidar/manager/lidar_in" to="/ouster/points" />
+    <remap from="/mimosa_node/radar/manager/radar_in" to="/radar/cloud" />
+
+    <param name="bag_name" value="$(arg bag_name)"/>
+    <param name="s" value="$(arg s)"/>
+    <param name="lidar_collection_delay" value="$(arg lidar_collection_delay)"/>
+
+    <rosparam file="$(find mimosa)/config/hornbill/params.yaml"/>
+    <rosparam file="$(find mimosa)/config/hornbill/os_hornbill.json" command="load" ns="lidar/sensor"/>
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
+
+</launch>

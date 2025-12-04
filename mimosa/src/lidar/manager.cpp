@@ -13,17 +13,12 @@ namespace lidar
 Manager::Manager(
   ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
   mimosa::graph::Manager::Ptr graph_manager)
-: imu_manager_(imu_manager),
-  graph_manager_(graph_manager),
-  config_(config::checkValid(config::fromRos<ManagerConfig>(pnh))),
+: SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
+    config::checkValid(config::fromRos<ManagerConfig>(pnh)), imu_manager, graph_manager, "lidar"),
   z_offset_(-config_.lidar_to_sensor_transform[11] / 1000.0),
   range_min_sq_(config_.range_min * config_.range_min),
   range_max_sq_(config_.range_max * config_.range_max)
 {
-  logger_ =
-    createLogger(config_.logs_directory + "lidar_manager.log", "lidar::Manager", config_.log_level);
-  logger_->info("lidar::Manager initialized with params:\n {}", config::toString(config_));
-
   geometric_ = std::make_unique<Geometric>(pnh);
   photometric_ = std::make_unique<Photometric>(pnh);
 
@@ -33,47 +28,25 @@ Manager::Manager(
       logger_, "Photometric being enabled requires create_full_res_pointcloud to be true.");
   }
 
-  initialized_ = false;
+  debug_msg_.initialized = initialized_;
 
   pub_points_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/manager/points_full_res", 1);
   pub_debug_ = pnh.advertise<mimosa_msgs::LidarManagerDebug>("lidar/manager/debug", 1);
 
   // Setup trajectory logger
   trajectory_logger_ = createLogger(
-    config_.logs_directory + "lidar_manager_odometry.log", "lidar::Manager", "trace", false);
+    config_.base.logs_directory + "lidar_manager_odometry.log", "lidar::Manager::odometry", "trace", false);
   trajectory_logger_->set_pattern("%v");
 
-  if (config_.enabled) {
-    sub_points_ = pnh.subscribe("lidar/manager/points_in", 5, &Manager::callback, this);
-  }
+  subscribeIfEnabled(pnh);
 }
 
 void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 {
-  if (!config_.enabled) {
-    return;
-  }
   Stopwatch sw;
-  debug_msg_.initialized = initialized_;
-  // Drop the initial few pointclouds
-  static int initial_skip = config_.initial_skip;
-  if (initial_skip > 0) {
-    --initial_skip;
-    logger_->info("Dropping initial pointcloud. {} more will be dropped", initial_skip);
+  if (!passesCommonValidations(msg)) {
     return;
   }
-
-  // Current pointcloud must be newer than the previous one
-  static double prev_header_ts = 0.0;
-  header_ts_ = msg->header.stamp.toSec() + config_.ts_offset;
-  if (header_ts_ <= prev_header_ts) {
-    logger_->error(
-      "Skipping pointcloud with timestamp {} because it is not newer than previous timestamp {}. "
-      "This should never happen. Check the header timestamps of the lidar pointclouds",
-      header_ts_, prev_header_ts);
-    return;
-  }
-  prev_header_ts = header_ts_;
 
   // Preprocess the pointcloud
   static const PType point_type = decodePointType(msg->fields);
@@ -96,6 +69,9 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
     case PType::Velodyne:
       prepareInput<PointVelodyne>(msg);
       break;
+    case PType::VelodyneAnybotics:
+      prepareInput<PointVelodyneAnybotics>(msg);
+      break;
     case PType::Rslidar:
       prepareInput<PointRslidar>(msg);
       break;
@@ -107,48 +83,14 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   logger_->debug("Declaring (ts: {})", corrected_ts_);
   Stopwatch sw_declare;
-  graph::Manager::DeclarationResult result =
-    graph_manager_->declare(corrected_ts_, new_key_, config_.use_to_init);
-  // Handle possible failures
-  switch (result) {
-    case graph::Manager::DeclarationResult::FAILURE_CANNOT_INIT_ON_MODALITY:
-      logger_->info("Cannot initialize on this modality. Skipping this pointcloud");
-      return;
+  graph::Manager::DeclarationResult dr =
+    graph_manager_->declare(corrected_ts_, new_key_, config_.base.use_to_init);
 
-    case graph::Manager::DeclarationResult::FAILURE_ATTITUDE_ESTIMATION:
-      logger_->debug(
-        "Graph manager could not initialize due to attitude estimation failure. Skipping this "
-        "pointcloud");
-      return;
-
-    case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_INITIALIZATION:
-      logger_->warn(
-        "timestamp is older than the graph initialization timestamp. If this "
-        "happens continously, check the time sychronization between the sensors");
-      return;
-
-    case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_LAG:
-      logger_->error("Timestamp is older than entire lag window. Ignoring measurement");
-      return;
-
-    case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_MAX_LATENCY:
-      logger_->warn("Timestamp is too old to be considered. Ignoring measurement");
-      return;
-
-    case graph::Manager::DeclarationResult::SUCCESS_INITIALIZED:
-    case graph::Manager::DeclarationResult::SUCCESS_SAME_KEY:
-    case graph::Manager::DeclarationResult::SUCCESS_OUT_OF_ORDER:
-    case graph::Manager::DeclarationResult::SUCCESS_NORMAL:
-      break;
-
-    default:
-      logCriticalException<std::logic_error>(
-        logger_, fmt::format(
-                   "Unknown declaration result. Maybe the graph::manager::DeclarationResult API "
-                   "has been updated. Received: {}",
-                   result));
+  if (!handleDeclarationResult(dr)) {
+    return;
   }
   debug_msg_.t_declare = sw_declare.elapsedMs();
+  logger_->debug("Declaration done for ts: {} assigned key: {}", corrected_ts_, gdkf(new_key_));
 
   if (imu_preintegrator_ == nullptr) {
     imu_preintegrator_ =
@@ -161,18 +103,18 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   static bool first = true;
   gtsam::Pose3 T_W_Bk_opt;
-  static gtsam::Values opt_values;
+  static gtsam::Values opt_values = graph_manager_->getCurrentOptimizedValues();
   if (first) {
     first = false;
-    broadcastTransform(
-      tf2_static_broadcaster_, config_.T_B_S, config_.body_frame, config_.sensor_frame, header_ts_);
+    broadcastStaticTransform(corrected_ts_);
 
     initialized_ = true;
+    debug_msg_.initialized = initialized_;
 
     logger_->info("Initialized");
 
     T_W_Bk_opt = graph_manager_->getPoseAt(new_key_);
-    opt_values.insert(X(new_key_), T_W_Bk_opt);
+    opt_values.insert_or_assign(X(new_key_), T_W_Bk_opt);
   } else {
     // Get the new factors
     gtsam::Values initial_values = opt_values;
@@ -180,7 +122,7 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
     gtsam::NonlinearFactorGraph new_factors;
     getFactors(initial_values, new_factors);
 
-    define(new_factors, opt_values, result);
+    define(new_factors, opt_values, dr);
 
     // const gtsam::NonlinearFactorGraph factors = graph_manager_->getFactors();
     // photometric_->visualizeTracks(
@@ -195,6 +137,7 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   debug_msg_.header.stamp.fromSec(corrected_ts_);
   debug_msg_.t_full = sw.elapsedMs();
+  logger_->debug("Callback complete for key {}. Full processing time: {} ms", gdkf(new_key_), debug_msg_.t_full);
   pub_debug_.publish(debug_msg_);
 }
 
@@ -225,6 +168,30 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   idxs_at_unique_ns_.reserve(msg_cloud.size());
   debug_msg_.t_clear_reserve = sw.tickMs();
 
+  if constexpr (std::is_same<PointT, PointRslidar>::value || 
+                std::is_same<PointT, PointVelodyneAnybotics>::value) {
+    // Transposing the pointcloud is required for RSAiry
+    // since the remaining code assumes the height corresponds to the number of rings
+    // and the width corresponds to the number of points per ring.
+    // The pointcloud of the VelodyneAnybotics lidar also seems to be transposed
+    if (config_.transpose_pointcloud) {
+      pcl::PointCloud<PointT> msg_cloud_transposed;
+      msg_cloud_transposed.width = msg_cloud.height;
+      msg_cloud_transposed.height = msg_cloud.width;
+      msg_cloud_transposed.resize(msg_cloud_transposed.width * msg_cloud_transposed.height);
+
+      for (size_t i = 0; i < msg_cloud.size(); ++i) {
+        const size_t current_row = i / msg_cloud.width;
+        const size_t current_col = i % msg_cloud.width;
+
+        const size_t new_row = current_col;
+        const size_t new_col = current_row;
+        msg_cloud_transposed[new_row * msg_cloud_transposed.width + new_col] = msg_cloud[i];
+      }
+      msg_cloud = msg_cloud_transposed;
+    }
+  }
+
   uint32_t last_point_ns = std::numeric_limits<uint32_t>::min();
   const size_t skip_divisor =
     config_.create_full_res_pointcloud ? 1 : geometric_->config.point_skip_divisor;
@@ -240,13 +207,13 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     if constexpr (
       std::is_same<PointT, PointLivox>::value ||
       std::is_same<PointT, PointLivoxFromCustom2>::value) {
-      if (!((pin.tag & 0x30) == 0x10 || (pin.tag & 0x30) == 0x00)) {
+      if (std::isnan(pin.tag) || !((pin.tag & 0x30) == 0x10 || (pin.tag & 0x30) == 0x00)) {
         continue;
       }
     }
 
     // Intensity filter
-    if (pin.intensity < config_.intensity_min || pin.intensity > config_.intensity_max) continue;
+    if (std::isnan(pin.intensity) || pin.intensity < config_.intensity_min || pin.intensity > config_.intensity_max) continue;
 
     // Range filter
     float range_sq = pin.x * pin.x + pin.y * pin.y + pin.z * pin.z;
@@ -261,35 +228,21 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
       t_ns = (pin.timestamp - header_ts_) * 1e9;
     } else if constexpr (std::is_same<PointT, PointLivox>::value) {
       t_ns = pin.timestamp - header_ts_ * 1e9;
-
-      // Additional sensor specific processing
-      if (t_ns >= 1e8 - 2e6)  // 100ms - 2ms
-      {
-        // The mid360 starts the next pointcloud at a time less than 100ms from the start of the pointcloud
-        // this causes issues in getting the state since we assume that the timestamp of the first point in
-        // pointcloud k is greater than the timestamp of the last point in pointcloud k-1. The issue manifests in
-        // the getStateUpto function called in the deskeewPoints function
-        continue;
-      }
     } else if constexpr (std::is_same<PointT, PointLivoxFromCustom2>::value) {
       t_ns = pin.t;
-    } else if constexpr (std::is_same<PointT, PointVelodyne>::value) {
+    } else if constexpr (std::is_same<PointT, PointVelodyne>::value || 
+                         std::is_same<PointT, PointVelodyneAnybotics>::value) {
       t_ns = pin.time * 1e9;
-
-      // Additional sensor specific processing
-      if (t_ns >= 1e8 - 2e6)  // 100ms - 2ms
-      {
-        // The velodyne starts the next pointcloud at a time less than 100ms from the start of the pointcloud
-        // this causes issues in getting the state since we assume that the timestamp of the first point in
-        // pointcloud k is greater than the timestamp of the last point in pointcloud k-1. The issue manifests in
-        // the getStateUpto function called in the deskeewPoints function
-        continue;
-      }
     } else if constexpr (std::is_same<PointT, PointRslidar>::value) {
       t_ns = (pin.timestamp - header_ts_) * 1e9;
     } else {
-      throw std::runtime_error("Unsupported point type");
+      throw std::runtime_error("Time decoding not implemented for this point type");
     }
+
+    if (t_ns > config_.ns_max) {
+      continue;
+    }
+
     last_point_ns = std::max(last_point_ns, t_ns);
 
     points_full_.points.emplace_back(
@@ -301,9 +254,16 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     if (i % geometric_->config.point_skip_divisor != 0) continue;
 
     // Ring filter - does not make sense in a Livox pointcloud
+    // VelodyneAnybotics points also seem to have unreliable ring numbers
     if constexpr (
       !std::is_same<PointT, PointLivox>::value &&
-      !std::is_same<PointT, PointLivoxFromCustom2>::value) {
+      !std::is_same<PointT, PointLivoxFromCustom2>::value &&
+      !std::is_same<PointT, PointVelodyneAnybotics>::value) {
+      if (std::isnan(pin.ring))
+      {
+        logger_->warn("Point ring number is NaN. Skipping the point but check your input data");
+        continue;
+      }
       if (pin.ring % geometric_->config.ring_skip_divisor != 0) continue;
     }
 
@@ -346,8 +306,8 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   debug_msg_.t_preprocess_sort = sw.tickMs();
 
   logger_->debug(
-    "Filtering done, header ts: {}, corrected ts: {}, points_full_size: {}", header_ts_,
-    corrected_ts_, points_full_.size());
+    "Filtering done, header ts: {}, corrected ts: {}, points_full_size: {}, duration: {}",
+    header_ts_, corrected_ts_, points_full_.size(), corrected_ts_ - header_ts_);
 
   // Save a copy of the raw points. This is needed by photometric
   if (photometric_->config.enabled) {
@@ -371,10 +331,12 @@ void Manager::deskewPoints()
   std::vector<gtsam::Pose3> T_W_Bts_at_unique_ns;
   T_W_Bts_at_unique_ns.reserve(unique_ns_.size());
 
+  static int not_initialized_count = 0;
   if (!initialized_) {
-    logger_->warn(
-      "Not initialized, not deskewing pointcloud. This should only happen on the first pointcloud. "
-      "If you are seeing this message later, then there is a bug");
+    ++not_initialized_count;
+    if (not_initialized_count != 1) {
+      logger_->error("not_initialized_count: {} but should be 1.", not_initialized_count);
+    }
     for (const auto ns : unique_ns_) {
       interpolated_map_T_Le_Lt_[ns] = gtsam::Pose3::Identity();
     }
@@ -411,7 +373,7 @@ void Manager::deskewPoints()
   // Particularly, since the preintegrator always starts integrating from the second measurement, it assumes that the
   // first measurement is at the previous state. So the previous state might not be at the same timestamp as the header_ts_
   // of the current pointcloud
-  imu_manager_->getInterpolatedMeasurements(state.ts(), corrected_ts_, imu_measurements);
+  imu_manager_->getInterpolatedMeasurements(state.ts(), corrected_ts_, imu_measurements, true);
 
   if (imu_measurements.size() < 2) {
     std::string msg = "Preintegration not possible as there are less than 2 measurements P1";
@@ -471,10 +433,10 @@ void Manager::deskewPoints()
 
   // Deskew the points
   // Note the propagated state = T_W_Be
-  const gtsam::Pose3 T_Le_W = config_.T_B_S.inverse() * propagated_state_.pose().inverse();
+  const gtsam::Pose3 T_Le_W = config_.base.T_B_S.inverse() * propagated_state_.pose().inverse();
 
   for (size_t i = 0; i < unique_ns_.size(); ++i) {
-    const gtsam::Pose3 T_Le_Lt = T_Le_W * T_W_Bts_at_unique_ns[i] * config_.T_B_S;
+    const gtsam::Pose3 T_Le_Lt = T_Le_W * T_W_Bts_at_unique_ns[i] * config_.base.T_B_S;
 
     if (photometric_->config.enabled) {
       interpolated_map_T_Le_Lt_[unique_ns_[i]] = T_Le_Lt;
@@ -526,12 +488,16 @@ void Manager::getFactors(
 
 void Manager::define(
   const gtsam::NonlinearFactorGraph & new_factors, gtsam::Values & optimized_values,
-  const graph::Manager::DeclarationResult result)
+  const graph::Manager::DeclarationResult dr)
 {
   Stopwatch sw;
+  logger_->debug(
+    "Defining with {} new factors for key: {}", new_factors.size(),
+    gdkf(new_key_));
 
-  graph_manager_->define(new_factors, optimized_values, result);
+  graph_manager_->define(new_factors, optimized_values, dr);
 
+  logger_->debug("Define done for key : {}", gdkf(new_key_));
   debug_msg_.t_define = sw.elapsedMs();
 }
 
@@ -567,7 +533,7 @@ void Manager::publishResults(const gtsam::Pose3 & T_W_Bk_opt)
 
   static int counter = 0;
   if (counter % config_.full_res_pointcloud_publish_rate_divisor == 0) {
-    publishCloud(pub_points_, points_full_, config_.sensor_frame, corrected_ts_);
+    publishCloud(pub_points_, points_full_, config_.base.sensor_frame, corrected_ts_);
   }
   ++counter;
 
@@ -589,29 +555,21 @@ void declare_config(ManagerConfig & config)
   using namespace config;
   name("Lidar Manager Config");
 
-  field(config.logs_directory, "logs_directory", "directory_path");
-  field(config.world_frame, "world_frame", "str");
-  field(config.body_frame, "body_frame", "str");
-  {
-    NameSpace ns("lidar");
-    field(config.sensor_frame, "sensor_frame", "str");
-    field(config.T_B_S, "T_B_S", "gtsam::Pose3");
-    field(config.T_B_OdometryLoggerFrame, "T_B_OdometryLoggerFrame", "gtsam::Pose3");
-  }
+  // Declare common sensor manager config fields
+  declare_sensor_manager_config_base(config.base, "lidar");
 
+  // Declare lidar-specific fields
   {
     NameSpace ns("lidar");
+    field(config.T_B_OdometryLoggerFrame, "T_B_OdometryLoggerFrame", "gtsam::Pose3");
     {
       NameSpace ns("manager");
-      field(config.log_level, "log_level", "trace|debug|info|warn|error|critical");
-      field(config.enabled, "enabled", "bool");
-      field(config.use_to_init, "use_to_init", "bool");
-      field(config.initial_skip, "initial_skip", "number of pointclouds to drop at the start");
-      field(config.ts_offset, "ts_offset", "s");
+      field(config.transpose_pointcloud, "transpose_pointcloud", "bool");
       field(config.range_min, "range_min", "m");
       field(config.range_max, "range_max", "m");
       field(config.intensity_min, "intensity_min", "float");
       field(config.intensity_max, "intensity_max", "float");
+      field(config.ns_max, "ns_max", "float");
       field(config.create_full_res_pointcloud, "create_full_res_pointcloud", "bool");
       field(
         config.full_res_pointcloud_publish_rate_divisor, "full_res_pointcloud_publish_rate_divisor",
@@ -626,14 +584,7 @@ void declare_config(ManagerConfig & config)
     }
   }
 
-  check(config.initial_skip, GE, 0, "initial_skip");
-  check(config.body_frame, NE, config.world_frame, "body_frame");
-  check(
-    config.sensor_frame, NE, config.world_frame,
-    "sensor_frame should not be the same as world_frame");
-  check(
-    config.sensor_frame, NE, config.body_frame,
-    "sensor_frame should not be the same as body_frame");
+  // Lidar-specific validation
   check(config.range_min, GE, 0.0, "range_min");
   check(config.range_max, GT, config.range_min, "range_max");
   check(config.intensity_min, GE, 0.0, "intensity_min");

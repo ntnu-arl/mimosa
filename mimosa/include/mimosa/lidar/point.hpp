@@ -7,7 +7,6 @@
 #pragma once
 
 #include <pcl/point_types.h>
-#include <sensor_msgs/PointField.h>
 
 // This is kept here since it is at the top level
 #define PCL_NO_PRECOMPILE
@@ -102,6 +101,16 @@ struct EIGEN_ALIGN16 PointVelodyne
 };
 
 // XYZIRT
+struct EIGEN_ALIGN16 PointVelodyneAnybotics
+{
+  PCL_ADD_POINT4D;
+  float intensity;
+  float ring;
+  float time;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+// XYZIRT
 struct EIGEN_ALIGN16 PointRslidar
 {
   PCL_ADD_POINT4D;
@@ -109,50 +118,6 @@ struct EIGEN_ALIGN16 PointRslidar
   uint16_t ring;
   double timestamp;  // Global time (unix timestamp) in seconds
 };
-
-enum class PType
-{
-  Unknown,
-  Ouster,
-  OusterR8,
-  Hesai,
-  Livox,
-  LivoxFromCustom2,
-  Velodyne,
-  Rslidar
-};
-
-inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields)
-{
-  if (fields.size() < 6) {
-    return PType::Unknown;
-  }
-
-  if (fields[4].name == "t") {
-    // Ouster
-    if (fields[6].datatype == sensor_msgs::PointField::UINT16) {
-      return PType::Ouster;
-    }
-    // Ouster R8
-    else if (fields[6].datatype == sensor_msgs::PointField::UINT8) {
-      return PType::OusterR8;
-    }
-  } else if (fields[4].name == "timestamp") {
-    return PType::Hesai;
-  } else if (fields[4].name == "tag") {
-    return PType::Livox;
-  } else if (fields[4].name == "intensity") {
-    return PType::LivoxFromCustom2;
-  } else if (fields[4].name == "ring") {
-    if (fields[5].name == "time") {
-      return PType::Velodyne;
-    } else {
-      return PType::Rslidar;
-    }
-  }
-
-  return PType::Unknown;
-}
 }  // namespace lidar
 }  // namespace mimosa
 
@@ -187,6 +152,11 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::lidar::PointVelodyne,
   (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(std::uint16_t, ring, ring)(
+    float, time, time))
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+  mimosa::lidar::PointVelodyneAnybotics,
+  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, ring, ring)(
     float, time, time))
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(

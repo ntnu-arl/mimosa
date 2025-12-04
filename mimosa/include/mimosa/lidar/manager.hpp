@@ -7,8 +7,7 @@
 #pragma once
 
 // mimosa
-#include "mimosa/graph/manager.hpp"
-#include "mimosa/imu/manager.hpp"
+#include "mimosa/sensor_manager_base.hpp"
 #include "mimosa/lidar/geometric.hpp"
 #include "mimosa/lidar/photometric.hpp"
 #include "mimosa_msgs/LidarManagerDebug.h"
@@ -22,21 +21,16 @@ namespace lidar
 {
 struct ManagerConfig
 {
-  std::string logs_directory = "/tmp/";
-  std::string log_level = "info";
-  bool enabled = true;
-  bool use_to_init = true;
-  std::string world_frame = "mimosa_world";
-  std::string body_frame = "mimosa_body";
-  std::string sensor_frame = "mimosa_lidar";
-  gtsam::Pose3 T_B_S = gtsam::Pose3::Identity();
+  SensorManagerBaseConfig base;
+
+  // Lidar-specific fields
   gtsam::Pose3 T_B_OdometryLoggerFrame = gtsam::Pose3::Identity();
-  int initial_skip = 5;
-  float ts_offset = 0.0;
+  bool transpose_pointcloud = false;
   float range_min = 0.0;
   float range_max = 100.0;
   float intensity_min = 0.0;
   float intensity_max = 1e10;
+  float ns_max = 1e9;
   std::vector<float> lidar_to_sensor_transform = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
   bool create_full_res_pointcloud = false;
   int full_res_pointcloud_publish_rate_divisor = 1;
@@ -47,24 +41,14 @@ struct ManagerConfig
 
 void declare_config(ManagerConfig & config);
 
-class Manager
+class Manager : public SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>
 {
-public:
-  using Ptr = std::shared_ptr<Manager>;
-
 private:
-  std::unique_ptr<spdlog::logger> logger_;
   std::unique_ptr<spdlog::logger> trajectory_logger_;
-
-  // Inputs
-  ros::Subscriber sub_points_;
 
   // Member variables
   std::unique_ptr<Geometric> geometric_;
   std::unique_ptr<Photometric> photometric_;
-  double header_ts_;  // Global time
-  double corrected_ts_;
-  gtsam::Key new_key_;
   pcl::PointCloud<Point> points_full_;
   pcl::PointCloud<Point> points_raw_;
   std::vector<size_t> geometric_point_idxs_;
@@ -73,14 +57,10 @@ private:
   std::vector<uint32_t> unique_ns_;
   std::vector<std::vector<size_t>> idxs_at_unique_ns_;
 
-  mimosa::imu::Manager::Ptr imu_manager_;
-  mimosa::graph::Manager::Ptr graph_manager_;
-  const ManagerConfig config_;
   const float z_offset_;
   const float range_min_sq_;
   const float range_max_sq_;
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> imu_preintegrator_;
-  bool initialized_;
   gtsam::NavState propagated_state_;
   mimosa_msgs::LidarManagerDebug debug_msg_;
   M66 geometric_eigenvectors_block_matrix_ = M66::Identity();
@@ -92,14 +72,12 @@ private:
   ros::Publisher pub_points_;
   ros::Publisher pub_debug_;
   ros::Publisher pub_path_;
-  tf2_ros::TransformBroadcaster tf2_broadcaster_;
-  tf2_ros::StaticTransformBroadcaster tf2_static_broadcaster_;
 
 public:
   Manager(
     ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
     mimosa::graph::Manager::Ptr graph_manager);
-  void callback(const sensor_msgs::PointCloud2::ConstPtr & msg);
+  void callback(const sensor_msgs::PointCloud2::ConstPtr & msg) override;
 
 private:
   template <typename PointT>

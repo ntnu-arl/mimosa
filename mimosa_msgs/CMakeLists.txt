@@ -53,6 +53,7 @@ add_message_files(
   LidarManagerDebug.msg
   LidarGeometricDebug.msg
   LidarPhotometricDebug.msg
+  RadarManagerDebug.msg
 )
 
 

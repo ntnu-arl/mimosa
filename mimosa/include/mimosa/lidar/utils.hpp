@@ -12,11 +12,7 @@
 
 // ROS
 #include <sensor_msgs/Image.h>
-#include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/MarkerArray.h>
-
-// PCL
-#include <pcl/point_cloud.h>
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -25,9 +21,6 @@
 
 // cv_bridge
 #include <cv_bridge/cv_bridge.h>
-
-// pcl_conversions
-#include <pcl_conversions/pcl_conversions.h>
 
 // C++
 #include <Eigen/Core>
@@ -39,15 +32,54 @@ namespace mimosa
 {
 namespace lidar
 {
-inline void publishCloud(
-  ros::Publisher & pub, const pcl::PointCloud<Point> & cloud, const std::string & frame_id,
-  const double ts)
+enum class PType
 {
-  sensor_msgs::PointCloud2 msg;
-  pcl::toROSMsg(cloud, msg);
-  msg.header.stamp.fromSec(ts);
-  msg.header.frame_id = frame_id;
-  pub.publish(msg);
+  Unknown = 0,
+  Ouster,
+  OusterR8,
+  Hesai,
+  Livox,
+  LivoxFromCustom2,
+  Velodyne,
+  VelodyneAnybotics,
+  Rslidar
+};
+
+inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields)
+{
+  if (fieldsMatch(fields, getFieldsFromPointType<PointOuster>())) {
+    return PType::Ouster;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointOusterR8>())) {
+    return PType::OusterR8;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointHesai>())) {
+    return PType::Hesai;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointLivox>())) {
+    return PType::Livox;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointLivoxFromCustom2>())) {
+    return PType::LivoxFromCustom2;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointVelodyne>())) {
+    return PType::Velodyne;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointVelodyneAnybotics>())) {
+    return PType::VelodyneAnybotics;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointRslidar>())) {
+    return PType::Rslidar;
+  }
+
+  return PType::Unknown;
 }
 
 inline void publishImage(

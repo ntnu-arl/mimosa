@@ -74,9 +74,8 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
   }
   prev_ts = ts;
 
-  static bool first = true;
-  if (first) {
-    first = false;
+  if (!has_recieved_first_message_) {
+    has_recieved_first_message_ = true;
     broadcastTransform(
       tf2_static_broadcaster_, config_.T_B_S, config_.body_frame, config_.sensor_frame, ts);
   }
@@ -110,7 +109,7 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
     }
   }
 
-  if (propagate) {
+  if (false && propagate) {
     gtsam::NavState nav_state;
     {
       logger_->trace("Propagating IMU");
@@ -271,7 +270,8 @@ V6D Manager::interpolateMeasurement(
 }
 
 void Manager::getInterpolatedMeasurements(
-  const double ts_start, const double ts_end, ImuBuffer & measurements)
+  const double ts_start, const double ts_end, ImuBuffer & measurements,
+  const bool dont_interpolate_first_measurement)
 {
   // Check if timestamps are in correct order
   if (ts_start >= ts_end) {
@@ -330,7 +330,13 @@ void Manager::getInterpolatedMeasurements(
     // Interpolate first element
     auto prev_s_itr = s_itr;
     --prev_s_itr;
-    measurements.emplace_front(ts_start, prev_s_itr->second);
+    if (dont_interpolate_first_measurement) {
+      measurements.emplace_front(ts_start, prev_s_itr->second);
+    } else {
+      measurements.emplace_front(
+        ts_start, interpolateMeasurement(
+                    prev_s_itr->first, prev_s_itr->second, s_itr->first, s_itr->second, ts_start));
+    }
   }
 
   // Add the last element
@@ -347,18 +353,44 @@ void Manager::getInterpolatedMeasurements(
   // but that is ok since this is extremely cheap and almost never happens.
 }
 
+size_t Manager::getNumMeasurementsBetween(const double t1, const double t2)
+{
+  const double t_start = std::min(t1, t2);
+  const double t_end = std::max(t1, t2);
+
+  auto s_itr = std::lower_bound(
+    buffer_.begin(), buffer_.end(), t_start,
+    [](const ImuMeasurement & m, const double ts) { return m.first < ts; });
+
+  size_t count = 0;
+  for (auto it = s_itr; it != buffer_.end(); ++it) {
+    if (it->first > t_end) {
+      break;
+    }
+    ++count;
+  }
+
+  return count;
+}
+
+
 void Manager::updatePreintegrationTo(
   const double ts_start, const double ts_end, const gtsam::imuBias::ConstantBias & bias,
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> & preintegrator)
 {
   // Preintegrate the imu measurements
   ImuBuffer measurements;
-  getInterpolatedMeasurements(ts_start, ts_end, measurements);
+  getInterpolatedMeasurements(ts_start, ts_end, measurements, true);
 
   if (measurements.size() < 2) {
     std::string msg = "Preintegration not possible as there are less than 2 measurements P1";
     logger_->error(msg);
     throw std::runtime_error(msg);
+  }
+
+  if (measurements.size() == 2)
+  {
+    logger_->warn("Preintegrating exactly one measurement");
   }
 
   preintegrator->resetIntegrationAndSetBias(bias);
@@ -384,10 +416,13 @@ void Manager::addImuFactorNoLock(
   double sigma_b_a = config_.preintegration.acc_bias_random_walk * sqrt(preintegrator_->deltaTij());
   double sigma_b_g =
     config_.preintegration.gyro_bias_random_walk * sqrt(preintegrator_->deltaTij());
-  graph.add(gtsam::BetweenFactor<gtsam::imuBias::ConstantBias>(
-    B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
-    gtsam::noiseModel::Diagonal::Sigmas(
-      (V6D() << sigma_b_a, sigma_b_a, sigma_b_a, sigma_b_g, sigma_b_g, sigma_b_g).finished())));
+  graph.add(
+    gtsam::BetweenFactor<gtsam::imuBias::ConstantBias>(
+      B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
+      gtsam::noiseModel::Diagonal::Sigmas(
+        (V6D() << sigma_b_a, sigma_b_a, sigma_b_a, sigma_b_g, sigma_b_g, sigma_b_g).finished())));
+
+  logger_->info("Added IMU factor between keys {} and {}", gdkf(key_0), gdkf(key_1));
 }
 
 void Manager::addImuFactor(
@@ -405,7 +440,6 @@ void Manager::addImuFactorAndGetNavState(
   {
     std::lock_guard<std::mutex> lock(preintegrator_mutex_);
     addImuFactorNoLock(state_0.ts(), ts_1, state_0.imuBias(), state_0.key(), key_1, graph);
-    logger_->info("Added IMU factor between {} and {}", state_0.ts(), ts_1);
     ns_1 = preintegrator_->predict(state_0.navState(), state_0.imuBias(), state_0.gravity());
     logger_->info("predicted state");
   }

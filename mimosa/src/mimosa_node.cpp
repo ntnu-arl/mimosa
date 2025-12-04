@@ -10,6 +10,8 @@
 
 // Exteroceptive sensor managers
 #include "mimosa/lidar/manager.hpp"
+#include "mimosa/radar/manager.hpp"
+#include "mimosa/odometry/manager.hpp"
 
 // ROS
 #include <ros/callback_queue.h>
@@ -39,6 +41,8 @@ int main(int argc, char ** argv)
 
   // Exteroceptive sensor managers
   mimosa::lidar::Manager lidar_manager(pnh, imu_manager, graph_manager);
+  mimosa::radar::Manager radar_manager(pnh, imu_manager, graph_manager);
+  mimosa::odometry::Manager odometry_manager(pnh, imu_manager, graph_manager);
 
   ros::waitForShutdown();
   imu_thread.join();

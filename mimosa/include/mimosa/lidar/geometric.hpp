@@ -54,6 +54,7 @@ private:
   double ts_;
   mimosa_msgs::LidarGeometricDebug debug_msg_;
 
+  ros::Publisher pub_sm_cloud_;
   ros::Publisher pub_sm_cloud_ds_;
   ros::Publisher pub_sm_correspondances_ma_;
   ros::Publisher pub_debug_;

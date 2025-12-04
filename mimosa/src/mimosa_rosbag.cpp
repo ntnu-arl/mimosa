@@ -10,6 +10,8 @@
 
 // Exteroceptive sensor managers
 #include "mimosa/lidar/manager.hpp"
+#include "mimosa/radar/manager.hpp"
+#include "mimosa/odometry/manager.hpp"
 
 // ROS
 #include <rosbag/bag.h>
@@ -59,6 +61,8 @@ int main(int argc, char ** argv)
 
   // Exteroceptive sensor managers
   mimosa::lidar::Manager lidar_manager(pnh, imu_manager, graph_manager);
+  mimosa::radar::Manager radar_manager(pnh, imu_manager, graph_manager);
+  mimosa::odometry::Manager odometry_manager(pnh, imu_manager, graph_manager);
 
   // Read the bag name from parameter server
   std::string bag_name;
@@ -116,10 +120,12 @@ int main(int argc, char ** argv)
     std::cout << path << std::endl;
   }
 
-  std::string pointcloud_topic = pnh.resolveName("/mimosa_node/lidar/manager/points_in");
-  std::string imu_topic = pnh.resolveName("/mimosa_node/imu/manager/imu_in");
+  std::string imu_topic = imu_manager->getSubscribedTopic();
+  std::string lidar_topic = lidar_manager.getSubscribedTopic();
+  std::string radar_topic = radar_manager.getSubscribedTopic();
+  std::string odometry_topic = odometry_manager.getSubscribedTopic();
 
-  std::vector<std::string> topics = {pointcloud_topic, imu_topic};
+  std::vector<std::string> topics = {imu_topic, lidar_topic, radar_topic, odometry_topic};
 
   std::cout << "Topics: " << std::endl;
   for (const auto & topic : topics) {
@@ -191,7 +197,7 @@ int main(int argc, char ** argv)
       clock_msg.clock = msg_time;
       clock_pub.publish(clock_msg);
 
-      if (m.getTopic() == pointcloud_topic) {
+      if (m.getTopic() == lidar_topic) {
         sensor_msgs::PointCloud2::ConstPtr msg = m.instantiate<sensor_msgs::PointCloud2>();
         if (msg != nullptr) {
           if (lidar_collection_delay != 0) {
@@ -216,8 +222,17 @@ int main(int argc, char ** argv)
             }
           }
         }
+      } else if (m.getTopic() == radar_topic) {
+        sensor_msgs::PointCloud2::ConstPtr msg = m.instantiate<sensor_msgs::PointCloud2>();
+        if (msg != nullptr) {
+          radar_manager.callback(msg);
+        }
+      } else if (m.getTopic() == odometry_topic) {
+        nav_msgs::Odometry::ConstPtr msg = m.instantiate<nav_msgs::Odometry>();
+        if (msg != nullptr) {
+          odometry_manager.callback(msg);
+        }
       }
-
       ++it;
     }
 

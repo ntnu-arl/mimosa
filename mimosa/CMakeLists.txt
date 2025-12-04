@@ -37,10 +37,13 @@ message("OpenCV Version:" ${OpenCV_VERSION})
 message("OpenCV Path:" ${OpenCV_DIR})
 
 find_package(GTSAM 4.2.0 REQUIRED)
+find_package(GTSAM_UNSTABLE REQUIRED)
 message("GTSAM version: ${GTSAM_VERSION}")
 message("GTSAM path: ${GTSAM_DIR}")
+message("GTSAM UNSTABLE path: ${GTSAM_UNSTABLE_DIR}")
 
 find_package(gtsam_points REQUIRED)
+message("gtsam points path: ${gtsam_points_DIR}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fexceptions")
 
@@ -86,6 +89,8 @@ set(SRC_FOLDERS
     imu
     graph
     lidar
+    radar
+    odometry
 )
 
 # Initialize an empty list to hold all source files
@@ -134,7 +139,7 @@ target_link_libraries(${PROJECT_NAME}_lib
   ${PCL_LIBRARIES}
   gtsam
   gtsam_unstable
-  gtsam_points
+  gtsam_points::gtsam_points
   ${OpenCV_LIBS}
 )
 
@@ -146,7 +151,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${PCL_LIBRARIES}
   gtsam
   gtsam_unstable
-  gtsam_points
+  gtsam_points::gtsam_points
   ${OpenCV_LIBS}
 )
 
@@ -162,7 +167,7 @@ target_link_libraries(${PROJECT_NAME}_rosbag
   ${PCL_LIBRARIES}
   gtsam
   gtsam_unstable
-  gtsam_points
+  gtsam_points::gtsam_points
   ${OpenCV_LIBS}
 )
 

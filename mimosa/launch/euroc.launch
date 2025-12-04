@@ -1,0 +1,16 @@
+<launch>
+  <arg name="viz" default="false" />
+
+  <node pkg="mimosa" type="mimosa_node" name="mimosa_node" output="screen" clear_params="true"> # launch-prefix="gdb -ex run --args">
+    <remap from="/mimosa_node/imu/manager/imu_in" to="/imu0" />
+    <!-- <remap from="/mimosa_node/lidar/manager/lidar_in" to="/rslidar_points" /> -->
+    <!-- <remap from="/mimosa_node/radar/manager/radar_in" to="/radar/cloud" /> -->
+    <remap from="/mimosa_node/odometry/manager/odometry_in" to="/rovio/odometry" />
+
+    <rosparam file="$(find mimosa)/config/euroc/params.yaml"/>
+    <rosparam file="$(find mimosa)/config/os_dummy.json" command="load" ns="lidar/sensor"/>
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
+
+</launch>

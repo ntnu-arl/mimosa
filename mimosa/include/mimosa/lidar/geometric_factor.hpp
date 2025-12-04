@@ -16,6 +16,7 @@
 // mimosa
 #include "mimosa/lidar/geometric_config.hpp"
 #include "mimosa/lidar/incremental_voxel_map.hpp"
+#include "mimosa/state.hpp"
 
 namespace mimosa
 {
@@ -166,7 +167,7 @@ public:
   {
     // This function is ignored since it only serves to increase computational cost
     std::cout << "\033[1;31mCalling Error on Key: \033[0m\n"
-              << gtsam::DefaultKeyFormatter(keys()[0])
+              << gdkf(keys()[0])
               << " with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
     return 0.0;
   }
@@ -224,7 +225,7 @@ public:
   {
     linearize_count_++;
 
-    // std::cout << "calling linearize key: " << gtsam::DefaultKeyFormatter(keys()[0]) << std::endl;
+    // std::cout << "calling linearize key: " << gdkf(keys()[0]) << std::endl;
     // Caching with call_count is wrong because relinearization happens before new factors are added
     // Therefore, if we did cache a gaussian factor it would be at an old linearization point
     // Instead, it is possible to do the correspondance calculcation before, since it is unlikely that
@@ -246,8 +247,9 @@ public:
 
     // The 4 DoF registration is a special case where the factor does not constrain global roll and pitch
     // const V3D global_z(0, 0, 1);
-    // const V3D local_z = delta_pose.rotation().inverse() * global_z;
-    // const M33 rot_projection_mat = local_z * local_z.transpose();
+    const V3D global_z = -(c.at<gtsam::Unit3>(G(0))).unitVector();
+    const V3D local_z = delta_pose.rotation().inverse() * global_z;
+    const M33 rot_projection_mat = local_z * local_z.transpose();
 
     size_t n_threads = 4;
 
@@ -268,9 +270,10 @@ public:
         delta_pose * cloud_source_.points[i].getVector3fMap().cast<double>();
 
       bool update_correspondance = false;
+      // While a denominator of 2 * config_.num_corres_points provides provable guarantees, this heuristic also works well
       if (
         (transed_point_target_[i] - transed_point_target_da_[i]).norm() >
-        config_.source_voxel_grid_filter_leaf_size / 10) {
+        config_.target_ivox_map_min_dist_in_voxel / 4) {
         // The point is far from the previous linearize location so the correspondances have to be updated
         update_correspondance = true;
         transed_point_target_da_[i] = transed_point_target_[i];
@@ -451,18 +454,16 @@ public:
         keys()[0], keys()[1], J_source_T_J_source, J_source_T_J_target, -J_source_T_b,
         J_target_T_J_target, -J_target_T_b, f);
     } else {
-      // if (config_.reg_4_dof)
-      // {
-      //   std::cout << "*********************4 DoF Handling*********************" << std::endl;
+      if (config_.reg_4_dof)
+      {
+        // Project the matrices
+        J_source_T_J_source.block<3,3>(0,0) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,0) * rot_projection_mat;
+        J_source_T_J_source.block<3,3>(0,3) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,3);
+        J_source_T_J_source.block<3,3>(3,0) = J_source_T_J_source.block<3,3>(3,0) * rot_projection_mat;
 
-      //   // Project the matrices
-      //   J_source_T_J_source.block<3,3>(0,0) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,0) * rot_projection_mat;
-      //   J_source_T_J_source.block<3,3>(0,3) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,3);
-      //   J_source_T_J_source.block<3,3>(3,0) = J_source_T_J_source.block<3,3>(3,0) * rot_projection_mat;
-
-      //   // Project J_T_b
-      //   J_source_T_b.head<3>() = rot_projection_mat * J_source_T_b.head<3>();
-      // }
+        // Project J_T_b
+        J_source_T_b.head<3>() = rot_projection_mat * J_source_T_b.head<3>();
+      }
 
       if (config_.project_on_degneneracy) {
         M33 P_rot;
