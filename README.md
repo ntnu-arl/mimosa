@@ -15,13 +15,13 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
 
   ```bash
   # dependancies
-  sudo apt install python-catkin-tools \
+  sudo apt install python3-catkin-tools \
   libgoogle-glog-dev \
   libspdlog-dev
 
   mkdir catkin_ws/src && cd catkin_ws/src
 
-  git clone git@github.com:ntnu-arl/config_utilities.git
+  git clone git@github.com:ntnu-arl/config_utilities.git -b dev/mimosa
   git clone git@github.com:ntnu-arl/gtsam.git -b feature/imu_factor_with_gravity
   git clone git@github.com:ntnu-arl/gtsam_points.git -b minimal_updated
 
@@ -29,7 +29,8 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
   git clone git@github.com:ntnu-arl/mimosa.git
 
   # build it
-  catkin config -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF ..
+  cd ..
+  catkin config -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF
   catkin build mimosa
   ```
 
