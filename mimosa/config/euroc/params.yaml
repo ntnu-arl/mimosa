@@ -4,8 +4,6 @@ navigation_frame: mimosa_navigation
 body_frame: mimosa_body
 
 imu:
-  sensor_frame: mimosa_imu
-  T_B_S: [0, 0, 0, 0, 0, 0, 1] # x, y, z, x, y, z, w
   manager:
     log_level: trace
     ts_offset: 0

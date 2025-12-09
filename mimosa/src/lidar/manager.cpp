@@ -415,10 +415,6 @@ void Manager::deskewPoints()
       V3D acc = state.imuBias().correctAccelerometer(curr_itr->second.head<3>());
       V3D omega = state.imuBias().correctGyroscope(curr_itr->second.tail<3>());
 
-      if (imu_preintegrator_->params()->body_P_sensor) {
-        std::tie(acc, omega) = imu_preintegrator_->correctMeasurementsBySensorPose(acc, omega);
-      }
-
       // The curr_state should now be propagated with const a and omega for delta_t
       gtsam::Rot3 R_W_Bt = curr_state.pose().rotation() * gtsam::Rot3::Expmap(omega * delta_t);
       V3D p_W_Bt = curr_state.pose().translation() + curr_state.velocity() * delta_t +

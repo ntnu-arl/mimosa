@@ -54,8 +54,6 @@ struct ManagerConfig
   std::string log_level = "info";
   std::string world_frame = "mimosa_world";
   std::string body_frame = "mimosa_body";
-  std::string sensor_frame = "mimosa_imu";
-  gtsam::Pose3 T_B_S = gtsam::Pose3::Identity();
   float ts_offset = 0.0;                   // s
   float max_buffer_duration = 2.0;         // s
   float pose_init_wait_secs = 1.0;         // s
@@ -93,7 +91,6 @@ private:
   std::mutex propagation_mutex_;
 
   // Outputs
-  tf2_ros::StaticTransformBroadcaster tf2_static_broadcaster_;
   ros::Publisher pub_debug_;
   ros::Publisher pub_localizability_marker_array_;
   ros::Publisher pub_odometry_;

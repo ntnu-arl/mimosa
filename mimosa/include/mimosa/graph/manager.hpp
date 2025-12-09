@@ -58,7 +58,6 @@ struct ManagerConfig
   std::string world_frame = "world";
   std::string navigation_frame = "navigation";
   std::string body_frame = "body";
-  gtsam::Pose3 T_B_I = gtsam::Pose3::Identity();
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
   float max_measurement_latency = 0.1;          // s

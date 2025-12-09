@@ -820,11 +820,6 @@ void declare_config(ManagerConfig & config)
   field(config.body_frame, "body_frame", "str");
 
   {
-    NameSpace ns("imu");
-    field(config.T_B_I, "T_B_S", "gtsam::Pose3");
-  }
-
-  {
     NameSpace ns("graph/manager");
     field(config.log_level, "log_level", "trace|debug|info|warn|error|critical");
     field(config.max_measurement_latency, "max_measurement_latency", "s");

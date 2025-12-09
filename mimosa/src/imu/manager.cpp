@@ -36,10 +36,6 @@ std::shared_ptr<gtsam::PreintegrationParams> Manager::generatePreintegratorParam
 
   auto p = std::make_shared<gtsam::PreintegrationParams>(gravity);
 
-  if (!config_.T_B_S.equals(gtsam::Pose3::Identity())) {
-    p->setBodyPSensor(config_.T_B_S);
-  }
-
   // Accelerometer
   p->setAccelerometerCovariance(I3 * std::pow(c.acc_noise_density, 2));
 
@@ -76,8 +72,6 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
 
   if (!has_recieved_first_message_) {
     has_recieved_first_message_ = true;
-    broadcastTransform(
-      tf2_static_broadcaster_, config_.T_B_S, config_.body_frame, config_.sensor_frame, ts);
   }
 
   V6D imu_meas;
@@ -199,7 +193,7 @@ bool Manager::estimateAttitude(
     // Assuming bias is small (magnitude is less than 1m/s^2) the max angle between
     // the true gravity in the body frame and the acc_mean is 0.0922 rad or 5.28 degrees
     gtsam::Rot3 R_I_W = gtsam::Rot3(Eigen::Quaterniond().setFromTwoVectors(gravity_W, acc_mean));
-    R_W_B = R_I_W.inverse() * config_.T_B_S.rotation().inverse();
+    R_W_B = R_I_W.inverse();
 
     // This orientation is correct up to 5.28 degrees assuming magnitude(bias) < 1m/s^2
 
@@ -215,9 +209,9 @@ bool Manager::estimateAttitude(
     // Initial orientation is identity
     R_W_B = gtsam::Rot3::Identity();
     // Gravity is the direction that allows this to be identity
-    V3D gravity = config_.T_B_S.rotation().rotate(-acc_mean.normalized()) *
+    V3D gravity = -acc_mean.normalized() *
                   config_.preintegration.gravity_magnitude;
-    estimated_acc_bias = acc_mean + config_.T_B_S.rotation().unrotate(gravity);
+    estimated_acc_bias = acc_mean + gravity;
     preintegrator_params_ = generatePreintegratorParams(gravity);
   }
   preintegrator_ = std::make_unique<gtsam::PreintegratedImuMeasurements>(preintegrator_params_);
@@ -535,8 +529,6 @@ void declare_config(ManagerConfig & config)
 
   {
     NameSpace ns("imu");
-    field(config.sensor_frame, "sensor_frame", "str");
-    field(config.T_B_S, "T_B_S", "Pose3");
     {
       NameSpace ns("manager");
       field(config.log_level, "log_level", "trace|debug|info|warn|error|critical");

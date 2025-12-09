@@ -3,8 +3,6 @@ world_frame: mimosa_world
 body_frame: mimosa_body
 
 imu:
-  sensor_frame: mimosa_imu
-  T_B_S: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0] # x, y, z, x, y, z, w
   manager:
     log_level: info
     max_buffer_duration: 1.1
