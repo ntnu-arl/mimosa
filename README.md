@@ -61,7 +61,37 @@ This package can be run either online (`mimosa_node`) or offline using a rosbag 
 
 #### LiDAR-Radar-IMU Fusion
 
-Coming soon...
+##### [Unified Autonomy Stack Datasets](https://huggingface.co/datasets/ntnu-arl/unified_autonomy_stack_datasets)
+
+Download any rosbag from [https://huggingface.co/datasets/ntnu-arl/unified_autonomy_stack_datasets](https://huggingface.co/datasets/ntnu-arl/unified_autonomy_stack_datasets). There are two variants of robots in this dataset: one which has an Ouster LiDAR and the other which has a Unipilot module (with a Robosense Airy LiDAR). As per the rosbag that you downloaded, you will need to build the [ouster_ros](https://github.com/ouster-lidar/ouster-ros) or [rslidar_sdk](https://github.com/ntnu-arl/rslidar_sdk/tree/develop) package respectively to be able to convert the raw LiDAR packets to pointclouds. Please follow the instructions in the respective repositories to build the drivers. Note that in the case of rslidar_sdk you will need to modify the config file to set the `lidar_type` as `RSAIRY`, the `common/msg_source` as `2` (for packet message comes from ros or ros2), `send_packet_ros` as `false` and `send_point_cloud_ros` as `true`. You can find a working config file [here](https://github.com/ntnu-arl/rslidar_sdk/blob/d02b59cc43d027e4bdaa1ee0762d36e77129ecc7/config/config.yaml).
+
+The bags should be replayed with `--clock` option and the global `/use_sim_time` parameter set to true. To do this, a simple way is to create a launch file called `simcore.launch` with the following content:
+
+```xml
+<launch>
+  <param name="/use_sim_time" value="true"/>
+</launch>
+```
+
+Then you can launch the system as:
+
+```bash
+# Terminal 1
+roslaunch simcore.launch
+
+# Terminal 2
+roslaunch ouster_ros replay.launch
+# or
+roslaunch rslidar_sdk start.launch
+
+# Terminal 3
+roslaunch mimosa hornbill.launch
+# or
+roslaunch mimosa magpie.launch
+
+# Terminal 4
+rosbag play --clock /path/to/your/rosbag.bag
+```
 
 #### LiDAR(Photometric-Geometric)-IMU Fusion
 
@@ -112,10 +142,10 @@ python dataset_evaluation.py
 To run on your own data, you need to set up the following:
 
 1. Take the most relevant launch file
-2. Remap to the correct topics in the launch file
-3. Modify parameters in the config file
-   1. For velodyne the `point_skip_factor` must be 1
-   2. Set your transforms for T_B_S for each of the sensors you are using
+2. Modify the remapping of the input topics to your sensor topics in the launch file
+3. Modify parameters in the corresponding config file
+   1. e.g. for velodyne the `point_skip_factor` must be 1
+   2. Set your transforms for `T_B_S` for each of the sensors you are using. This is the transform from the Sensor frame to the Body frame (i.e. pose of Sensor in the Body frame).
 4. Launch your launch file
 
 ## License
