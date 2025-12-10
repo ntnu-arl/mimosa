@@ -71,6 +71,7 @@ void declare_config(GeometricConfig & config)
         config.ring_skip_divisor, "ring_skip_divisor", "divisor for downsampling the pointcloud");
       field(config.map_keyframe_trans_thresh, "map_keyframe_trans_thresh", "m");
       field(config.map_keyframe_rot_thresh_deg, "map_keyframe_rot_thresh_deg", "deg");
+      field(config.initial_clouds_to_force_map_update, "initial_clouds_to_force_map_update", "num");
       field(config.lru_horizon, "lru_horizon", "num");
       field(config.neighbor_voxel_mode, "neighbor_voxel_mode", "num");
 

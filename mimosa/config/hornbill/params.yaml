@@ -81,6 +81,7 @@ lidar:
     ring_skip_divisor: 1  # keep if point.ring % ring_skip_divisor == 0
     map_keyframe_trans_thresh: 1
     map_keyframe_rot_thresh_deg: 10
+    initial_clouds_to_force_map_update: 1 # number of initial pointclouds to force map update regardless of movement. This is useful in case of lidars with non repeating scan patterns to ensure good initial map coverage.
     lru_horizon: 1000
     neighbor_voxel_mode: 19
     scan_to_map:

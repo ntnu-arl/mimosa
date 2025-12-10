@@ -49,6 +49,7 @@ struct GeometricConfig
   int ring_skip_divisor = 1;
   float map_keyframe_trans_thresh = 0.1;
   float map_keyframe_rot_thresh_deg = 10;
+  size_t initial_clouds_to_force_map_update = 10;
   size_t lru_horizon = 100;
   size_t neighbor_voxel_mode = 7;
 

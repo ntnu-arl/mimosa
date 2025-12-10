@@ -55,16 +55,16 @@ graph:
 
 lidar:
   sensor_frame: mimosa_lidar
-  T_B_S: [-0.06605, -0.01878, 0.034, 0.707, 0.00, -0.707, 0.00] # x, y, z, x, y, z, w
+  T_B_S: [0.0035, 0.0197, 0.078359, 0, 0, 0, 1] # x, y, z, x, y, z, w
   T_B_OdometryLoggerFrame: [0, 0, 0, 0, 0, 0, 1] # x, y, z, x, y, z, w
   manager:
     log_level: warn
     enabled: true
     use_to_init: true
-    initial_skip: 2 # number of initial pointclouds to drop
-    transpose_pointcloud: true # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
+    initial_skip: 5 # number of initial pointclouds to drop
+    transpose_pointcloud: false # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
     ts_offset: 0
-    range_min: 0.35
+    range_min: 0.3
     range_max: 100
     intensity_min: 0
     intensity_max: 1.0e+10
@@ -81,7 +81,7 @@ lidar:
     ring_skip_divisor: 1  # keep if point.ring % ring_skip_divisor == 0
     map_keyframe_trans_thresh: 1
     map_keyframe_rot_thresh_deg: 10
-    initial_clouds_to_force_map_update: 1 # number of initial pointclouds to force map update regardless of movement. This is useful in case of lidars with non repeating scan patterns to ensure good initial map coverage.
+    initial_clouds_to_force_map_update: 10 # number of initial pointclouds to force map update regardless of movement. This is useful in case of lidars with non repeating scan patterns to ensure good initial map coverage.
     lru_horizon: 1000
     neighbor_voxel_mode: 19
     scan_to_map:
@@ -138,9 +138,8 @@ lidar:
     max_error: 0.5075
 
 radar:
-  sensor_frame: mimosa_radar
-  # T_B_S: [0.080, -0.034, 0.016, 0.000, 0.259, 0.000, 0.966] # x, y, z, x, y, z, w
-  T_B_S: [0.07717380907196035, -0.0479741168664902, 0.006770362043579366, 0.01761050968654745, 0.25032180256367187, -0.017699746191127304, 0.9679631109162291] # x, y, z, x, y, z, w # Estimated from RIG
+  sensor_frame: radar
+  T_B_S: [0.0787200000, 0.0215900000, -0.0591900000, 0.9723699204, 0.0000000000, -0.2334453639, 0.0000000000]
   manager:
     log_level: warn
     use_to_init: false

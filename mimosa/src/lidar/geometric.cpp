@@ -442,6 +442,12 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
     }
   }
 
+  static size_t initial_clouds_to_force_map_update = config.initial_clouds_to_force_map_update;
+  if (initial_clouds_to_force_map_update > 0) {
+    update_map = true;
+    initial_clouds_to_force_map_update--;
+  }
+
   if (update_map) {
     // Transform the cloud to world frame using the T_W_Be
     Stopwatch sw;
