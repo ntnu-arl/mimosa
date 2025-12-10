@@ -382,11 +382,6 @@ void Manager::updatePreintegrationTo(
     throw std::runtime_error(msg);
   }
 
-  if (measurements.size() == 2)
-  {
-    logger_->warn("Preintegrating exactly one measurement");
-  }
-
   preintegrator->resetIntegrationAndSetBias(bias);
 
   // Integrate the measurements
