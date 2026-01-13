@@ -62,7 +62,7 @@ lidar:
     enabled: true
     use_to_init: true
     initial_skip: 2 # number of initial pointclouds to drop
-    transpose_pointcloud: true # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
+    transpose_pointcloud: false # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
     ts_offset: 0
     range_min: 0.35
     range_max: 100
