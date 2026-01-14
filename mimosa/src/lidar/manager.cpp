@@ -147,7 +147,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   Stopwatch sw;
 
   // Convert the pointcloud to pcl
-  pcl::PointCloud<PointT> msg_cloud;
+  static pcl::PointCloud<PointT> msg_cloud;
   toPcl(*msg, msg_cloud);
   debug_msg_.n_points_in = msg_cloud.size();
   debug_msg_.t_pcl_conversion = sw.tickMs();
