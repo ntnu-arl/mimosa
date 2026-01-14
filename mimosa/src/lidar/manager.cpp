@@ -192,6 +192,30 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     }
   }
 
+  if constexpr (
+    !std::is_same<PointT, PointLivox>::value &&
+    !std::is_same<PointT, PointLivoxFromCustom2>::value) {
+    if (config_.organize_pointcloud_by_ring && msg_cloud.height == 1) {
+      // The main loop in the pointcloud skips some points in each ring since the resolution in a ring is typically higher as compared to the number of rings. It assumes that the pointcloud is provided in a row major order. If the input pointcloud is not in row major order, it should be organized as such so that the point skipping logic does not discard too many useful points.
+      // This was needed for the Hesai JT128 but could also be useful for other lidars.
+      pcl::PointCloud<PointT> msg_cloud_organized;
+      msg_cloud_organized.reserve(msg_cloud.size());
+      uint num_rings = 128;  // TODO: Remove hardcoded value
+      uint points_per_ring = msg_cloud.width / num_rings;
+      std::vector<std::vector<PointT>> rings(num_rings);
+      for (auto & ring : rings) {
+        ring.reserve(points_per_ring);
+      }
+      for (const auto & point : msg_cloud) {
+        rings[point.ring].push_back(point);
+      }
+      for (const auto & ring : rings) {
+        msg_cloud_organized.insert(msg_cloud_organized.end(), ring.begin(), ring.end());
+      }
+      msg_cloud = msg_cloud_organized;
+    }
+  }
+
   uint32_t last_point_ns = std::numeric_limits<uint32_t>::min();
   const size_t skip_divisor =
     config_.create_full_res_pointcloud ? 1 : geometric_->config.point_skip_divisor;
@@ -561,6 +585,7 @@ void declare_config(ManagerConfig & config)
     {
       NameSpace ns("manager");
       field(config.transpose_pointcloud, "transpose_pointcloud", "bool");
+      field(config.organize_pointcloud_by_ring, "organize_pointcloud_by_ring", "bool");
       field(config.range_min, "range_min", "m");
       field(config.range_max, "range_max", "m");
       field(config.intensity_min, "intensity_min", "float");

@@ -63,6 +63,7 @@ lidar:
     use_to_init: true
     initial_skip: 2 # number of initial pointclouds to drop
     transpose_pointcloud: true # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
+    organize_pointcloud_by_ring: false # Only needed if the pointcloud is not already provided in a row major order by ring (Currently only required for Hesai JT128)
     ts_offset: 0
     range_min: 0.4
     range_max: 100
