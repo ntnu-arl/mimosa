@@ -35,6 +35,7 @@ public:
   enum class RejectStatus
   {
     Unprocessed = 0,
+    InsufficientCorresPoints,
     CorresMaxDist,
     EigenSolverFail,
     MinEigenValueLow,
@@ -293,7 +294,7 @@ public:
         std::vector<double> sq_dists(config_.num_corres_points);
         if (!ivox_target_->knn_search(
               transed_point_target_[i], config_.num_corres_points, k_indices, sq_dists)) {
-          statuses_[i] = RejectStatus::CorresMaxDist;
+          statuses_[i] = RejectStatus::InsufficientCorresPoints;
           continue;
         }
         if (sq_dists.back() > config_.max_corres_distance * config_.max_corres_distance) {

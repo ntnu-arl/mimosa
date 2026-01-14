@@ -9,6 +9,7 @@ float32 t_update_map
 float32 t_insertion
 
 int32 n_unprocessed
+int32 n_rejected_insufficient_corres_points
 int32 n_rejected_max_corres_dist
 int32 n_rejected_eigensolver_fail
 int32 n_rejected_min_eigen_value_low

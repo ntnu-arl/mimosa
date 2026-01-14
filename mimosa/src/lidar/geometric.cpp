@@ -258,6 +258,7 @@ void Geometric::getFactors(
 
   const std::vector<ICPFactor::RejectStatus> & statuses = factor_->getStatuses();
   debug_msg_.n_unprocessed = 0;
+  debug_msg_.n_rejected_insufficient_corres_points = 0;
   debug_msg_.n_rejected_max_corres_dist = 0;
   debug_msg_.n_rejected_eigensolver_fail = 0;
   debug_msg_.n_rejected_min_eigen_value_low = 0;
@@ -269,6 +270,9 @@ void Geometric::getFactors(
     switch (statuses[i]) {
       case ICPFactor::RejectStatus::Unprocessed:
         debug_msg_.n_unprocessed++;
+        break;
+      case ICPFactor::RejectStatus::InsufficientCorresPoints:
+        debug_msg_.n_rejected_insufficient_corres_points++;
         break;
       case ICPFactor::RejectStatus::CorresMaxDist:
         debug_msg_.n_rejected_max_corres_dist++;
