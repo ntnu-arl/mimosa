@@ -11,6 +11,7 @@ float32 t_insertion
 int32 n_unprocessed
 int32 n_rejected_max_corres_dist
 int32 n_rejected_eigensolver_fail
+int32 n_rejected_min_eigen_value_low
 int32 n_rejected_line
 int32 n_rejected_plane
 int32 n_rejected_max_error

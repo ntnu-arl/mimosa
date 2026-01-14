@@ -260,6 +260,7 @@ void Geometric::getFactors(
   debug_msg_.n_unprocessed = 0;
   debug_msg_.n_rejected_max_corres_dist = 0;
   debug_msg_.n_rejected_eigensolver_fail = 0;
+  debug_msg_.n_rejected_min_eigen_value_low = 0;
   debug_msg_.n_rejected_line = 0;
   debug_msg_.n_rejected_plane = 0;
   debug_msg_.n_rejected_max_error = 0;
@@ -274,6 +275,9 @@ void Geometric::getFactors(
         break;
       case ICPFactor::RejectStatus::EigenSolverFail:
         debug_msg_.n_rejected_eigensolver_fail++;
+        break;
+      case ICPFactor::RejectStatus::MinEigenValueLow:
+        debug_msg_.n_rejected_min_eigen_value_low++;
         break;
       case ICPFactor::RejectStatus::Line:
         debug_msg_.n_rejected_line++;

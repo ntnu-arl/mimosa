@@ -37,6 +37,7 @@ public:
     Unprocessed = 0,
     CorresMaxDist,
     EigenSolverFail,
+    MinEigenValueLow,
     Line,
     CorresPlaneInvalid,
     MaxError,
@@ -195,6 +196,12 @@ public:
     Eigen::SelfAdjointEigenSolver<M3D> eigensolver(cov);
     if (eigensolver.info() != Eigen::Success) {
       statuses_[i] = RejectStatus::EigenSolverFail;
+      return false;
+    }
+
+    if (eigensolver.eigenvalues().x() < 1e-6) {
+      // Unrealistic Plane
+      statuses_[i] = RejectStatus::MinEigenValueLow;
       return false;
     }
 
