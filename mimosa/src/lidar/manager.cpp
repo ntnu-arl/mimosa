@@ -201,21 +201,32 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     if (config_.organize_pointcloud_by_ring && msg_cloud.height == 1) {
       // The main loop in the pointcloud skips some points in each ring since the resolution in a ring is typically higher as compared to the number of rings. It assumes that the pointcloud is provided in a row major order. If the input pointcloud is not in row major order, it should be organized as such so that the point skipping logic does not discard too many useful points.
       // This was needed for the Hesai JT128 but could also be useful for other lidars.
-      pcl::PointCloud<PointT> msg_cloud_organized;
-      msg_cloud_organized.reserve(msg_cloud.size());
-      uint num_rings = 128;  // TODO: Remove hardcoded value
-      uint points_per_ring = msg_cloud.width / num_rings;
-      std::vector<std::vector<PointT>> rings(num_rings);
-      for (auto & ring : rings) {
-        ring.reserve(points_per_ring);
-      }
+      constexpr uint32_t num_rings = 128; // This is set to 128 since that is the largest number of channels in common lidars. AFAIK only velodyne alpha prime has 256 channels.
+      const size_t num_points = msg_cloud.size();
+      // Single pass to count points per ring
+      std::array<size_t, num_rings> ring_counts{};
       for (const auto & point : msg_cloud) {
-        rings[point.ring].push_back(point);
+        ++ring_counts[point.ring];
       }
-      for (const auto & ring : rings) {
-        msg_cloud_organized.insert(msg_cloud_organized.end(), ring.begin(), ring.end());
+
+      // Compute starting indices for each ring
+      std::array<size_t, num_rings> ring_offsets{};
+      size_t offset = 0;
+      for (uint32_t i = 0; i < num_rings; ++i) {
+        ring_offsets[i] = offset;
+        offset += ring_counts[i];
       }
-      msg_cloud = msg_cloud_organized;
+
+      // Place points directly into final positions
+      pcl::PointCloud<PointT> msg_cloud_organized;
+      msg_cloud_organized.resize(num_points);
+
+      std::array<size_t, num_rings> ring_cursors = ring_offsets;
+      for (const auto & point : msg_cloud) {
+        msg_cloud_organized[ring_cursors[point.ring]++] = point;
+      }
+
+      msg_cloud = std::move(msg_cloud_organized);
     }
     debug_msg_.t_organize_by_ring = sw_organize.elapsedMs();
   }
