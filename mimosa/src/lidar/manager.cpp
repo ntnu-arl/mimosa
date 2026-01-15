@@ -147,7 +147,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   Stopwatch sw;
 
   // Convert the pointcloud to pcl
-  pcl::PointCloud<PointT> msg_cloud;
+  static pcl::PointCloud<PointT> msg_cloud;
   toPcl(*msg, msg_cloud);
   debug_msg_.n_points_in = msg_cloud.size();
   debug_msg_.t_pcl_conversion = sw.tickMs();
@@ -174,6 +174,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     // since the remaining code assumes the height corresponds to the number of rings
     // and the width corresponds to the number of points per ring.
     // The pointcloud of the VelodyneAnybotics lidar also seems to be transposed
+    Stopwatch sw_transpose;
     if (config_.transpose_pointcloud) {
       pcl::PointCloud<PointT> msg_cloud_transposed;
       msg_cloud_transposed.width = msg_cloud.height;
@@ -190,6 +191,44 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
       }
       msg_cloud = msg_cloud_transposed;
     }
+    debug_msg_.t_transpose_pointcloud = sw_transpose.elapsedMs();
+  }
+
+  if constexpr (
+    !std::is_same<PointT, PointLivox>::value &&
+    !std::is_same<PointT, PointLivoxFromCustom2>::value) {
+    Stopwatch sw_organize;
+    if (config_.organize_pointcloud_by_ring && msg_cloud.height == 1) {
+      // The main loop in the pointcloud skips some points in each ring since the resolution in a ring is typically higher as compared to the number of rings. It assumes that the pointcloud is provided in a row major order. If the input pointcloud is not in row major order, it should be organized as such so that the point skipping logic does not discard too many useful points.
+      // This was needed for the Hesai JT128 but could also be useful for other lidars.
+      constexpr uint32_t num_rings = 128; // This is set to 128 since that is the largest number of channels in common lidars. AFAIK only velodyne alpha prime has 256 channels.
+      const size_t num_points = msg_cloud.size();
+      // Single pass to count points per ring
+      std::array<size_t, num_rings> ring_counts{};
+      for (const auto & point : msg_cloud) {
+        ++ring_counts[point.ring];
+      }
+
+      // Compute starting indices for each ring
+      std::array<size_t, num_rings> ring_offsets{};
+      size_t offset = 0;
+      for (uint32_t i = 0; i < num_rings; ++i) {
+        ring_offsets[i] = offset;
+        offset += ring_counts[i];
+      }
+
+      // Place points directly into final positions
+      pcl::PointCloud<PointT> msg_cloud_organized;
+      msg_cloud_organized.resize(num_points);
+
+      std::array<size_t, num_rings> ring_cursors = ring_offsets;
+      for (const auto & point : msg_cloud) {
+        msg_cloud_organized[ring_cursors[point.ring]++] = point;
+      }
+
+      msg_cloud = std::move(msg_cloud_organized);
+    }
+    debug_msg_.t_organize_by_ring = sw_organize.elapsedMs();
   }
 
   uint32_t last_point_ns = std::numeric_limits<uint32_t>::min();
@@ -561,6 +600,7 @@ void declare_config(ManagerConfig & config)
     {
       NameSpace ns("manager");
       field(config.transpose_pointcloud, "transpose_pointcloud", "bool");
+      field(config.organize_pointcloud_by_ring, "organize_pointcloud_by_ring", "bool");
       field(config.range_min, "range_min", "m");
       field(config.range_max, "range_max", "m");
       field(config.intensity_min, "intensity_min", "float");

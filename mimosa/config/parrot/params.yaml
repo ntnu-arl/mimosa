@@ -5,29 +5,30 @@ body_frame: mimosa_body
 
 imu:
   manager:
-    log_level: info
-    max_buffer_duration: 1.1
-    pose_init_wait_secs: 0.2
+    log_level: warn
+    ts_offset: 0
+    max_buffer_duration: 4
+    pose_init_wait_secs: 1
     interpolation_max_ts_diff: 1 #s
     extrapolation_max_ts_diff: 0.15 #s
     acc_scale_factor: 1 # Scales the acclerometer measurement. Default is 1, which means no scaling. Livox typically reports acc in g, so we need to scale it to m/s^2
   preintegration:
-    acc_noise_density: 0.2 # [ m / s^2 / sqrt(Hz) ]   ( accel "white noise" ) # Datasheet ICM-20948 0.0022563
-    acc_bias_random_walk: 0.05 # [ m / s^3 / sqrt(Hz) ].  ( accel bias diffusion )
-    gyro_noise_density: 0.026179938 # [ rad / s / sqrt(Hz) ]   ( gyro "white noise" ) # Datasheet ICM-20948: 0.00026179938
-    gyro_bias_random_walk: 0.001 # [ rad / s^2 / sqrt(Hz) ] ( gyro bias diffusion )
+    acc_noise_density: 0.13886655606357616 # 0.013886655606357616  # [ m / s^2 / sqrt(Hz) ]   ( accel "white noise" ) # Vectornav VN-100 0.0013886655606357616
+    acc_bias_random_walk: 8.538212723310593e-05 # [ m / s^3 / sqrt(Hz) ].  ( accel bias diffusion ) # Vectornav VN-100 8.538212723310593e-05
+    gyro_noise_density: 5.4380545102010436e-03 # 5.4380545102010436e-04 # [ rad / s / sqrt(Hz) ]   ( gyro "white noise" ) # Vectornav VN-100 5.4380545102010436e-05
+    gyro_bias_random_walk: 1.6587925152480572e-06 # [ rad / s^2 / sqrt(Hz) ] ( gyro bias diffusion ) # Vectornav VN-100 1.6587925152480572e-06
     integration_sigma: 0 # Unclear what this is. Set to 0 for now.
     use_2nd_order_coriolis: false
     use_estimated_gravity: false
-    gravity_magnitude: 9.806
+    gravity_magnitude: 9.82145996
     gravity_aligned_initialization: false
 
 graph:
   manager:
-    log_level: trace
+    log_level: warn
     max_measurement_latency: 0.25 # seconds # measurements that are older than this (wrt the latest state in the lag) will be discarded. Should be approximately half the lag time.
     smoother:
-      lag: 0.5
+      lag: 0.5 # seconds
       wildfire_threshold: 0.001
       relinearize_threshold_translation: 5.0e-3
       relinearize_threshold_rotation: 1.75e-2
@@ -38,56 +39,57 @@ graph:
       relinearize_skip: 1
       enable_relinearization: true
       evaluate_nonlinear_error: false
-      factorization: QR
+      factorization: CHOLESKY
       cache_linearized_factors: true
       enable_detailed_results: false
       enable_partial_relinearization_check: true
       initial_position_sigma: 1.0e-6
       initial_rotation_yaw_sigma_deg: 1.0e-6
       initial_rotation_pitch_roll_sigma_deg: 1.0e-6 # 10.0 # if gravity_aligned_initialization is true, then this should be set to 10.0
-      initial_velocity_sigma: 1.0e-1
-      initial_bias_acc_sigma: 1.0
-      initial_bias_gyro_sigma: 1.0e-1
-      initial_gravity_sigma: 5.0e-1
+      initial_velocity_sigma: 1.0e-6
+      initial_bias_acc_sigma: 1.0e-1
+      initial_bias_gyro_sigma: 1.0e-5
+      initial_gravity_sigma: 5.0e-2
       additional_update_iterations: 5 # An update does 1 single GN step. Hence 5 updates means a maximum of 5 GN steps.
 
 
 lidar:
   sensor_frame: mimosa_lidar
-  T_B_S: [-0.006253, 0.011775, 0.0028525, 0, 0, 0, 1] # x, y, z, x, y, z, w
-  T_B_OdometryLoggerFrame: [-0.006253, 0.011775, 0.10825, 0, 0, 0, 1] # x, y, z, x, y, z, w
+  T_B_S: [-0.11484, -0.01878, 0.035, 0.3799282, -0.5963678, -0.3799282, 0.5963678] # x, y, z, x, y, z, w
+  T_B_OdometryLoggerFrame: [0, 0, 0, 0, 0, 0, 1] # x, y, z, x, y, z, w
   manager:
-    log_level: trace
+    log_level: warn
     enabled: true
     use_to_init: true
-    initial_skip: 0 # number of initial pointclouds to drop
+    initial_skip: 2 # number of initial pointclouds to drop
     transpose_pointcloud: false # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
-    organize_pointcloud_by_ring: false # Only needed if the pointcloud is not already provided in a row major order by ring (Currently only required for Hesai JT128)
+    organize_pointcloud_by_ring: true # Only needed if the pointcloud is not already provided in a row major order by ring (Currently only required for Hesai JT128)
     ts_offset: 0
-    range_min: 0.2
+    range_min: 0.35
     range_max: 100
     intensity_min: 0
     intensity_max: 1.0e+10
-    create_full_res_pointcloud: true
+    ns_max: 1e8 # nanoseconds (used to clip out points that are after the end of the regular scan). A value of 1e8 means that any points that are more than 100ms after the start of the scan will be clipped out.
+    create_full_res_pointcloud: false
     full_res_pointcloud_publish_rate_divisor: 2
     use_reflectivity_as_intensity: false
     scale_intensity_by_sq_range: false
     near_range_correction: true # Currently requires minimum range of 2m
   geometric:
-    log_level: trace
+    log_level: warn
     enabled: true
     point_skip_divisor: 4 # keep if point.index_in_ring % point_skip_divisor == 0
     ring_skip_divisor: 1  # keep if point.ring % ring_skip_divisor == 0
-    map_keyframe_trans_thresh: 2
-    map_keyframe_rot_thresh_deg: 30
+    map_keyframe_trans_thresh: 1
+    map_keyframe_rot_thresh_deg: 10
     initial_clouds_to_force_map_update: 1 # number of initial pointclouds to force map update regardless of movement. This is useful in case of lidars with non repeating scan patterns to ensure good initial map coverage.
     lru_horizon: 1000
     neighbor_voxel_mode: 19
     scan_to_map:
-      source_voxel_grid_filter_leaf_size: 0.5
-      source_voxel_grid_min_dist_in_voxel: 0.15
-      target_ivox_map_leaf_size: 0.5
-      target_ivox_map_min_dist_in_voxel: 0.15
+      source_voxel_grid_filter_leaf_size: 1
+      source_voxel_grid_min_dist_in_voxel: 0.2
+      target_ivox_map_leaf_size: 1
+      target_ivox_map_min_dist_in_voxel: 0.2
       num_corres_points: 5
       max_corres_distance: 1
       plane_validity_distance: 0.07
@@ -99,12 +101,13 @@ lidar:
       degen_thresh_trans: 40 # 0.01 # m
       degen_thresh_rot: 0 # 0.03 # 0.05 # deg
   photometric:
-    log_level: trace
-    enabled: true
-    destagger: true
+    log_level: warn
+    enabled: false
+    destagger: false
     visualize: false
     range_min: 0.5 # Needed to avoid division by zero
     range_max: 30
+    static_mask_path: ""
     erosion_buffer: 10
     patch_size: 5
     margin_size: 10
@@ -134,3 +137,37 @@ lidar:
     error_scale: 1
     sigma: 0.25
     max_error: 0.5075
+
+radar:
+  sensor_frame: mimosa_radar
+  # T_B_S: [0.080, -0.034, 0.016, 0.000, 0.259, 0.000, 0.966] # x, y, z, x, y, z, w
+  T_B_S: [0.07717380907196035, -0.0479741168664902, 0.006770362043579366, 0.01761050968654745, 0.25032180256367187, -0.017699746191127304, 0.9679631109162291] # x, y, z, x, y, z, w # Estimated from RIG
+  manager:
+    log_level: warn
+    use_to_init: false
+    enabled: true
+    initial_skip: 2 # number of initial pointclouds to drop
+    ts_offset: 0
+    is_exposure_compensated: false # If false, then the timestamp will be shifted by frame_ms/2
+    range_min: 0.1
+    range_max: 16
+    threshold_azimuth_deg: 60
+    threshold_elevation_deg: 60
+    filter_min_db: 5
+    frame_ms: 18.5
+    huber_threshold: 1.345
+    noise_sigma: 0.037527767
+    outlier_threshold: 3.0
+
+odometry:
+  sensor_frame: mimosa_odometry
+  T_B_S: [0, 0, 0, 0, 0, 0, 1] # x, y, z, x, y, z, w
+  manager:
+    log_level: warn
+    enabled: true
+    use_to_init: false
+    initial_skip: 2 # number of initial messages to drop
+    ts_offset: 0
+    d_opt_thresh: 1
+    sigma_rot_deg: 0.5
+    sigma_trans_m: 0.001

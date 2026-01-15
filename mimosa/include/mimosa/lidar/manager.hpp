@@ -26,6 +26,7 @@ struct ManagerConfig
   // Lidar-specific fields
   gtsam::Pose3 T_B_OdometryLoggerFrame = gtsam::Pose3::Identity();
   bool transpose_pointcloud = false;
+  bool organize_pointcloud_by_ring = false;
   float range_min = 0.0;
   float range_max = 100.0;
   float intensity_min = 0.0;

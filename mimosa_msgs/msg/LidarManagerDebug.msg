@@ -3,6 +3,8 @@ Header header
 float32 t_full
 
 float32 t_preprocess
+float32 t_transpose_pointcloud
+float32 t_organize_by_ring
 float32 t_preprocess_sort
 float32 t_pcl_conversion
 float32 t_clear_reserve

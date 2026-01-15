@@ -402,14 +402,16 @@ void Manager::addImuFactorNoLock(
   graph.add(gtsam::ImuFactorWithGravity(
     X(key_0), V(key_0), X(key_1), V(key_1), B(key_0), G(0), *preintegrator_));
 
-  double sigma_b_a = config_.preintegration.acc_bias_random_walk * sqrt(preintegrator_->deltaTij());
-  double sigma_b_g =
-    config_.preintegration.gyro_bias_random_walk * sqrt(preintegrator_->deltaTij());
+  const auto imu_bias_random_walk =
+    (V6D() << config_.preintegration.acc_bias_random_walk,
+     config_.preintegration.acc_bias_random_walk, config_.preintegration.acc_bias_random_walk,
+     config_.preintegration.gyro_bias_random_walk, config_.preintegration.gyro_bias_random_walk,
+     config_.preintegration.gyro_bias_random_walk)
+      .finished();
   graph.add(
     gtsam::BetweenFactor<gtsam::imuBias::ConstantBias>(
       B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
-      gtsam::noiseModel::Diagonal::Sigmas(
-        (V6D() << sigma_b_a, sigma_b_a, sigma_b_a, sigma_b_g, sigma_b_g, sigma_b_g).finished())));
+      gtsam::noiseModel::Diagonal::Sigmas(imu_bias_random_walk * sqrt(preintegrator_->deltaTij()))));
 
   logger_->info("Added IMU factor between keys {} and {}", gdkf(key_0), gdkf(key_1));
 }
