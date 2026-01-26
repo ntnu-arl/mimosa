@@ -19,6 +19,6 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
 
-  <node name="recorder" pkg="rosbag" type="record" args="-O $(find mimosa)/data/mimosa_results.bag /mimosa_node/graph/debug /mimosa_node/graph/odometry" output="screen" />
+  <node name="recorder" pkg="rosbag" type="record" args="-O $(find mimosa)/data/mimosa_results.bag /mimosa_node/graph/debug /mimosa_node/graph/odometry /mimosa_node/imu/manager/odometry" output="screen" />
 
 </launch>
