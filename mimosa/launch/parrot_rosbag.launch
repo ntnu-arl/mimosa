@@ -3,7 +3,7 @@
   <arg name="s" default="0" />
   <arg name="viz" default="false" />
 
-  <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true"> # launch-prefix="gdb -ex run --args">
+  <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true" required="true"> # launch-prefix="gdb -ex run --args">
     <remap from="/mimosa_node/imu/manager/imu_in" to="/vectornav_driver_node/imu/data" />
     <remap from="/mimosa_node/lidar/manager/lidar_in" to="/lidar_points" />
     <remap from="/mimosa_node/radar/manager/radar_in" to="/radar/cloud" />
@@ -17,5 +17,7 @@
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
+
+  <node name="recorder" pkg="rosbag" type="record" args="-O $(find mimosa)/data/mimosa_results.bag /mimosa_node/graph/debug /mimosa_node/graph/odometry" output="screen" />
 
 </launch>
