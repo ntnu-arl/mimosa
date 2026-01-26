@@ -103,7 +103,7 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
     }
   }
 
-  if (false && propagate) {
+  if (propagate) {
     gtsam::NavState nav_state;
     {
       logger_->trace("Propagating IMU");
