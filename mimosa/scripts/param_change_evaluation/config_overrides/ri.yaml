@@ -1,0 +1,7 @@
+lidar:
+  manager:
+    enabled: false
+
+radar:
+  manager:
+    use_to_init: true

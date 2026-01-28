@@ -3,6 +3,8 @@
   <arg name="s" default="0" />
   <arg name="viz" default="false" />
 
+  <arg name="config_override" default="" />
+
   <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true" required="true"> # launch-prefix="gdb -ex run --args">
     <remap from="/mimosa_node/imu/manager/imu_in" to="/vectornav_driver_node/imu/data" />
     <remap from="/mimosa_node/lidar/manager/lidar_in" to="/lidar_points" />
@@ -14,6 +16,10 @@
 
     <rosparam file="$(find mimosa)/config/parrot/params.yaml"/>
     <rosparam file="$(find mimosa)/config/os_dummy.json" command="load" ns="lidar/sensor"/>
+
+    <!-- Override config loaded second (overwrites matching keys) -->
+    <rosparam file="$(arg config_override)" if="$(eval config_override != '')"/>
+
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />

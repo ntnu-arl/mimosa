@@ -1,0 +1,12 @@
+imu:
+  preintegration:
+    acc_noise_density: 0.0013886655606357616 # 0.013886655606357616  # [ m / s^2 / sqrt(Hz) ]   ( accel "white noise" ) # Vectornav VN-100 0.0013886655606357616
+    gyro_noise_density: 5.4380545102010436e-05 # 5.4380545102010436e-04 # [ rad / s / sqrt(Hz) ]   ( gyro "white noise" ) # Vectornav VN-100 5.4380545102010436e-05
+
+lidar:
+  manager:
+    enabled: false
+
+radar:
+  manager:
+    use_to_init: true
