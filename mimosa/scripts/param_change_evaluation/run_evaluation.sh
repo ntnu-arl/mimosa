@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-BAG_NAME="/home/cyanide/rosbags/nk4/lab/bags/fyllingsdal/day_2/500m_7_fast_actually_615/processed/sensors_only_with_clouds_short.bag"
+BAG_NAME="/home/cyanide/rosbags/nk4/lab/bags/fyllingsdal/day_2/500m_7_fast_actually_615/processed/sensors_only_with_clouds.bag"
 MIMOSA_DIR="$(rospack find mimosa)"
 OVERRIDES_DIR="$MIMOSA_DIR/scripts/param_change_evaluation/config_overrides"
 RESULTS_DIR="$MIMOSA_DIR/data/param_change_evaluation_results"
