@@ -94,6 +94,9 @@ protected:
   double header_ts_;
   double corrected_ts_; // The mechanism to get the corrected timestamp is sensor-specific and is implemented in the derived class
 
+  int initial_skip_;
+  double prev_ts_ = 0.0;
+
 public:
   inline std::string getSubscribedTopic() const { return sub_.getTopic(); }
 
@@ -106,6 +109,8 @@ protected:
     logger_ = createLogger(
       config_.base.logs_directory + manager_type_ + "_manager.log", manager_type_ + "::Manager", config_.base.log_level);
     logger_->info("Initialized with params:\n {}", config::toString(config_));
+
+    initial_skip_ = config_.base.initial_skip;
 
     initialized_ = false;
   }
@@ -140,10 +145,9 @@ protected:
 
   inline bool handleInitialSkip()
   {
-    static int initial_skip = config_.base.initial_skip;
-    if (initial_skip > 0) {
-      --initial_skip;
-      logger_->info("Dropping initial message. {} more will be dropped", initial_skip);
+    if (initial_skip_ > 0) {
+      --initial_skip_;
+      logger_->info("Dropping initial message. {} more will be dropped", initial_skip_);
       return false;  // Should skip
     }
     return true;  // Don't skip
@@ -151,18 +155,17 @@ protected:
 
   inline bool validateTimestamp(const typename MsgT::ConstPtr & msg)
   {
-    static double prev_ts = 0.0;
     header_ts_ = msg->header.stamp.toSec();
 
-    if (header_ts_ <= prev_ts) {
+    if (header_ts_ <= prev_ts_) {
       logger_->error(
         "Skipping message with timestamp {} because it is not newer than previous timestamp {}. "
         "This should never happen. Check the header timestamps of the incoming messages",
-        header_ts_, prev_ts);
+        header_ts_, prev_ts_);
       return false;
     }
 
-    prev_ts = header_ts_;
+    prev_ts_ = header_ts_;
     return true;
   }
 
