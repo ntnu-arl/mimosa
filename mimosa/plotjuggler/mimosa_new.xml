@@ -1,144 +1,162 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
- <tabbed_widget name="Main Window" parent="main_window">
-  <Tab tab_name="Graph Manager" containers="1">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab containers="1" tab_name="Graph Manager">
    <Container>
-    <DockSplitter sizes="0.200162;0.200162;0.199352;0.200162;0.200162" count="5" orientation="-">
+    <DockSplitter orientation="-" count="5" sizes="0.200162;0.200162;0.199352;0.200162;0.200162">
      <DockArea name="Accelerometer Bias">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-0.029868" top="0.160722" right="75.967438"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-0.735603" top="0.082441" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/debug/acc_bias/x"/>
-       <curve color="#d62728" name="/mimosa_node/graph/debug/acc_bias/y"/>
-       <curve color="#1ac938" name="/mimosa_node/graph/debug/acc_bias/z"/>
+       <curve name="/mimosa_node/graph/debug/acc_bias/x" color="#1f77b4"/>
+       <curve name="/mimosa_node/graph/debug/acc_bias/y" color="#d62728"/>
+       <curve name="/mimosa_node/graph/debug/acc_bias/z" color="#1ac938"/>
       </plot>
      </DockArea>
      <DockArea name="Gyroscope Bias">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-0.003110" top="0.007728" right="75.967438"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="0.000255" top="0.007672" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/debug/gyro_bias/x"/>
-       <curve color="#d62728" name="/mimosa_node/graph/debug/gyro_bias/y"/>
-       <curve color="#1ac938" name="/mimosa_node/graph/debug/gyro_bias/z"/>
+       <curve name="/mimosa_node/graph/debug/gyro_bias/x" color="#1f77b4"/>
+       <curve name="/mimosa_node/graph/debug/gyro_bias/y" color="#d62728"/>
+       <curve name="/mimosa_node/graph/debug/gyro_bias/z" color="#1ac938"/>
       </plot>
      </DockArea>
      <DockArea name="Linear Velocity">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-0.704284" top="6.779297" right="75.967438"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-1.672515" top="1.616123" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/twist/twist/linear/x"/>
-       <curve color="#d62728" name="/mimosa_node/graph/odometry/twist/twist/linear/y"/>
-       <curve color="#1ac938" name="/mimosa_node/graph/odometry/twist/twist/linear/z"/>
+       <curve name="/mimosa_node/graph/odometry/twist/twist/linear/x" color="#1f77b4"/>
+       <curve name="/mimosa_node/graph/odometry/twist/twist/linear/y" color="#d62728"/>
+       <curve name="/mimosa_node/graph/odometry/twist/twist/linear/z" color="#1ac938"/>
       </plot>
      </DockArea>
      <DockArea name="Diff against IMU Prior (cm, deg)">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-0.044117" top="1.808802" right="75.967438"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-0.047683" top="1.955022" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/debug/diff_against_imu_prior_rot_deg"/>
-       <curve color="#d62728" name="/mimosa_node/graph/debug/diff_against_imu_prior_trans_cm"/>
+       <curve name="/mimosa_node/graph/debug/diff_against_imu_prior_rot_deg" color="#1f77b4"/>
+       <curve name="/mimosa_node/graph/debug/diff_against_imu_prior_trans_cm" color="#d62728"/>
       </plot>
      </DockArea>
      <DockArea name="Gravity">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-10.065096" top="0.220751" right="75.967438"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-0.772248" top="0.458448" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/debug/gravity/x"/>
-       <curve color="#d62728" name="/mimosa_node/graph/debug/gravity/y"/>
-       <curve color="#1ac938" name="/mimosa_node/graph/debug/gravity/z"/>
+       <curve name="/mimosa_node/graph/debug/gravity/x" color="#1f77b4"/>
+       <curve name="/mimosa_node/graph/debug/gravity/y" color="#d62728"/>
+       <curve name="/mimosa_node/graph/debug/gravity/z" color="#1ac938"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab tab_name="LiDAR Manager" containers="1">
+  <Tab containers="1" tab_name="LiDAR Manager">
    <Container>
-    <DockSplitter sizes="1" count="1" orientation="-">
+    <DockSplitter orientation="-" count="1" sizes="1">
      <DockArea name="Time (ms)">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-0.825043" top="33.826775" right="75.900707"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-2.430379" top="99.645520" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/lidar/manager/debug/t_calculate_estimate"/>
-       <curve color="#d62728" name="/mimosa_node/lidar/manager/debug/t_clear_reserve"/>
-       <curve color="#1ac938" name="/mimosa_node/lidar/manager/debug/t_declare"/>
-       <curve color="#ff7f0e" name="/mimosa_node/lidar/manager/debug/t_define"/>
-       <curve color="#f14cc1" name="/mimosa_node/lidar/manager/debug/t_deskew"/>
-       <curve color="#9467bd" name="/mimosa_node/lidar/manager/debug/t_factor_prep"/>
-       <curve color="#17becf" name="/mimosa_node/lidar/manager/debug/t_full"/>
-       <curve color="#bcbd22" name="/mimosa_node/lidar/manager/debug/t_organize_by_ring"/>
-       <curve color="#1f77b4" name="/mimosa_node/lidar/manager/debug/t_pcl_conversion"/>
-       <curve color="#d62728" name="/mimosa_node/lidar/manager/debug/t_post_define_update"/>
-       <curve color="#1ac938" name="/mimosa_node/lidar/manager/debug/t_preprocess"/>
-       <curve color="#ff7f0e" name="/mimosa_node/lidar/manager/debug/t_preprocess_filter"/>
-       <curve color="#f14cc1" name="/mimosa_node/lidar/manager/debug/t_preprocess_geo_photo"/>
-       <curve color="#9467bd" name="/mimosa_node/lidar/manager/debug/t_preprocess_sort"/>
-       <curve color="#17becf" name="/mimosa_node/lidar/manager/debug/t_publish_results"/>
-       <curve color="#bcbd22" name="/mimosa_node/lidar/manager/debug/t_transpose_pointcloud"/>
-       <curve color="#1f77b4" name="/mimosa_node/lidar/manager/debug/t_update"/>
-       <curve color="#d62728" name="/mimosa_node/lidar/manager/debug/t_update_map"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_calculate_estimate" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_clear_reserve" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_declare" color="#1ac938"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_define" color="#ff7f0e"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_deskew" color="#f14cc1"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_factor_prep" color="#9467bd"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_full" color="#17becf"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_organize_by_ring" color="#bcbd22"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_pcl_conversion" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_post_define_update" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_preprocess" color="#1ac938"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_preprocess_filter" color="#ff7f0e"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_preprocess_geo_photo" color="#f14cc1"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_preprocess_sort" color="#9467bd"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_publish_results" color="#17becf"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_transpose_pointcloud" color="#bcbd22"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_update" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/manager/debug/t_update_map" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess" color="#1ac938"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab tab_name="LiDAR Geometric" containers="1">
+  <Tab containers="1" tab_name="LiDAR Geometric">
    <Container>
-    <DockSplitter sizes="1" count="1" orientation="-">
+    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
      <DockArea name="Number of Points">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.000000" bottom="-2582.925000" top="105899.925000" right="75.900707"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-655.750000" top="26885.750000" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/n_correspondances"/>
-       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/n_linearize_calls"/>
-       <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/n_points_in"/>
-       <curve color="#ff7f0e" name="/mimosa_node/lidar/geometric/debug/n_points_in_sm_ds"/>
-       <curve color="#f14cc1" name="/mimosa_node/lidar/geometric/debug/n_points_in_ss_ds"/>
-       <curve color="#9467bd" name="/mimosa_node/lidar/geometric/debug/n_rejected_eigensolver_fail"/>
-       <curve color="#17becf" name="/mimosa_node/lidar/geometric/debug/n_rejected_insufficient_corres_points"/>
-       <curve color="#bcbd22" name="/mimosa_node/lidar/geometric/debug/n_rejected_line"/>
-       <curve color="#1f77b4" name="/mimosa_node/lidar/geometric/debug/n_rejected_max_corres_dist"/>
-       <curve color="#d62728" name="/mimosa_node/lidar/geometric/debug/n_rejected_max_error"/>
-       <curve color="#1ac938" name="/mimosa_node/lidar/geometric/debug/n_rejected_min_eigen_value_low"/>
-       <curve color="#ff7f0e" name="/mimosa_node/lidar/geometric/debug/n_rejected_plane"/>
-       <curve color="#f14cc1" name="/mimosa_node/lidar/geometric/debug/n_unprocessed"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_correspondances" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_linearize_calls" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_points_in" color="#1ac938"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_points_in_sm_ds" color="#ff7f0e"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_points_in_ss_ds" color="#f14cc1"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_eigensolver_fail" color="#9467bd"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_insufficient_corres_points" color="#17becf"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_line" color="#bcbd22"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_max_corres_dist" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_max_error" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_min_eigen_value_low" color="#1ac938"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_rejected_plane" color="#ff7f0e"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/n_unprocessed" color="#f14cc1"/>
       </plot>
      </DockArea>
-    </DockSplitter>
-   </Container>
-  </Tab>
-  <Tab tab_name="Radar Manager" containers="1">
-   <Container>
-    <DockSplitter sizes="0.500404;0.499596" count="2" orientation="-">
-     <DockArea name="Times (ms)">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.247059" bottom="-0.183687" top="7.696225" right="75.967438"/>
-       <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/radar/manager/debug/t_full"/>
-       <curve color="#d62728" name="/mimosa_node/radar/manager/debug/t_graph_declare"/>
-       <curve color="#1ac938" name="/mimosa_node/radar/manager/debug/t_preprocess"/>
-      </plot>
-     </DockArea>
-     <DockArea name="Number of Points">
-      <plot mode="TimeSeries" flip_y="false" style="Lines" flip_x="false">
-       <range left="0.247059" bottom="-0.975000" top="39.975000" right="75.967438"/>
-       <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/radar/manager/debug/n_points_dynamic"/>
-       <curve color="#d62728" name="/mimosa_node/radar/manager/debug/n_points_in"/>
-       <curve color="#1ac938" name="/mimosa_node/radar/manager/debug/n_points_static"/>
-       <curve color="#ff7f0e" name="/mimosa_node/radar/manager/debug/n_points_valid"/>
-      </plot>
-     </DockArea>
-    </DockSplitter>
-   </Container>
-  </Tab>
-  <Tab tab_name="Top Down Position XY" containers="1">
-   <Container>
-    <DockSplitter sizes="1" count="1" orientation="-">
      <DockArea name="...">
-      <plot mode="XYPlot" flip_y="false" style="Lines" flip_x="false">
-       <range left="-35.537831" bottom="-1.198050" top="38.773506" right="38.654989"/>
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-0.332657" top="13.726002" left="0.000000" right="534.469015"/>
        <limitY/>
-       <curve color="#1f77b4" name="/mimosa_node/graph/odometry/pose/pose/position/[x;y]" curve_x="/mimosa_node/graph/odometry/pose/pose/position/x" curve_y="/mimosa_node/graph/odometry/pose/pose/position/y"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess" color="#1f77b4"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess1" color="#d62728"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess2" color="#1ac938"/>
+       <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess3" color="#ff7f0e"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Radar Manager">
+   <Container>
+    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
+     <DockArea name="Times (ms)">
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-0.341010" top="14.166307" left="0.015785" right="534.319279"/>
+       <limitY/>
+       <curve name="/mimosa_node/radar/manager/debug/t_full" color="#1f77b4"/>
+       <curve name="/mimosa_node/radar/manager/debug/t_graph_declare" color="#d62728"/>
+       <curve name="/mimosa_node/radar/manager/debug/t_preprocess" color="#1ac938"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Number of Points">
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-3.200000" top="131.200000" left="0.015785" right="534.319279"/>
+       <limitY/>
+       <curve name="/mimosa_node/radar/manager/debug/n_points_dynamic" color="#1f77b4"/>
+       <curve name="/mimosa_node/radar/manager/debug/n_points_in" color="#d62728"/>
+       <curve name="/mimosa_node/radar/manager/debug/n_points_static" color="#1ac938"/>
+       <curve name="/mimosa_node/radar/manager/debug/n_points_valid" color="#ff7f0e"/>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Position">
+   <Container>
+    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
+     <DockArea name="Top Down Orthographic XY">
+      <plot flip_y="false" style="Lines" flip_x="false" mode="XYPlot">
+       <range bottom="-38.284131" top="131.390605" left="-431.684985" right="254.504398"/>
+       <limitY/>
+       <curve curve_y="/mimosa_node/graph/odometry/pose/pose/position/y" curve_x="/mimosa_node/graph/odometry/pose/pose/position/x" name="/mimosa_node/graph/odometry/pose/pose/position/[x;y]" color="#1f77b4"/>
+      </plot>
+     </DockArea>
+     <DockArea name="Z">
+      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
+       <range bottom="-1.640766" top="9.267885" left="-183.608145" right="534.469015"/>
+       <limitY/>
+       <curve name="/mimosa_node/graph/odometry/pose/pose/position/z" color="#1f77b4"/>
       </plot>
      </DockArea>
     </DockSplitter>
@@ -151,7 +169,7 @@
  <!-- - - - - - - - - - - - - - - -->
  <Plugins>
   <plugin ID="DataLoad CSV">
-   <parameters time_axis="" delimiter="0"/>
+   <parameters delimiter="0" time_axis=""/>
   </plugin>
   <plugin ID="DataLoad MCAP"/>
   <plugin ID="DataLoad ROS bags">
