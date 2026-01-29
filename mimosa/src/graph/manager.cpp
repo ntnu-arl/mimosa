@@ -27,7 +27,6 @@ Manager::Manager(ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager)
   smoother_ = std::make_unique<gtsam::ISAM2>(isam2_params_);
 #endif
 
-  initialized_ = false;
   resetKey();
 
   // Setup trajectory logger
@@ -368,7 +367,7 @@ Manager::DeclarationResult Manager::declare(
         }
       } catch (const std::exception & e) {
         std::cerr << e.what() << '\n';
-        throw e;
+        throw;
       }
     }
 

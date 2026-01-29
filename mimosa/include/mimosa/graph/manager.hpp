@@ -93,7 +93,7 @@ private:
   // Member variables
   mimosa::imu::Manager::Ptr imu_manager_;
   const gtsam::ISAM2Params isam2_params_;
-  bool initialized_;
+  bool initialized_ = false;
 
   State state_;
   gtsam::Key internal_key_;

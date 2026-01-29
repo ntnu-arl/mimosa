@@ -111,8 +111,6 @@ protected:
     logger_->info("Initialized with params:\n {}", config::toString(config_));
 
     initial_skip_ = config_.base.initial_skip;
-
-    initialized_ = false;
   }
   
   virtual void callback(const typename MsgT::ConstPtr & msg) = 0;

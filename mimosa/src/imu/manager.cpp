@@ -475,10 +475,6 @@ void Manager::addImuFactorAndGetNavState(
 void Manager::setPropagationBaseState(const State & state)
 {
   logger_->trace("Setting propagation base state");
-  std::lock_guard<std::mutex> lock(propagation_mutex_);
-  propagation_base_state_ = state;
-  propagation_preintegrator_->resetIntegrationAndSetBias(propagation_base_state_.imuBias());
-  propagated_upto_ts_ = propagation_base_state_.ts();
 
   // we should propagate it to the latest IMU message in the buffer
   double latest_ts;
@@ -486,8 +482,14 @@ void Manager::setPropagationBaseState(const State & state)
     std::lock_guard<std::mutex> lock(buffer_mutex_);
     latest_ts = buffer_.rbegin()->first;
   }
+
   if (latest_ts > propagation_base_state_.ts()) {
-    updatePreintegrationTo(
+  std::lock_guard<std::mutex> lock(propagation_mutex_);
+  propagation_base_state_ = state;
+  propagation_preintegrator_->resetIntegrationAndSetBias(propagation_base_state_.imuBias());
+  propagated_upto_ts_ = propagation_base_state_.ts();
+
+  updatePreintegrationTo(
       propagation_base_state_.ts(), latest_ts, state.imuBias(), propagation_preintegrator_);
     propagated_upto_ts_ = latest_ts;
   }

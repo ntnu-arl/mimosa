@@ -87,7 +87,7 @@ private:
   // Propagation
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> propagation_preintegrator_;
   State propagation_base_state_;
-  double propagated_upto_ts_;
+  double propagated_upto_ts_ = 0;
   std::mutex propagation_mutex_;
 
   // Outputs
@@ -111,7 +111,7 @@ public:
   using Ptr = std::shared_ptr<Manager>;
   Manager(ros::NodeHandle & pnh);
   // * This function is public to allow other sensor managers to create thier own preintegrators if needed
-  inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams()
+  inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams() const
   {
     return preintegrator_params_;
   }
