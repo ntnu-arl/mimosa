@@ -101,7 +101,7 @@ Download the dataset from [https://projects.asl.ethz.ch/datasets/enwide](https:/
 After downloading any of the sequences in the dataset, you can run the following command to launch the example:
 
 ```bash
-roslaunch mimosa enwide_rosbag.launch bag:="/path/to/your/rosbag.bag" viz:="true"
+roslaunch mimosa enwide_rosbag.launch bag_name:="/path/to/your/rosbag.bag" viz:="true"
 ```
 
 ##### [Newer College Multi-Camera Dataset](https://ori-drs.github.io/newer-college-dataset/multi-cam/)
@@ -110,7 +110,7 @@ Download the dataset from [https://ori-drs.github.io/newer-college-dataset/downl
 After downloading any of the sequences in the dataset, you can run the following command to launch the example:
 
 ```bash
-roslaunch mimosa newer_college_rosbag.launch bag:="/path/to/your/rosbag.bag" viz:="true"
+roslaunch mimosa newer_college_rosbag.launch bag_name:="/path/to/your/rosbag.bag" viz:="true"
 ```
 
 ##### Complete Dataset Example
