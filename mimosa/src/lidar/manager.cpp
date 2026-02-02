@@ -161,8 +161,10 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   idxs_at_unique_ns_.clear();
 
   // Reserve space for the points
-  points_full_.reserve(msg_cloud.size());
-  geometric_point_idxs_.reserve(msg_cloud.size());
+  points_full_.reserve(
+    config_.create_full_res_pointcloud ? msg_cloud.size()
+                                       : msg_cloud.size() / geometric_->config.point_skip_divisor);
+  geometric_point_idxs_.reserve(msg_cloud.size() / geometric_->config.point_skip_divisor);
   ns_idx_pairs_.reserve(msg_cloud.size());
   unique_ns_.reserve(msg_cloud.size());
   idxs_at_unique_ns_.reserve(msg_cloud.size());
