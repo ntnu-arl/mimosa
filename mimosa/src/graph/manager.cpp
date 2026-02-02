@@ -482,6 +482,8 @@ Manager::DeclarationResult Manager::declare(
     const auto pose_diff = p.between(propagated_state.pose());
     debug_msg_.diff_against_imu_prior_trans_cm = pose_diff.translation().norm() * 100;
     debug_msg_.diff_against_imu_prior_rot_deg = rad2deg(pose_diff.rotation().axisAngle().second);
+    const auto v = smoother_->calculateEstimate<V3D>(V(key));
+    debug_msg_.diff_against_imu_prior_vel_cm_p_s = (v - propagated_state.velocity()).norm() * 100; // Convert to cm/s
 
     imu_manager_->setPropagationBaseState(state_);
     publishResults();
@@ -591,6 +593,8 @@ void Manager::defineNoLock(
     const auto pose_diff = p.between(state_.navState().pose());
     debug_msg_.diff_against_imu_prior_trans_cm = pose_diff.translation().norm() * 100;
     debug_msg_.diff_against_imu_prior_rot_deg = rad2deg(pose_diff.rotation().axisAngle().second);
+    const auto v = optimized_values_.at<V3D>(V(state_.key()));
+    debug_msg_.diff_against_imu_prior_vel_cm_p_s = (v - state_.navState().velocity()).norm() * 100; // Convert to cm/s
   }
   optimized_values = optimized_values_;
 

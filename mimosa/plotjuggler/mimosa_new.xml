@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
  <tabbed_widget parent="main_window" name="Main Window">
-  <Tab containers="1" tab_name="Graph Manager">
+  <Tab tab_name="Graph Manager" containers="1">
    <Container>
-    <DockSplitter orientation="-" count="5" sizes="0.200162;0.200162;0.199352;0.200162;0.200162">
+    <DockSplitter count="5" sizes="0.200162;0.200162;0.199352;0.200162;0.200162" orientation="-">
      <DockArea name="Accelerometer Bias">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-0.735603" top="0.082441" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.599966" left="0.000000" top="0.089151" bottom="-0.112577"/>
        <limitY/>
        <curve name="/mimosa_node/graph/debug/acc_bias/x" color="#1f77b4"/>
        <curve name="/mimosa_node/graph/debug/acc_bias/y" color="#d62728"/>
@@ -14,8 +14,8 @@
       </plot>
      </DockArea>
      <DockArea name="Gyroscope Bias">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="0.000255" top="0.007672" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.599966" left="0.000000" top="0.000550" bottom="-0.005442"/>
        <limitY/>
        <curve name="/mimosa_node/graph/debug/gyro_bias/x" color="#1f77b4"/>
        <curve name="/mimosa_node/graph/debug/gyro_bias/y" color="#d62728"/>
@@ -23,25 +23,26 @@
       </plot>
      </DockArea>
      <DockArea name="Linear Velocity">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-1.672515" top="1.616123" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.599966" left="0.000000" top="7.413903" bottom="-1.759828"/>
        <limitY/>
        <curve name="/mimosa_node/graph/odometry/twist/twist/linear/x" color="#1f77b4"/>
        <curve name="/mimosa_node/graph/odometry/twist/twist/linear/y" color="#d62728"/>
        <curve name="/mimosa_node/graph/odometry/twist/twist/linear/z" color="#1ac938"/>
       </plot>
      </DockArea>
-     <DockArea name="Diff against IMU Prior (cm, deg)">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-0.047683" top="1.955022" left="0.000000" right="534.469015"/>
+     <DockArea name="Diff against IMU Prior (cm, deg, cm/s)">
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.599966" left="0.000000" top="27.215145" bottom="-0.663784"/>
        <limitY/>
        <curve name="/mimosa_node/graph/debug/diff_against_imu_prior_rot_deg" color="#1f77b4"/>
        <curve name="/mimosa_node/graph/debug/diff_against_imu_prior_trans_cm" color="#d62728"/>
+       <curve name="/mimosa_node/graph/debug/diff_against_imu_prior_vel_cm_p_s" color="#1ac938"/>
       </plot>
      </DockArea>
      <DockArea name="Gravity">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-0.772248" top="0.458448" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.599966" left="0.000000" top="0.362753" bottom="-10.069853"/>
        <limitY/>
        <curve name="/mimosa_node/graph/debug/gravity/x" color="#1f77b4"/>
        <curve name="/mimosa_node/graph/debug/gravity/y" color="#d62728"/>
@@ -51,12 +52,12 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="LiDAR Manager">
+  <Tab tab_name="LiDAR Manager" containers="1">
    <Container>
-    <DockSplitter orientation="-" count="1" sizes="1">
+    <DockSplitter count="1" sizes="1" orientation="-">
      <DockArea name="Time (ms)">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-2.430379" top="99.645520" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.499938" left="0.199992" top="53.662373" bottom="-1.308838"/>
        <limitY/>
        <curve name="/mimosa_node/lidar/manager/debug/t_calculate_estimate" color="#1f77b4"/>
        <curve name="/mimosa_node/lidar/manager/debug/t_clear_reserve" color="#d62728"/>
@@ -82,12 +83,12 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="LiDAR Geometric">
+  <Tab tab_name="LiDAR Geometric" containers="1">
    <Container>
-    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
+    <DockSplitter count="2" sizes="0.500404;0.499596" orientation="-">
      <DockArea name="Number of Points">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-655.750000" top="26885.750000" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.499938" left="0.199992" top="103042.225000" bottom="-2513.225000"/>
        <limitY/>
        <curve name="/mimosa_node/lidar/geometric/debug/n_correspondances" color="#1f77b4"/>
        <curve name="/mimosa_node/lidar/geometric/debug/n_linearize_calls" color="#d62728"/>
@@ -105,8 +106,8 @@
       </plot>
      </DockArea>
      <DockArea name="...">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-0.332657" top="13.726002" left="0.000000" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.499938" left="0.199992" top="5.194761" bottom="-0.123537"/>
        <limitY/>
        <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess" color="#1f77b4"/>
        <curve name="/mimosa_node/lidar/geometric/debug/t_preprocess1" color="#d62728"/>
@@ -117,12 +118,12 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Radar Manager">
+  <Tab tab_name="Radar Manager" containers="1">
    <Container>
-    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
+    <DockSplitter count="2" sizes="0.500404;0.499596" orientation="-">
      <DockArea name="Times (ms)">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-0.341010" top="14.166307" left="0.015785" right="534.319279"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.562722" left="0.263269" top="17.448772" bottom="-0.418243"/>
        <limitY/>
        <curve name="/mimosa_node/radar/manager/debug/t_full" color="#1f77b4"/>
        <curve name="/mimosa_node/radar/manager/debug/t_graph_declare" color="#d62728"/>
@@ -130,8 +131,8 @@
       </plot>
      </DockArea>
      <DockArea name="Number of Points">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-3.200000" top="131.200000" left="0.015785" right="534.319279"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="69.562722" left="0.263269" top="84.050000" bottom="-2.050000"/>
        <limitY/>
        <curve name="/mimosa_node/radar/manager/debug/n_points_dynamic" color="#1f77b4"/>
        <curve name="/mimosa_node/radar/manager/debug/n_points_in" color="#d62728"/>
@@ -142,19 +143,19 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Position">
+  <Tab tab_name="Position" containers="1">
    <Container>
-    <DockSplitter orientation="-" count="2" sizes="0.500404;0.499596">
+    <DockSplitter count="2" sizes="0.500404;0.499596" orientation="-">
      <DockArea name="Top Down Orthographic XY">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="XYPlot">
-       <range bottom="-38.284131" top="131.390605" left="-431.684985" right="254.504398"/>
+      <plot flip_y="false" mode="XYPlot" style="Lines" flip_x="false">
+       <range right="493.040516" left="-533.456630" top="247.661354" bottom="-6.041214"/>
        <limitY/>
-       <curve curve_y="/mimosa_node/graph/odometry/pose/pose/position/y" curve_x="/mimosa_node/graph/odometry/pose/pose/position/x" name="/mimosa_node/graph/odometry/pose/pose/position/[x;y]" color="#1f77b4"/>
+       <curve curve_x="/mimosa_node/graph/odometry/pose/pose/position/x" name="/mimosa_node/graph/odometry/pose/pose/position/[x;y]" color="#1f77b4" curve_y="/mimosa_node/graph/odometry/pose/pose/position/y"/>
       </plot>
      </DockArea>
      <DockArea name="Z">
-      <plot flip_y="false" style="Lines" flip_x="false" mode="TimeSeries">
-       <range bottom="-1.640766" top="9.267885" left="-183.608145" right="534.469015"/>
+      <plot flip_y="false" mode="TimeSeries" style="Lines" flip_x="false">
+       <range right="493.040516" left="-533.456630" top="2.132113" bottom="-2.861895"/>
        <limitY/>
        <curve name="/mimosa_node/graph/odometry/pose/pose/position/z" color="#1f77b4"/>
       </plot>
@@ -206,7 +207,84 @@
  <previouslyLoaded_Datafiles/>
  <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
  <!-- - - - - - - - - - - - - - - -->
- <customMathEquations/>
+ <customMathEquations>
+  <snippet name="imu_rate_odom_rot_diff_deg">
+   <global></global>
+   <function>x1 = value
+y1 = v1
+z1 = v2
+w1 = v3
+x2 = v4
+y2 = v5
+z2 = v6
+w2 = v7
+
+-- Normalize the first quaternion
+local norm1 = math.sqrt(w1*w1 + x1*x1 + y1*y1 + z1*z1)
+local qw1 = w1 / norm1
+local qx1 = x1 / norm1
+local qy1 = y1 / norm1
+local qz1 = z1 / norm1
+
+-- Normalize the second quaternion
+local norm2 = math.sqrt(w2*w2 + x2*x2 + y2*y2 + z2*z2)
+local qw2 = w2 / norm2
+local qx2 = x2 / norm2
+local qy2 = y2 / norm2
+local qz2 = z2 / norm2
+
+-- Compute the dot product between the two unit quaternions
+local dot = qw1*qw2 + qx1*qx2 + qy1*qy2 + qz1*qz2
+-- Clamp dot to the range [-1, 1] to avoid numerical errors
+dot = math.max(-1, math.min(1, dot))
+
+-- Calculate the angle (in radians) between the two rotations
+local angle = 2 * math.acos(math.abs(dot))
+
+-- Convert to degrees
+return angle * 180 / math.pi</function>
+   <linked_source>/mimosa_node/graph/odometry/pose/pose/orientation/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/pose/pose/orientation/y</v1>
+    <v2>/mimosa_node/graph/odometry/pose/pose/orientation/z</v2>
+    <v3>/mimosa_node/graph/odometry/pose/pose/orientation/w</v3>
+    <v4>/mimosa_node/imu/manager/odometry/pose/pose/orientation/x</v4>
+    <v5>/mimosa_node/imu/manager/odometry/pose/pose/orientation/y</v5>
+    <v6>/mimosa_node/imu/manager/odometry/pose/pose/orientation/z</v6>
+    <v7>/mimosa_node/imu/manager/odometry/pose/pose/orientation/w</v7>
+   </additional_sources>
+  </snippet>
+  <snippet name="imu_rate_odom_vel_diff">
+   <global></global>
+   <function>local dx = v3 - value
+local dy = v4 - v1
+local dz = v5 - v2
+return math.sqrt(dx * dx + dy * dy + dz * dz)</function>
+   <linked_source>/mimosa_node/graph/odometry/twist/twist/linear/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/twist/twist/linear/y</v1>
+    <v2>/mimosa_node/graph/odometry/twist/twist/linear/z</v2>
+    <v3>/mimosa_node/imu/manager/odometry/twist/twist/linear/x</v3>
+    <v4>/mimosa_node/imu/manager/odometry/twist/twist/linear/y</v4>
+    <v5>/mimosa_node/imu/manager/odometry/twist/twist/linear/z</v5>
+   </additional_sources>
+  </snippet>
+  <snippet name="imu_rate_odom_pos_diff">
+   <global></global>
+   <function>local dx = v3 - value
+local dy = v4 - v1
+local dz = v5 - v2
+return math.sqrt(dx * dx + dy * dy + dz * dz)</function>
+   <linked_source>/mimosa_node/graph/odometry/pose/pose/position/x</linked_source>
+   <additional_sources>
+    <v1>/mimosa_node/graph/odometry/pose/pose/position/y</v1>
+    <v2>/mimosa_node/graph/odometry/pose/pose/position/z</v2>
+    <v3>/mimosa_node/imu/manager/odometry/pose/pose/position/x</v3>
+    <v4>/mimosa_node/imu/manager/odometry/pose/pose/position/y</v4>
+    <v5>/mimosa_node/imu/manager/odometry/pose/pose/position/z</v5>
+   </additional_sources>
+  </snippet>
+ </customMathEquations>
  <snippets/>
  <!-- - - - - - - - - - - - - - - -->
 </root>
