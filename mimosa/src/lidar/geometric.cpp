@@ -219,7 +219,7 @@ void Geometric::getFactors(
     debug_msg_.degen_trans_bool[1] = degen_directions(4);
     debug_msg_.degen_trans_bool[2] = degen_directions(5);
 
-    logger_->info("degen_directions: {}", degen_directions.transpose());
+    // logger_->info("degen_directions: {}", degen_directions.transpose());
 
     if (pub_degen_marker_array_.getNumSubscribers()) {
       // Create the marker for the axis
@@ -493,7 +493,6 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
 
 void Geometric::publishDebug()
 {
-  logger_->debug("Publishing debug info");
   debug_msg_.header.stamp.fromSec(ts_);
   pub_debug_.publish(debug_msg_);
 }

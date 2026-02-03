@@ -54,6 +54,9 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
     case PType::Ouster:
       prepareInput<PointOuster>(msg);
       break;
+    case PType::OusterOdyssey:
+      prepareInput<PointOusterOdyssey>(msg);
+      break;
     case PType::OusterR8:
       prepareInput<PointOusterR8>(msg);
       break;
@@ -198,7 +201,8 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   if constexpr (
     !std::is_same<PointT, PointLivox>::value &&
-    !std::is_same<PointT, PointLivoxFromCustom2>::value) {
+    !std::is_same<PointT, PointLivoxFromCustom2>::value && 
+    !std::is_same<PointT, PointOusterOdyssey>::value) {
     Stopwatch sw_organize;
     if (config_.organize_pointcloud_by_ring && msg_cloud.height == 1) {
       // The main loop in the pointcloud skips some points in each ring since the resolution in a ring is typically higher as compared to the number of rings. It assumes that the pointcloud is provided in a row major order. If the input pointcloud is not in row major order, it should be organized as such so that the point skipping logic does not discard too many useful points.
@@ -254,16 +258,28 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     }
 
     // Intensity filter
-    if (std::isnan(pin.intensity) || pin.intensity < config_.intensity_min || pin.intensity > config_.intensity_max) continue;
+    float intensity = 0.0f;
+    if constexpr (std::is_same<PointT, PointOusterOdyssey>::value) {
+      if (std::isnan(pin.reflectivity) || pin.reflectivity < config_.intensity_min ||
+          pin.reflectivity > config_.intensity_max)
+        continue;
+      intensity = static_cast<float>(pin.reflectivity);
+    } else {
+      if (
+        std::isnan(pin.intensity) || pin.intensity < config_.intensity_min ||
+        pin.intensity > config_.intensity_max)
+        continue;
+      intensity = pin.intensity;
+    }
 
     // Range filter
-    float range_sq = pin.x * pin.x + pin.y * pin.y + pin.z * pin.z;
+    const float range_sq = pin.x * pin.x + pin.y * pin.y + pin.z * pin.z;
     if (range_sq < range_min_sq_ || range_sq > range_max_sq_) continue;
 
     // Decode time to be nanoseconds since the header timestamp
     uint32_t t_ns;
     if constexpr (
-      std::is_same<PointT, PointOuster>::value || std::is_same<PointT, PointOusterR8>::value) {
+      std::is_same<PointT, PointOuster>::value || std::is_same<PointT, PointOusterOdyssey>::value || std::is_same<PointT, PointOusterR8>::value) {
       t_ns = pin.t;
     } else if constexpr (std::is_same<PointT, PointHesai>::value) {
       t_ns = (pin.timestamp - header_ts_) * 1e9;
@@ -287,7 +303,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     last_point_ns = std::max(last_point_ns, t_ns);
 
     points_full_.points.emplace_back(
-      pin.x, pin.y, pin.z + z_offset_, pin.intensity, t_ns, i, std::sqrt(range_sq));
+      pin.x, pin.y, pin.z + z_offset_, intensity, t_ns, i, std::sqrt(range_sq));
     const size_t new_idx = points_full_.size() - 1;
     ns_idx_pairs_.emplace_back(t_ns, new_idx);
 
@@ -299,7 +315,8 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     if constexpr (
       !std::is_same<PointT, PointLivox>::value &&
       !std::is_same<PointT, PointLivoxFromCustom2>::value &&
-      !std::is_same<PointT, PointVelodyneAnybotics>::value) {
+      !std::is_same<PointT, PointVelodyneAnybotics>::value &&
+      !std::is_same<PointT, PointOusterOdyssey>::value) {
       if (std::isnan(pin.ring))
       {
         logger_->warn("Point ring number is NaN. Skipping the point but check your input data");
@@ -553,7 +570,6 @@ void Manager::postDefineUpdate(const gtsam::Key key, const gtsam::Values & value
   }
 
   if (!bias_directions.size()) {
-    logger_->info("Nothing degen. Selecting all directions");
     bias_directions.push_back(V3D::UnitX());
     bias_directions.push_back(V3D::UnitY());
     bias_directions.push_back(V3D::UnitZ());

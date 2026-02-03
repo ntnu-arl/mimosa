@@ -36,6 +36,7 @@ enum class PType
 {
   Unknown = 0,
   Ouster,
+  OusterOdyssey,
   OusterR8,
   Hesai,
   Livox,
@@ -49,6 +50,10 @@ inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields
 {
   if (fieldsMatch(fields, getFieldsFromPointType<PointOuster>())) {
     return PType::Ouster;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointOusterOdyssey>())) {
+    return PType::OusterOdyssey;
   }
 
   if (fieldsMatch(fields, getFieldsFromPointType<PointOusterR8>())) {
