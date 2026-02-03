@@ -483,13 +483,15 @@ void Manager::setPropagationBaseState(const State & state)
     latest_ts = buffer_.rbegin()->first;
   }
 
-  if (latest_ts > propagation_base_state_.ts()) {
   std::lock_guard<std::mutex> lock(propagation_mutex_);
-  propagation_base_state_ = state;
-  propagation_preintegrator_->resetIntegrationAndSetBias(propagation_base_state_.imuBias());
-  propagated_upto_ts_ = propagation_base_state_.ts();
+  if (state.ts() > propagation_base_state_.ts()) {
+    propagation_base_state_ = state;
+    propagation_preintegrator_->resetIntegrationAndSetBias(propagation_base_state_.imuBias());
+    propagated_upto_ts_ = propagation_base_state_.ts();
+  }
 
-  updatePreintegrationTo(
+  if (latest_ts > propagation_base_state_.ts()) {
+    updatePreintegrationTo(
       propagation_base_state_.ts(), latest_ts, state.imuBias(), propagation_preintegrator_);
     propagated_upto_ts_ = latest_ts;
   }
