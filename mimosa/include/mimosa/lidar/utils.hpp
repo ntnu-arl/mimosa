@@ -278,6 +278,12 @@ public:
     return true;
   }
 
+  void clear()
+  {
+    points.clear();
+    indices.clear();
+  }
+
   /// @brief Get the points stored in this container.
   const std::vector<Eigen::Vector3d> & get_points() const { return points; }
   /// @brief Get the indices of the points in the original cloud.

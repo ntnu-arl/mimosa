@@ -59,15 +59,13 @@ void Geometric::downsample(
   Stopwatch sw;
 
   const double inv_leaf_size = 1.0 / leaf_size;
-  FlatContainerMinimal::Setting voxel_settings;
-  voxel_settings.max_num_points_in_cell = max_points_per_voxel;
-  voxel_settings.min_sq_dist_in_cell = min_dist_in_voxel * min_dist_in_voxel;
+  const FlatContainerMinimal::Setting voxel_settings{min_dist_in_voxel * min_dist_in_voxel, max_points_per_voxel};
 
   // Map from voxel coordinates to the container holding points for that voxel
-  std::vector<FlatContainerMinimal> flat_voxels;
-  flat_voxels.reserve(input_cloud.size() / 2);
-  std::unordered_map<Eigen::Vector3i, size_t, XORVector3iHash> voxels;
-  voxels.reserve(input_cloud.size() / 2);
+  size_t flat_voxels_used = 0;
+  flat_voxels_.reserve(input_cloud.size() / 2); // Rough estimate
+  voxels_.clear();
+  voxels_.reserve(input_cloud.size() / 2);
 
   debug_msg_.t_preprocess1 = sw.tickMs();
 
@@ -80,31 +78,41 @@ void Geometric::downsample(
     // Calculate integer voxel coordinates
     const Eigen::Vector3i coord = fast_floor(point_pos * inv_leaf_size).head<3>();
 
-    auto found = voxels.find(coord);
-    if (found == voxels.end()) {
-      // If the voxel doesn't exist, create a new one
-      found = voxels.emplace_hint(found, coord, flat_voxels.size());
-      flat_voxels.emplace_back(voxel_settings);
+    auto found = voxels_.find(coord);
+    if (found == voxels_.end()) {
+      size_t idx;
+      if (flat_voxels_used < flat_voxels_.size()) {
+        // Reuse existing container
+        flat_voxels_[flat_voxels_used].clear();
+        idx = flat_voxels_used++;
+      } else {
+        // Only allocate if we truly need more
+        idx = flat_voxels_.size();
+        flat_voxels_.emplace_back(voxel_settings);
+        flat_voxels_used = flat_voxels_.size();
+        logger_->trace("Allocated new flat voxel container, total now {}", flat_voxels_.size());
+      }
+
+      found = voxels_.emplace_hint(found, coord, idx);
     }
 
-    flat_voxels[found->second].add(voxel_settings, point_pos.head<3>(), i);
+    flat_voxels_[found->second].add(voxel_settings, point_pos.head<3>(), i);
   }
 
   debug_msg_.t_preprocess2 = sw.tickMs();
 
   // Collect points from all voxels
-  // Reserve space roughly - this is an estimate
-  std::vector<size_t> indices;
-  indices.reserve(voxels.size() * max_points_per_voxel);
-  for (const auto & voxel : flat_voxels) {
-    indices.insert(indices.end(), voxel.get_indices().begin(), voxel.get_indices().end());
+  indices_.clear();
+  indices_.reserve(flat_voxels_used * max_points_per_voxel);
+  for (size_t i = 0; i < flat_voxels_used; ++i) {
+    indices_.insert(indices_.end(), flat_voxels_[i].get_indices().begin(), flat_voxels_[i].get_indices().end());
   }
 
   // Resize the output cloud to fit the selected points
   output_cloud.clear();
-  output_cloud.reserve(indices.size());
-  for (const size_t idx : indices) {
-    output_cloud.points.emplace_back(input_cloud.points[idx]);
+  output_cloud.reserve(indices_.size());
+  for (const size_t idx : indices_) {
+    output_cloud.points.push_back(input_cloud.points[idx]);
   }
   // Set the output cloud properties
   output_cloud.header = input_cloud.header;
@@ -123,6 +131,18 @@ void Geometric::preprocess(
   Stopwatch sw;
   logger_->trace("Preprocess start");
 
+  static bool first = true;
+  if (first) {
+    first = false;
+
+    // Excessive reserving to avoid reallocations later
+    Be_cloud_->reserve(points_deskewed.size());
+    flat_voxels_.reserve(points_deskewed.size());
+    voxels_.reserve(points_deskewed.size());
+    indices_.reserve(points_deskewed.size());
+    sm_Be_cloud_ds_.reserve(points_deskewed.size());
+  }
+
   ts_ = ts;
 
   // Clear the previous cloud
@@ -137,14 +157,13 @@ void Geometric::preprocess(
     auto & p = Be_cloud_->points.emplace_back(points_deskewed[idx]);
     p.getVector3fMap() = R_B_L * p.getVector3fMap() + t_B_L;
   });
+  // Set the sizes since these are invalidated by the above loop that works directly on the points
+  Be_cloud_->width = Be_cloud_->size();
+  Be_cloud_->height = 1;
 
   if (pub_sm_cloud_.getNumSubscribers()) {
     publishCloud(pub_sm_cloud_, *Be_cloud_, config.body_frame, ts_);
   }
-
-  // Set the sizes since these are invalidated by the above loop that works directly on the points
-  Be_cloud_->width = Be_cloud_->size();
-  Be_cloud_->height = 1;
 
   downsample(
     *Be_cloud_, sm_Be_cloud_ds_, config.scan_to_map.source_voxel_grid_filter_leaf_size, 20,

@@ -51,6 +51,11 @@ private:
   std::vector<gtsam::Pose3> map_poses_;
   geometry_msgs::PoseArray keyframe_poses_;
 
+  // Variables for downsampling
+  std::vector<FlatContainerMinimal> flat_voxels_;
+  std::unordered_map<Eigen::Vector3i, size_t, XORVector3iHash> voxels_;
+  std::vector<size_t> indices_;
+
   double ts_;
   mimosa_msgs::LidarGeometricDebug debug_msg_;
 
