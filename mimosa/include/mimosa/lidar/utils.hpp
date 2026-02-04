@@ -133,7 +133,6 @@ inline void applyTransform(
 template <typename PointT>
 inline void toPcl(const sensor_msgs::PointCloud2 & msg, pcl::PointCloud<PointT> & cloud)
 {
-  cloud.clear();
   pcl_conversions::toPCL(msg.header, cloud.header);
   cloud.width = msg.width;
   cloud.height = msg.height;
