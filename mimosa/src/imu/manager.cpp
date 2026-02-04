@@ -16,7 +16,7 @@ Manager::Manager(ros::NodeHandle & pnh)
   // Prepare logger
   logger_ =
     createLogger(config_.logs_directory + "imu_manager.log", "imu::Manager", config_.log_level);
-  logger_->info("imu::Manager initialized with params:\n {}", config::toString(config_));
+  logger_->debug("imu::Manager initialized with params:\n {}", config::toString(config_));
 
   // Publishers
   pub_debug_ = pnh.advertise<mimosa_msgs::ImuManagerDebug>("imu/manager/debug", 1);
@@ -166,7 +166,7 @@ bool Manager::estimateAttitude(
     }
     const double buffer_duration = buffer_.rbegin()->first - buffer_.begin()->first;
     if (buffer_duration < config_.pose_init_wait_secs) {
-      logger_->info(
+      logger_->debug(
         "Imu buffer has not been filled enough yet. Current duration/Required duration: {} / {}",
         buffer_duration, config_.pose_init_wait_secs);
       return false;
@@ -221,7 +221,9 @@ bool Manager::estimateAttitude(
   logger_->info("Estimated R_W_B:\n{}", R_W_B.matrix());
   logger_->info("Estimated acc bias: {}", estimated_acc_bias.transpose());
   logger_->info("Estimated gyro bias: {}", estimated_gyro_bias.transpose());
-  logger_->info("Gravity vector: {}", preintegrator_params_->getGravity());
+  logger_->info(
+    "Gravity vector: {} with norm: {}", preintegrator_params_->getGravity().transpose(),
+    preintegrator_params_->getGravity().norm());
 
   return true;
 }
@@ -413,7 +415,7 @@ void Manager::addImuFactorNoLock(
       B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
       gtsam::noiseModel::Diagonal::Sigmas(imu_bias_random_walk * sqrt(preintegrator_->deltaTij()))));
 
-  logger_->info("Added IMU factor between keys {} and {}", gdkf(key_0), gdkf(key_1));
+  logger_->debug("Added IMU factor between keys {} and {}", gdkf(key_0), gdkf(key_1));
 }
 
 void Manager::addImuFactor(
@@ -432,7 +434,7 @@ void Manager::addImuFactorAndGetNavState(
     std::lock_guard<std::mutex> lock(preintegrator_mutex_);
     addImuFactorNoLock(state_0.ts(), ts_1, state_0.imuBias(), state_0.key(), key_1, graph);
     ns_1 = preintegrator_->predict(state_0.navState(), state_0.imuBias(), state_0.gravity());
-    logger_->info("predicted state");
+    logger_->trace("predicted state");
   }
 
   gtsam::Values values;
