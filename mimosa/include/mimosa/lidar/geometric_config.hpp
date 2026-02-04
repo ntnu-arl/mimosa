@@ -40,7 +40,7 @@ struct GeometricConfig
   bool enabled = true;
   std::string log_level = "info";
 
-  std::string world_frame = "mimosa_world";
+  std::string map_frame = "mimosa_map";
   std::string sensor_frame = "mimosa_lidar";
   std::string body_frame = "mimosa_body";
   gtsam::Pose3 T_B_L = gtsam::Pose3::Identity();

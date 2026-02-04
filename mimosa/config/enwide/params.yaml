@@ -1,5 +1,5 @@
 logs_directory: /tmp/mimosa/
-world_frame: mimosa_world
+map_frame: mimosa_map
 navigation_frame: mimosa_navigation
 body_frame: mimosa_body
 

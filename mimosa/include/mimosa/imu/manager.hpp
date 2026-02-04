@@ -52,7 +52,7 @@ struct ManagerConfig
 {
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
-  std::string world_frame = "mimosa_world";
+  std::string map_frame = "mimosa_map";
   std::string body_frame = "mimosa_body";
   float ts_offset = 0.0;                   // s
   float max_buffer_duration = 2.0;         // s

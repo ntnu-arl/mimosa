@@ -44,7 +44,7 @@ private:
   cv::Mat static_mask_;
 
   Frame::Ptr current_frame_;
-  std::vector<Feature> world_Le_features_;
+  std::vector<Feature> map_Le_features_;
   PhotometricFactor::Ptr photometric_factor_;
 
   mimosa_msgs::LidarPhotometricDebug debug_msg_;
@@ -82,7 +82,7 @@ private:
     const int num_to_detect, Frame::ConstPtr frame, std::vector<Feature> & features,
     const gtsam::Pose3 & T_W_Be, const std::vector<V3D> & bias_directions = {});
   void publishFeatures(
-    Frame::ConstPtr frame, const gtsam::Values & values, const std::string & world_frame,
+    Frame::ConstPtr frame, const gtsam::Values & values, const std::string & map_frame,
     const double ts);
 };
 }  // namespace lidar

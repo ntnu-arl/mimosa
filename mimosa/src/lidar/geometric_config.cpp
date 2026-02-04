@@ -54,7 +54,7 @@ void declare_config(GeometricConfig & config)
   name("Lidar Geometric Config");
 
   field(config.logs_directory, "logs_directory", "directory_path");
-  field(config.world_frame, "world_frame", "str");
+  field(config.map_frame, "map_frame", "str");
   field(config.body_frame, "body_frame", "str");
 
   {

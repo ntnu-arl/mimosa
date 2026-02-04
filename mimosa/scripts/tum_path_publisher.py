@@ -26,7 +26,7 @@ def parse_arguments():
     )
     parser.add_argument("file_name", type=str, help="Path to TUM format file")
     parser.add_argument(
-        "--frame_id", type=str, default="world", help="Frame ID for the path"
+        "--frame_id", type=str, default="map", help="Frame ID for the path"
     )
     parser.add_argument(
         "--topic_name", type=str, default="tum_path", help="Topic to publish path on"

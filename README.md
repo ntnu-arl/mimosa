@@ -11,7 +11,7 @@ mimosa maintains a sliding window factor graph to fuse factors generated from mu
 
 ### IMU Factor
 
-The IMU factor is based on GTSAM's provided `PreintegratedIMUFactor` but modified to also have gravity as a state in the preintegration. This is due to the fact that we consider the initial orientation of the IMU to be the world frame (whereas GTSAM assumes the world frame to be gravity aligned).
+The IMU factor is based on GTSAM's provided `PreintegratedIMUFactor` but modified to also have gravity as a state in the preintegration. This is due to the fact that we consider the initial orientation of the IMU to be the map frame (whereas GTSAM assumes the map frame to be gravity aligned).
 
 ### LiDAR Factor
 

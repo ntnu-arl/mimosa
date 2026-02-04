@@ -16,7 +16,7 @@ struct SensorManagerBaseConfig
 {
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
-  std::string world_frame = "world";
+  std::string map_frame = "map";
   std::string body_frame = "body";
   std::string sensor_frame = "sensor";
   gtsam::Pose3 T_B_S = gtsam::Pose3::Identity();
@@ -39,7 +39,7 @@ inline void declare_sensor_manager_config_base(
   using namespace config;
 
   field(base_config.logs_directory, "logs_directory", "directory_path");
-  field(base_config.world_frame, "world_frame", "str");
+  field(base_config.map_frame, "map_frame", "str");
   field(base_config.body_frame, "body_frame", "str");
 
   {
@@ -60,10 +60,10 @@ inline void declare_sensor_manager_config_base(
 
   // Common validation
   check(base_config.initial_skip, GE, 0, "initial_skip");
-  check(base_config.body_frame, NE, base_config.world_frame, "body_frame");
+  check(base_config.body_frame, NE, base_config.map_frame, "body_frame");
   check(
-    base_config.sensor_frame, NE, base_config.world_frame,
-    "sensor_frame should not be the same as world_frame");
+    base_config.sensor_frame, NE, base_config.map_frame,
+    "sensor_frame should not be the same as map_frame");
   check(
     base_config.sensor_frame, NE, base_config.body_frame,
     "sensor_frame should not be the same as body_frame");

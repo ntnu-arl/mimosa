@@ -55,7 +55,7 @@ void declare_config(SmootherConfig & config);
 
 struct ManagerConfig
 {
-  std::string world_frame = "world";
+  std::string map_frame = "map";
   std::string navigation_frame = "navigation";
   std::string body_frame = "body";
   std::string logs_directory = "/tmp/";

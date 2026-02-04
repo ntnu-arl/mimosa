@@ -40,7 +40,7 @@ Geometric::Geometric(ros::NodeHandle & pnh)
   pub_keyframe_poses_ =
     pnh.advertise<geometry_msgs::PoseArray>("lidar/geometric/keyframe_poses", 1);
 
-  keyframe_poses_.header.frame_id = config.world_frame;
+  keyframe_poses_.header.frame_id = config.map_frame;
 }
 
 /**
@@ -195,7 +195,7 @@ void Geometric::getFactors(
 
   if (pub_sm_correspondances_ma_.getNumSubscribers()) {
     visualization_msgs::MarkerArray ma;
-    fillMarkerArray(*factor_, ma, config.world_frame, ts_);
+    fillMarkerArray(*factor_, ma, config.map_frame, ts_);
     pub_sm_correspondances_ma_.publish(ma);
   }
 
@@ -476,7 +476,7 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
   }
 
   if (update_map) {
-    // Transform the cloud to world frame using the T_W_Be
+    // Transform the cloud to map frame using the T_W_Be
     Stopwatch sw;
     const M3F R_W_Be = T_W_Be.rotation().matrix().cast<float>();
     const V3F t_W_Be = T_W_Be.translation().cast<float>();
@@ -501,7 +501,7 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
     if (pub_map_.getNumSubscribers()) {
       // Publish the updated map
       pcl::PointCloud<Point>::Ptr W_map = ivox_map_->getCloud();
-      publishCloud(pub_map_, *W_map, config.world_frame, ts_);
+      publishCloud(pub_map_, *W_map, config.map_frame, ts_);
     }
 
     keyframe_poses_.header.stamp.fromSec(ts_);

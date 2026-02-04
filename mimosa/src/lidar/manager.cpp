@@ -129,7 +129,7 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
     // const gtsam::NonlinearFactorGraph factors = graph_manager_->getFactors();
     // photometric_->visualizeTracks(
-    //   factors, opt_values, config_.world_frame, corrected_ts_, X(new_key_));
+    //   factors, opt_values, config_.map_frame, corrected_ts_, X(new_key_));
 
     T_W_Bk_opt = opt_values.at<gtsam::Pose3>(X(new_key_));
   }

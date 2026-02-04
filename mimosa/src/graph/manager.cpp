@@ -689,20 +689,20 @@ void Manager::initializeGraph(
 void Manager::publishResults()
 {
   broadcastTransform(
-    tf2_broadcaster_, state_.navState().pose(), config_.world_frame, config_.body_frame,
+    tf2_broadcaster_, state_.navState().pose(), config_.map_frame, config_.body_frame,
     state_.ts());
 
-  // Broadcast the nav to world transform
+  // Broadcast the nav to map transform
   const V3D n_g_direction = -V3D::UnitZ();
   V3D w_g_direction = state_.gravity().unitVector();
   // n_g = T_N_W * w_g
   gtsam::Pose3 T_N_W = gtsam::Pose3(
     gtsam::Rot3(Eigen::Quaterniond().setFromTwoVectors(w_g_direction, n_g_direction)), V3D::Zero());
   broadcastTransform(
-    tf2_static_broadcaster_, T_N_W, config_.navigation_frame, config_.world_frame, 0.0);
+    tf2_static_broadcaster_, T_N_W, config_.navigation_frame, config_.map_frame, 0.0);
 
   static nav_msgs::Path path;
-  path.header.frame_id = config_.world_frame;
+  path.header.frame_id = config_.map_frame;
   publishPath(pub_path_, path, state_.navState().pose(), state_.ts());
 
   // Write the trajectory to the trajectory logger
@@ -716,7 +716,7 @@ void Manager::publishResults()
   // Publish odometry
   static nav_msgs::Odometry odometry;
   if (pub_odometry_.getNumSubscribers()) {
-    odometry.header.frame_id = config_.world_frame;
+    odometry.header.frame_id = config_.map_frame;
     odometry.child_frame_id = config_.body_frame;
     odometry.header.stamp.fromSec(state_.ts());
     convert(state_.navState().pose(), odometry.pose.pose);
@@ -727,7 +727,7 @@ void Manager::publishResults()
   // Publish transform stamped
   static geometry_msgs::TransformStamped ts_frame_child;
   if (pub_transform_stamped_.getNumSubscribers()) {
-    ts_frame_child.header.frame_id = config_.world_frame;
+    ts_frame_child.header.frame_id = config_.map_frame;
     ts_frame_child.child_frame_id = config_.body_frame;
     ts_frame_child.header.stamp.fromSec(state_.ts());
     convert(state_.navState().pose(), ts_frame_child.transform);
@@ -745,7 +745,7 @@ void Manager::publishResults()
 
   // Iterate over the optimized values and publish the poses
   nav_msgs::Path opt_path;
-  opt_path.header.frame_id = config_.world_frame;
+  opt_path.header.frame_id = config_.map_frame;
   for (const auto & [key, value] : optimized_values_) {
     // Check if key is of pose type
     if (*gdkf(key).begin() != 'x') {
@@ -753,7 +753,7 @@ void Manager::publishResults()
     }
 
     geometry_msgs::PoseStamped pose;
-    pose.header.frame_id = config_.world_frame;
+    pose.header.frame_id = config_.map_frame;
     pose.header.stamp.fromSec(state_.ts());
     convert(value.cast<gtsam::Pose3>(), pose.pose);
     opt_path.poses.push_back(pose);
@@ -818,7 +818,7 @@ void declare_config(ManagerConfig & config)
   name("Graph Manager Config");
 
   field(config.logs_directory, "logs_directory", "directory_path");
-  field(config.world_frame, "world_frame", "str");
+  field(config.map_frame, "map_frame", "str");
   field(config.navigation_frame, "navigation_frame", "str");
   field(config.body_frame, "body_frame", "str");
 
@@ -829,7 +829,7 @@ void declare_config(ManagerConfig & config)
     field(config.smoother, "smoother");
   }
 
-  check(config.body_frame, NE, config.world_frame, "body_frame");
+  check(config.body_frame, NE, config.map_frame, "body_frame");
 }
 
 }  // namespace graph

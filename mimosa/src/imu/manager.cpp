@@ -143,7 +143,7 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
     // Publish odometry
     nav_msgs::Odometry odometry;
     if (pub_odometry_.getNumSubscribers()) {
-      odometry.header.frame_id = config_.world_frame;
+      odometry.header.frame_id = config_.map_frame;
       odometry.child_frame_id = config_.body_frame;
       odometry.header.stamp.fromSec(ts);
       convert(nav_state.pose(), odometry.pose.pose);
@@ -525,7 +525,7 @@ void declare_config(ManagerConfig & config)
   name("Imu Manager Config");
 
   field(config.logs_directory, "logs_directory", "directory_path");
-  field(config.world_frame, "world_frame", "str");
+  field(config.map_frame, "map_frame", "str");
   field(config.body_frame, "body_frame", "str");
 
   {
