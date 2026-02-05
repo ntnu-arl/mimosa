@@ -520,7 +520,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: mimosa_world
+    Fixed Frame: mimosa_map
     Frame Rate: 30
   Name: root
   Tools:
