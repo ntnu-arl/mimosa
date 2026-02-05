@@ -145,18 +145,14 @@ void Geometric::preprocess(
 
   ts_ = ts;
 
-  // Clear the previous cloud
-  Be_cloud_->clear();
-  Be_cloud_->reserve(idxs.size());
-
   const M3F R_B_L = config.T_B_L.rotation().matrix().cast<float>();
   const V3F t_B_L = config.T_B_L.translation().cast<float>();
-
-  std::for_each(idxs.begin(), idxs.end(), [&](const size_t idx) {
+  Be_cloud_->resize(idxs.size());
+  for(size_t i = 0; i < idxs.size(); i++) {
     // Transform the point from the Le frame to the Be frame
-    auto & p = Be_cloud_->points.emplace_back(points_deskewed[idx]);
+    auto & p = Be_cloud_->points[i] = points_deskewed[idxs[i]];
     p.getVector3fMap() = R_B_L * p.getVector3fMap() + t_B_L;
-  });
+  }
   // Set the sizes since these are invalidated by the above loop that works directly on the points
   Be_cloud_->width = Be_cloud_->size();
   Be_cloud_->height = 1;
