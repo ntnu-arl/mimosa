@@ -3,7 +3,9 @@
   <arg name="s" default="0" />
   <arg name="viz" default="false" />
 
-  <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true"> # launch-prefix="gdb -ex run --args">
+  <arg name="config_override" default="" />
+
+  <node pkg="mimosa" type="mimosa_rosbag" name="mimosa_node" output="screen" clear_params="true" required="true"> # launch-prefix="gdb -ex run --args">
     <remap from="/mimosa_node/imu/manager/imu_in" to="/os_cloud_node/imu" />
     <remap from="/mimosa_node/lidar/manager/lidar_in" to="/os_cloud_node/points" />
 
@@ -12,8 +14,13 @@
 
     <rosparam file="$(find mimosa)/config/newer_college/params.yaml"/>
     <rosparam file="$(find mimosa)/config/newer_college/os_newer_college.json" command="load" ns="lidar/sensor"/>
+
+    <!-- Override config loaded second (overwrites matching keys) -->
+    <rosparam file="$(arg config_override)" if="$(eval config_override != '')"/>
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />
+
+  <node name="recorder" pkg="rosbag" type="record" args="-O $(find mimosa)/data/mimosa_results.bag /mimosa_node/graph/debug /mimosa_node/graph/odometry /mimosa_node/imu/manager/odometry" output="screen" />
 
 </launch>

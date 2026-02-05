@@ -23,9 +23,9 @@ namespace lidar
 class PhotometricFactor : public gtsam::NonlinearFactor
 {
   // This is a factor constraining one pose to an implicit pose or between two poses
-  // If it is a unary factor, then the key_b is T_W_B and its cloud is registered to the world frame
-  // - In this case the features exist in the LiDAR_World frame and are projected into the intensity image.
-  // - The LiDAR_World frame is simply T_B_L
+  // If it is a unary factor, then the key_b is T_W_B and its cloud is registered to the map frame
+  // - In this case the features exist in the LiDAR_map frame and are projected into the intensity image.
+  // - The LiDAR_map frame is simply T_B_L
   // If it is a binary factor, then the key_b is T_W_Be_b and features from key_a with pose T_W_Be_a are projected into the intensity image at the b frame
   // The extracted features are deskewed and in the LiDAR frame corresponding to the a frame
 

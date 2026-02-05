@@ -377,7 +377,7 @@ void Photometric::getFactors(
   if (!config.enabled) return;
   Stopwatch sw;
 
-  if (!world_Le_features_.size()) return;
+  if (!map_Le_features_.size()) return;
 
   // Get a const ptr to the current frame
   Frame::ConstPtr const_current_frame = std::const_pointer_cast<const Frame>(current_frame_);
@@ -386,7 +386,7 @@ void Photometric::getFactors(
     S(i, i) = selection(i);
   }
   photometric_factor_.reset(new PhotometricFactor(
-    const_current_frame, world_Le_features_, config, eigenvectors_block_matrix, S));
+    const_current_frame, map_Le_features_, config, eigenvectors_block_matrix, S));
 
   graph.add(photometric_factor_);
 
@@ -480,11 +480,11 @@ void Photometric::updateMap(const gtsam::Values & values, const std::vector<V3D>
         invalid_indices.push_back(i);
       } else {
         // Update the new centers
-        world_Le_features_[i].center = photometric_factor_->getFeatures().at(i).center;
+        map_Le_features_[i].center = photometric_factor_->getFeatures().at(i).center;
         // Increase the life time of each of the tracked features by 1
-        world_Le_features_[i].life_time++;
+        map_Le_features_[i].life_time++;
 
-        if (world_Le_features_[i].life_time >= config.max_feature_life_time) {
+        if (map_Le_features_[i].life_time >= config.max_feature_life_time) {
           logger_->debug(
             "Feature {} has reached max life time {}", i, config.max_feature_life_time);
           invalid_indices.push_back(i);
@@ -497,20 +497,20 @@ void Photometric::updateMap(const gtsam::Values & values, const std::vector<V3D>
 
     // Remove all the invalid indices in reverse order
     for (auto i = invalid_indices.rbegin(); i != invalid_indices.rend(); i++) {
-      world_Le_features_.erase(world_Le_features_.begin() + *i);
+      map_Le_features_.erase(map_Le_features_.begin() + *i);
     }
   }
 
   // Use the statuses to find the features that are still being tracked
   detectFeatures(
-    config.num_features_detect - world_Le_features_.size(), const_current_frame, world_Le_features_,
+    config.num_features_detect - map_Le_features_.size(), const_current_frame, map_Le_features_,
     values.at<gtsam::Pose3>(current_frame_->key), bias_directions);
 
   debug_msg_.t_update_map =
     sw.elapsedMs();  // This is done here since we are publishing the debug msg in publishFeatures
 
   logger_->trace("Update map end {}", values.size());
-  publishFeatures(current_frame_, values, "mimosa_world", ros::Time::now().toSec());
+  publishFeatures(current_frame_, values, "mimosa_map", ros::Time::now().toSec());
 }
 
 void Photometric::detectFeatures(
@@ -745,7 +745,7 @@ void Photometric::detectFeatures(
 }
 
 void Photometric::publishFeatures(
-  Frame::ConstPtr frame, const gtsam::Values & values, const std::string & world_frame,
+  Frame::ConstPtr frame, const gtsam::Values & values, const std::string & map_frame,
   const double ts)
 {
   logger_->trace("publishFeatures start");
@@ -766,32 +766,32 @@ void Photometric::publishFeatures(
     }
   };
 
-  addPointsToCloud(world_Le_features_, true);
+  addPointsToCloud(map_Le_features_, true);
   // addPointsToCloud(last_frame_features_, false);
 
-  publishCloud(pub_features_, cloud, world_frame, ts);
+  publishCloud(pub_features_, cloud, map_frame, ts);
 
   cv::Mat img_intensity_u8;
   frame->img_intensity.convertTo(img_intensity_u8, CV_8UC1);
 
-  publishImage(pub_img_intensity_, img_intensity_u8, "mono8", world_frame, ts);
+  publishImage(pub_img_intensity_, img_intensity_u8, "mono8", map_frame, ts);
 
   if (pub_img_new_features_.getNumSubscribers()) {
     cv::Mat img_new_features;
     // drawFeatures(img_intensity_u8, last_frame_features_, img_new_features);
-    publishImage(pub_img_new_features_, img_new_features, "bgr8", world_frame, ts);
+    publishImage(pub_img_new_features_, img_new_features, "bgr8", map_frame, ts);
   }
 
   if (pub_img_tracked_keyframe_features_.getNumSubscribers()) {
     cv::Mat img_tracked_keyframe_features;
-    drawFeatures(img_intensity_u8, world_Le_features_, img_tracked_keyframe_features);
+    drawFeatures(img_intensity_u8, map_Le_features_, img_tracked_keyframe_features);
     publishImage(
-      pub_img_tracked_keyframe_features_, img_tracked_keyframe_features, "bgr8", world_frame, ts);
+      pub_img_tracked_keyframe_features_, img_tracked_keyframe_features, "bgr8", map_frame, ts);
   }
 
   if (pub_feature_marker_.getNumSubscribers()) {
     visualization_msgs::Marker marker;
-    marker.header.frame_id = world_frame;
+    marker.header.frame_id = map_frame;
     marker.header.stamp.fromSec(ts);
     marker.ns = "features";
     marker.id = 0;

@@ -30,10 +30,9 @@ private:
 
 public:
   State() : key_(0), ts_(0) {}
-  ~State() {}
 
-  const auto key() const { return key_; }
-  const auto ts() const { return ts_; }
+  gtsam::Key key() const { return key_; }
+  double ts() const { return ts_; }
   const auto & navState() const { return nav_state_; }
   const auto & imuBias() const { return imu_bias_; }
   const auto & gravity() const { return gravity_; }

@@ -36,6 +36,7 @@ enum class PType
 {
   Unknown = 0,
   Ouster,
+  OusterOdyssey,
   OusterR8,
   Hesai,
   Livox,
@@ -49,6 +50,10 @@ inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields
 {
   if (fieldsMatch(fields, getFieldsFromPointType<PointOuster>())) {
     return PType::Ouster;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<PointOusterOdyssey>())) {
+    return PType::OusterOdyssey;
   }
 
   if (fieldsMatch(fields, getFieldsFromPointType<PointOusterR8>())) {
@@ -128,7 +133,6 @@ inline void applyTransform(
 template <typename PointT>
 inline void toPcl(const sensor_msgs::PointCloud2 & msg, pcl::PointCloud<PointT> & cloud)
 {
-  cloud.clear();
   pcl_conversions::toPCL(msg.header, cloud.header);
   cloud.width = msg.width;
   cloud.height = msg.height;
@@ -271,6 +275,12 @@ public:
     indices.push_back(index);
 
     return true;
+  }
+
+  void clear()
+  {
+    points.clear();
+    indices.clear();
   }
 
   /// @brief Get the points stored in this container.

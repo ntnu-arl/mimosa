@@ -16,7 +16,6 @@ private:
 
 public:
   ChronoStopwatch() { reset(); }
-  ~ChronoStopwatch() {}
 
   /**
    * @brief Get the elapsed time since the last reset in seconds

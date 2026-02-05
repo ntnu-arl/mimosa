@@ -1,5 +1,5 @@
 logs_directory: /tmp/mimosa/
-world_frame: mimosa_world
+map_frame: mimosa_map
 navigation_frame: mimosa_navigation
 body_frame: mimosa_body
 
@@ -55,14 +55,14 @@ graph:
 
 lidar:
   sensor_frame: mimosa_lidar
-  T_B_S: [-0.006253, 0.011775, 0.0028525, 0, 0, 0, 1] # x, y, z, x, y, z, w
+  T_B_S: [0.0166, 0.02158, 0.03375, 0, 0, 0, 1] # x, y, z, x, y, z, w
   T_B_OdometryLoggerFrame: [-0.006253, 0.011775, 0.10825, 0, 0, 0, 1] # x, y, z, x, y, z, w
   manager:
     log_level: warn
     enabled: true
     use_to_init: true
     initial_skip: 2 # number of initial pointclouds to drop
-    transpose_pointcloud: true # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
+    transpose_pointcloud: false # Transpose the pointcloud to have height correspond to the number of rings and width correspond to the number of points per ring
     organize_pointcloud_by_ring: false # Only needed if the pointcloud is not already provided in a row major order by ring (Currently only required for Hesai JT128)
     ts_offset: 0
     range_min: 0.4

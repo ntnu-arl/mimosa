@@ -25,7 +25,7 @@ namespace lidar
 class ICPFactor : public gtsam::NonlinearFactor
 {
   // This is a factor between one or two poses
-  // If it is a unary factor, then the key_source is T_W_B and its cloud is registered to the world frame
+  // If it is a unary factor, then the key_source is T_W_B and its cloud is registered to the map frame
   // If it is a binary factor, then the key_source is T_W_B_source and its cloud is registered to the cloud from key_target with pose T_W_B_target
   // All clouds are assumed to be deskewed already and in the body frame
 

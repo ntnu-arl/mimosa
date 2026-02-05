@@ -16,7 +16,7 @@ struct SensorManagerBaseConfig
 {
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
-  std::string world_frame = "world";
+  std::string map_frame = "map";
   std::string body_frame = "body";
   std::string sensor_frame = "sensor";
   gtsam::Pose3 T_B_S = gtsam::Pose3::Identity();
@@ -39,7 +39,7 @@ inline void declare_sensor_manager_config_base(
   using namespace config;
 
   field(base_config.logs_directory, "logs_directory", "directory_path");
-  field(base_config.world_frame, "world_frame", "str");
+  field(base_config.map_frame, "map_frame", "str");
   field(base_config.body_frame, "body_frame", "str");
 
   {
@@ -60,10 +60,10 @@ inline void declare_sensor_manager_config_base(
 
   // Common validation
   check(base_config.initial_skip, GE, 0, "initial_skip");
-  check(base_config.body_frame, NE, base_config.world_frame, "body_frame");
+  check(base_config.body_frame, NE, base_config.map_frame, "body_frame");
   check(
-    base_config.sensor_frame, NE, base_config.world_frame,
-    "sensor_frame should not be the same as world_frame");
+    base_config.sensor_frame, NE, base_config.map_frame,
+    "sensor_frame should not be the same as map_frame");
   check(
     base_config.sensor_frame, NE, base_config.body_frame,
     "sensor_frame should not be the same as body_frame");
@@ -94,6 +94,9 @@ protected:
   double header_ts_;
   double corrected_ts_; // The mechanism to get the corrected timestamp is sensor-specific and is implemented in the derived class
 
+  int initial_skip_;
+  double prev_ts_ = 0.0;
+
 public:
   inline std::string getSubscribedTopic() const { return sub_.getTopic(); }
 
@@ -107,7 +110,7 @@ protected:
       config_.base.logs_directory + manager_type_ + "_manager.log", manager_type_ + "::Manager", config_.base.log_level);
     logger_->info("Initialized with params:\n {}", config::toString(config_));
 
-    initialized_ = false;
+    initial_skip_ = config_.base.initial_skip;
   }
   
   virtual void callback(const typename MsgT::ConstPtr & msg) = 0;
@@ -140,10 +143,9 @@ protected:
 
   inline bool handleInitialSkip()
   {
-    static int initial_skip = config_.base.initial_skip;
-    if (initial_skip > 0) {
-      --initial_skip;
-      logger_->info("Dropping initial message. {} more will be dropped", initial_skip);
+    if (initial_skip_ > 0) {
+      --initial_skip_;
+      logger_->info("Dropping initial message. {} more will be dropped", initial_skip_);
       return false;  // Should skip
     }
     return true;  // Don't skip
@@ -151,18 +153,17 @@ protected:
 
   inline bool validateTimestamp(const typename MsgT::ConstPtr & msg)
   {
-    static double prev_ts = 0.0;
     header_ts_ = msg->header.stamp.toSec();
 
-    if (header_ts_ <= prev_ts) {
+    if (header_ts_ <= prev_ts_) {
       logger_->error(
         "Skipping message with timestamp {} because it is not newer than previous timestamp {}. "
         "This should never happen. Check the header timestamps of the incoming messages",
-        header_ts_, prev_ts);
+        header_ts_, prev_ts_);
       return false;
     }
 
-    prev_ts = header_ts_;
+    prev_ts_ = header_ts_;
     return true;
   }
 

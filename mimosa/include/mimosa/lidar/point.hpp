@@ -49,6 +49,15 @@ struct EIGEN_ALIGN16 PointOuster
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
+struct EIGEN_ALIGN16 PointOusterOdyssey
+{
+  PCL_ADD_POINT4D;
+  uint32_t t;  // Time in nanosecs since the beginning of the scan
+  uint16_t reflectivity;
+  uint16_t near_ir;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
 // XYZIRT
 struct EIGEN_ALIGN16 PointOusterR8
 {
@@ -129,6 +138,11 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::lidar::PointOuster,
   (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(std::uint32_t, t, t)(
     std::uint16_t, reflectivity, reflectivity)(std::uint16_t, ring, ring))
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+  mimosa::lidar::PointOusterOdyssey,
+  (float, x, x)(float, y, y)(float, z, z)(std::uint32_t, t, t)(
+    std::uint16_t, reflectivity, reflectivity)(std::uint16_t, near_ir, near_ir))
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::lidar::PointOusterR8,
