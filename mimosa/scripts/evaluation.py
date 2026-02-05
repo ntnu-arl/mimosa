@@ -98,7 +98,9 @@ def compute_rpe(gt_tum: Path, traj_tum: Path, output_zip: Path) -> bool:
         "-r", "point_distance",
         "--delta", "10",
         "--delta_unit", "m",
-        "--save_results", str(output_zip)
+        "--save_results", str(output_zip),
+        "--no_warnings",
+        "--silent"
     ]
     return run_command(cmd)
 
@@ -111,7 +113,9 @@ def compute_ate(gt_tum: Path, traj_tum: Path, output_zip: Path) -> bool:
         str(traj_tum),
         "--align",
         "-r", "trans_part",
-        "--save_results", str(output_zip)
+        "--save_results", str(output_zip),
+        "--no_warnings",
+        "--silent"
     ]
     return run_command(cmd)
 
@@ -122,7 +126,7 @@ def run_evo_res(result_zips: List[Path], output_path: Path) -> bool:
         print("  No result files to process")
         return False
     
-    cmd = ["evo_res"] + [str(z) for z in result_zips] + ["--save_table", str(output_path)]
+    cmd = ["evo_res"] + [str(z) for z in result_zips] + ["--save_table", str(output_path), "--no_warnings", "--silent"]
     return run_command(cmd)
 
 
