@@ -200,8 +200,8 @@ void Photometric::preprocess(
   // visualize(yaw_angle_validities, "interpolated yaw_angle_validities");
   // visualize(current_frame_->yaw_angles, "interpolated yaw_angles");
 
-  std::vector<int> idx_to_uk(points_deskewed.size(), -1);
-  std::vector<int> idx_to_vk(points_deskewed.size(), -1);
+  idx_to_uk_.resize(points_deskewed.size(), -1);
+  idx_to_vk_.resize(points_deskewed.size(), -1);
 
   // Fill the images
   logger_->trace("Filling images");
@@ -224,15 +224,15 @@ void Photometric::preprocess(
     V2D uv;
     if (!project(p_i_Le.getVector3fMap().cast<double>(), uv, current_frame_->yaw_angles, config))
       continue;
-    idx_to_uk[i] = std::round(uv.x());
-    idx_to_vk[i] = std::round(uv.y());
+    idx_to_uk_[i] = std::round(uv.x());
+    idx_to_vk_[i] = std::round(uv.y());
   }
 
   // Fill the proj_idx_
   logger_->trace("Filling proj_idx_");
   for (size_t i = 0; i < points_deskewed.size(); i++) {
-    const int u = idx_to_uk[i];
-    const int v = idx_to_vk[i];
+    const int u = idx_to_uk_[i];
+    const int v = idx_to_vk_[i];
     if (u < 0 || v < 0) continue;
     const int start_idx = vectorIndexFromRowCol(v, u, config);
     const int offset = current_frame_->proj_idx[start_idx] + 1;

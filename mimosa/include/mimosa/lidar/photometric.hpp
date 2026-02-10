@@ -41,6 +41,9 @@ private:
   const cv::Mat mask_margin_;
   const std::vector<int> idx_to_u_;
   const std::vector<int> idx_to_v_;
+  std::vector<int> idx_to_uk_;
+  std::vector<int> idx_to_vk_;
+
   cv::Mat static_mask_;
 
   Frame::Ptr current_frame_;
