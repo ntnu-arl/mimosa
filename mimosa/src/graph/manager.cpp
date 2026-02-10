@@ -748,7 +748,7 @@ void Manager::publishResults()
   opt_path.header.frame_id = config_.map_frame;
   for (const auto & [key, value] : optimized_values_) {
     // Check if key is of pose type
-    if (*gdkf(key).begin() != 'x') {
+    if (gtsam::Symbol(key).chr() != 'x') {
       continue;
     }
 
