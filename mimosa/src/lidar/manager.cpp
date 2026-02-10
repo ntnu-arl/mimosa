@@ -369,7 +369,6 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   // Save a copy of the raw points. This is needed by photometric
   if (photometric_->config.enabled) {
-    points_raw_.clear();
     points_raw_ = points_full_;
   }
 
