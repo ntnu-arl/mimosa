@@ -91,10 +91,11 @@ int main(int argc, char ** argv)
   std::cout << "regex_pattern: " << regex_pattern << std::endl;
 
   // Iterate through files in the directory
+  std::regex compiled_regex(regex_pattern);
   for (const auto & entry : std::filesystem::directory_iterator(bag_dir)) {
     if (
       entry.is_regular_file() &&
-      std::regex_match(entry.path().filename().string(), std::regex(regex_pattern))) {
+      std::regex_match(entry.path().filename().string(), compiled_regex)) {
       bag_paths.push_back(entry.path().string());
     }
   }
