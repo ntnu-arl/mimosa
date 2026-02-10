@@ -194,7 +194,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
         const size_t new_col = current_row;
         msg_cloud_transposed[new_row * msg_cloud_transposed.width + new_col] = msg_cloud[i];
       }
-      msg_cloud = msg_cloud_transposed;
+      msg_cloud = std::move(msg_cloud_transposed);
     }
     debug_msg_.t_transpose_pointcloud = sw_transpose.elapsedMs();
   }
