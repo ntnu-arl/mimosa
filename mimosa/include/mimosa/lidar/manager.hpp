@@ -72,7 +72,6 @@ private:
   // Outputs
   ros::Publisher pub_points_;
   ros::Publisher pub_debug_;
-  ros::Publisher pub_path_;
 
 public:
   Manager(
