@@ -354,6 +354,8 @@ size_t Manager::getNumMeasurementsBetween(const double t1, const double t2)
   const double t_start = std::min(t1, t2);
   const double t_end = std::max(t1, t2);
 
+  std::lock_guard<std::mutex> lock(buffer_mutex_);
+
   auto s_itr = std::lower_bound(
     buffer_.begin(), buffer_.end(), t_start,
     [](const ImuMeasurement & m, const double ts) { return m.first < ts; });
