@@ -78,7 +78,7 @@ private:
   // Member variables
   ImuBuffer buffer_;
   std::mutex buffer_mutex_;
-  bool has_recieved_first_message_ = false;
+  bool has_received_first_message_ = false;
   std::shared_ptr<gtsam::PreintegrationParams> preintegrator_params_;
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> preintegrator_;
   std::mutex preintegrator_mutex_;
@@ -115,7 +115,7 @@ public:
   {
     return preintegrator_params_;
   }
-  inline bool hasRecievedFirstMessage() const { return has_recieved_first_message_; }
+  inline bool hasReceivedFirstMessage() const { return has_received_first_message_; }
   void callback(const sensor_msgs::Imu::ConstPtr & msg);
   bool estimateAttitude(gtsam::Rot3 & R_W_B, V3D & estimated_acc_bias, V3D & estimated_gyro_bias);
   void getInterpolatedMeasurements(

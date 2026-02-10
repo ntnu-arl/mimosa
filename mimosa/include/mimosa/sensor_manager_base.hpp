@@ -134,7 +134,7 @@ protected:
   inline bool isImuReady() const
   {
     // This could be simpler but is done this way to provide more informative logging
-    if (!imu_manager_->hasRecievedFirstMessage()) {
+    if (!imu_manager_->hasReceivedFirstMessage()) {
       logger_->debug("imu::Manager has not received the first message yet. Skipping this message.");
       return false;
     }

@@ -70,8 +70,8 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
   }
   prev_ts = ts;
 
-  if (!has_recieved_first_message_) {
-    has_recieved_first_message_ = true;
+  if (!has_received_first_message_) {
+    has_received_first_message_ = true;
   }
 
   V6D imu_meas;
