@@ -352,13 +352,7 @@ void Photometric::createMask()
   // The static mask has zero for all invalid points
   // these zeros should be applied to the current_frame_ mask
   if (config.static_mask_path != "") {
-    for (int v = 0; v < config.rows; v++) {
-      for (int u = 0; u < config.cols; u++) {
-        if (static_mask_.ptr<uchar>(v)[u] == 0) {
-          current_frame_->img_mask.ptr<uchar>(v)[u] = 0;
-        }
-      }
-    }
+    cv::bitwise_and(current_frame_->img_mask, static_mask_, current_frame_->img_mask);
   }
 
   // Erode the mask so that there is a margin around the valid points
