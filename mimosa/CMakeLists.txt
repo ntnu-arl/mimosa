@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(mimosa)
 
 add_compile_options(-std=c++17)
-add_definitions(-DUSE_OPENMP=TRUE)
+add_definitions(-DUSE_OPENMP=1)
 
 #################
 ## Dependencies ##
