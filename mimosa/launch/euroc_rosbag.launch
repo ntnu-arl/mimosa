@@ -1,8 +1,8 @@
 <launch>
   <arg name="bag_name"/>
   <arg name="s" default="0" />
-
   <arg name="viz" default="false" />
+  <arg name="lidar_collection_delay" default="0.113" /> # Delay in seconds to account for the fact that the rosbag was rewritten with header timestamps
 
   <arg name="config_override" default="" />
 
@@ -14,6 +14,7 @@
 
     <param name="bag_name" value="$(arg bag_name)"/>
     <param name="s" value="$(arg s)"/>
+    <param name="lidar_collection_delay" value="$(arg lidar_collection_delay)"/>
 
     <rosparam file="$(find mimosa)/config/euroc/params.yaml"/>
     <rosparam file="$(find mimosa)/config/os_dummy.json" command="load" ns="lidar/sensor"/>
