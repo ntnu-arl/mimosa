@@ -121,7 +121,7 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
   } else {
     // Get the new factors
     gtsam::Values initial_values = opt_values;
-    initial_values.insert_or_assign(X(new_key_), propagated_state_.pose());
+    initial_values.insert_or_assign(X(new_key_), graph_manager_->getPoseAt(new_key_));
     gtsam::NonlinearFactorGraph new_factors;
     getFactors(initial_values, new_factors);
 
