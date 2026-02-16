@@ -9,7 +9,7 @@ imu:
     pose_init_wait_secs: 0.2
     interpolation_max_ts_diff: 1 #s
     extrapolation_max_ts_diff: 0.15 #s
-    acc_scale_factor: 1 # Scales the acclerometer measurement. Default is 1, which means no scaling. Livox typically reports acc in g, so we need to scale it to m/s^2
+    acc_scale_factor: 1 # Scales the accelerometer measurement. Default is 1, which means no scaling. Livox typically reports acc in g, so we need to scale it to m/s^2
   preintegration:
     acc_noise_density: 0.1 # [ m / s^2 / sqrt(Hz) ]   ( accel "white noise" ) # Datasheet ICM-20948 0.0022563
     acc_bias_random_walk: 0.01 # [ m / s^3 / sqrt(Hz) ].  ( accel bias diffusion )
