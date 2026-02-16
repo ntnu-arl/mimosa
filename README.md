@@ -3,7 +3,7 @@
 ![License: MIT](https://img.shields.io/badge/License-BSD-green.svg)
 ![ROS Version](https://img.shields.io/badge/ROS-Noetic-blue)
 
-This package implements a tightly-coupled multi-modal fusion framework. It currently suppports fusing LiDAR (Geometric, Photometric), Radar, any Odometry and IMU to provide robust state estimation in challenging environments. The framework is designed to be modular and easily extensible to add new sensors.
+This package implements a tightly-coupled multi-modal fusion framework. It currently supports fusing LiDAR (Geometric, Photometric), Radar, any Odometry and IMU to provide robust state estimation in challenging environments. The framework is designed to be modular and easily extensible to add new sensors.
 
 ## Working Description
 
@@ -33,7 +33,7 @@ Consecutive odometry measurements (e.g., from a VIO system) are used to create r
 These instructions assume that `ros-noetic-desktop-full` is installed on your Ubuntu 20.04 system.
 
   ```bash
-  # dependancies
+  # dependencies
   sudo apt install python3-catkin-tools \
   libgoogle-glog-dev \
   libspdlog-dev
@@ -55,7 +55,7 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
 
 ## Usage
 
-This package can be run either online (`mimosa_node`) or offline using a rosbag (`mimosa_rosbag`). The online version is for deployment on a robot, while the offline version is for testing and debugging. Both versions are identical in terms of functionality since they use the same callbacks. The offline version just allows you to read a rosbag and process the callbacks directly instead of recieving them over the network.
+This package can be run either online (`mimosa_node`) or offline using a rosbag (`mimosa_rosbag`). The online version is for deployment on a robot, while the offline version is for testing and debugging. Both versions are identical in terms of functionality since they use the same callbacks. The offline version just allows you to read a rosbag and process the callbacks directly instead of receiving them over the network.
 
 ### Examples
 
@@ -115,7 +115,7 @@ roslaunch mimosa newer_college_rosbag.launch bag_name:="/path/to/your/rosbag.bag
 
 ##### Complete Dataset Example
 
-There is also a script [dataset_evaluation.py](src/mimosa/scripts/dataset_evaluation.py) that can be used to run the complete dataset evaluation. This script will run the `mimosa_rosbag` node on all the sequences in the dataset and save the results in a folder. Before running this script make sure to set the currect `dataset_path` and `results_directory`. It is assumed that the dataset is in the following format:
+There is also a script [dataset_evaluation.py](src/mimosa/scripts/dataset_evaluation.py) that can be used to run the complete dataset evaluation. This script will run the `mimosa_rosbag` node on all the sequences in the dataset and save the results in a folder. Before running this script make sure to set the correct `dataset_path` and `results_directory`. It is assumed that the dataset is in the following format:
 
 ```bash
 dataset_path/
@@ -184,8 +184,8 @@ If you use this work in your research, please cite the relevant publications:
 
 @ARTICLE{perception_jplRadar,
     author={Nissov, Morten and Edlund, Jeffrey A. and Spieler, Patrick and Padgett, Curtis and Alexis, Kostas and Khattak, Shehryar},
-    journal={IEEE Robotics and Automation Letters}, 
-    title={Robust High-Speed State Estimation for Off-Road Navigation Using Radar Velocity Factors}, 
+    journal={IEEE Robotics and Automation Letters},
+    title={Robust High-Speed State Estimation for Off-Road Navigation Using Radar Velocity Factors},
     year={2024},
     volume={9},
     number={12},

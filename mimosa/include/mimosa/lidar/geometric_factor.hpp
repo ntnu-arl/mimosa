@@ -185,7 +185,7 @@ public:
         ivox_target_->underlying()->point(closest_point_indices[j]).head<3>();
     }
 
-    // Estimate the plane by solving the sytem of n.p/(n.j) = 1
+    // Estimate the plane by solving the system of n.p/(n.j) = 1
     MX1D ones(config_.num_corres_points, 1);
     ones.setOnes();
 
@@ -236,14 +236,14 @@ public:
     // std::cout << "calling linearize key: " << gdkf(keys()[0]) << std::endl;
     // Caching with call_count is wrong because relinearization happens before new factors are added
     // Therefore, if we did cache a gaussian factor it would be at an old linearization point
-    // Instead, it is possible to do the correspondance calculcation before, since it is unlikely that
-    // this changes significantly between linearizations. Additionally, the correspondance calculation
+    // Instead, it is possible to do the correspondence calculation before, since it is unlikely that
+    // this changes significantly between linearizations. Additionally, the correspondence calculation
     // is the most expensive part of the linearization due to the kd-tree search.
     // Additionally, since we need localizability before optimization, the linearize function
     // should be called right after creating the factor.
 
     // Most basically, iterate over the points in the cloud_source, transform them to the target frame
-    // find the correspondance, and compute the error
+    // find the correspondence, and compute the error
 
     const gtsam::Pose3 & T_W_B_source = c.at<gtsam::Pose3>(keys()[0]);
     const gtsam::Pose3 T_W_B_target =
@@ -282,7 +282,7 @@ public:
       if (
         (transed_point_target_[i] - transed_point_target_da_[i]).norm() >
         config_.target_ivox_map_min_dist_in_voxel / 4) {
-        // The point is far from the previous linearize location so the correspondances have to be updated
+        // The point is far from the previous linearize location so the correspondences have to be updated
         update_correspondance = true;
         transed_point_target_da_[i] = transed_point_target_[i];
       }
@@ -302,13 +302,13 @@ public:
           continue;
         }
 
-        // Estimate the correspondance plane
+        // Estimate the correspondence plane
         if (!estimatePlane(i, k_indices, source_origin_in_target)) {
           continue;
         }
       } else {
         // The point has not moved enough to redo data association
-        // However, the correspondance that happened in the previous iteration might
+        // However, the correspondence that happened in the previous iteration might
         // have been rejected. Additionally, the point may also have been max error rejected.
         // Therefore only points that were valid or were rejected due to checks after this line
         // in the previous iteration should be considered

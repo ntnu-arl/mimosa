@@ -407,7 +407,7 @@ void Manager::deskewPoints()
   //   logCriticalException<std::runtime_error>(
   //     logger_,
   //     fmt::format(
-  //       "Issue with state timstamps. First timestamp: {} state_ts: {}, state_ts - first_ts: {}",
+  //       "Issue with state timestamps. First timestamp: {} state_ts: {}, state_ts - first_ts: {}",
   //       globalTs(unique_ns_.front()), state.ts(), state.ts() - globalTs(unique_ns_.front())));
   // }
   // If the state timestamp is after the first point in the current pointcloud, then this needs to be corrected
@@ -634,7 +634,7 @@ void declare_config(ManagerConfig & config)
     }
     {
       NameSpace ns("sensor/lidar_intrinsics");
-      field(config.lidar_to_sensor_transform, "lidar_to_sensor_transform", "tranformation matrix");
+      field(config.lidar_to_sensor_transform, "lidar_to_sensor_transform", "transformation matrix");
     }
   }
 

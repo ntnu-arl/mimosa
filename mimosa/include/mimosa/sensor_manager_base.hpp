@@ -215,7 +215,7 @@ protected:
       case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_INITIALIZATION:
         logger_->info(
           "timestamp is older than the graph initialization timestamp. If this "
-          "happens continously, check the time sychronization between the sensors");
+          "happens continuously, check the time synchronization between the sensors");
         return false;
 
       case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_LAG:

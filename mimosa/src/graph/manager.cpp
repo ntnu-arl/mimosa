@@ -167,7 +167,7 @@ Manager::DeclarationResult Manager::declare(
     const auto imu_bias = gtsam::imuBias::ConstantBias(estimated_acc_bias, estimated_gyro_bias);
     const gtsam::Pose3 T_W_Bk = gtsam::Pose3(R_W_B, V3D::Zero());
 
-    // * Right now, the intialization is always without the rekeyed factors. Since the only other modality is the radar,
+    // * Right now, the initialization is always without the rekeyed factors. Since the only other modality is the radar,
     // * which would only help in the case of non stationary initialization. Non-stationary initialization is not supported yet.
     initializeGraph(ts, key, T_W_Bk, V3D::Zero(), imu_bias);
     initialized_ = true;
