@@ -35,7 +35,8 @@ Manager::Manager(
 
   // Setup trajectory logger
   trajectory_logger_ = createLogger(
-    config_.base.logs_directory + "lidar_manager_odometry.log", "lidar::Manager::odometry", "trace", false);
+    config_.base.logs_directory + "lidar_manager_odometry.log", "lidar::Manager::odometry", "trace",
+    false);
   trajectory_logger_->set_pattern("%v");
 
   subscribeIfEnabled(pnh);
@@ -140,7 +141,8 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   debug_msg_.header.stamp.fromSec(corrected_ts_);
   debug_msg_.t_full = sw.elapsedMs();
-  logger_->debug("Callback complete for key {}. Full processing time: {} ms", gdkf(new_key_), debug_msg_.t_full);
+  logger_->debug(
+    "Callback complete for key {}. Full processing time: {} ms", gdkf(new_key_), debug_msg_.t_full);
   pub_debug_.publish(debug_msg_);
 }
 
@@ -173,8 +175,9 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
   idxs_at_unique_ns_.reserve(msg_cloud.size());
   debug_msg_.t_clear_reserve = sw.tickMs();
 
-  if constexpr (std::is_same<PointT, PointRslidar>::value || 
-                std::is_same<PointT, PointVelodyneAnybotics>::value) {
+  if constexpr (
+    std::is_same<PointT, PointRslidar>::value ||
+    std::is_same<PointT, PointVelodyneAnybotics>::value) {
     // Transposing the pointcloud is required for RSAiry
     // since the remaining code assumes the height corresponds to the number of rings
     // and the width corresponds to the number of points per ring.
@@ -201,13 +204,14 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   if constexpr (
     !std::is_same<PointT, PointLivox>::value &&
-    !std::is_same<PointT, PointLivoxFromCustom2>::value && 
+    !std::is_same<PointT, PointLivoxFromCustom2>::value &&
     !std::is_same<PointT, PointOusterOdyssey>::value) {
     Stopwatch sw_organize;
     if (config_.organize_pointcloud_by_ring && msg_cloud.height == 1) {
       // The main loop in the pointcloud skips some points in each ring since the resolution in a ring is typically higher as compared to the number of rings. It assumes that the pointcloud is provided in a row major order. If the input pointcloud is not in row major order, it should be organized as such so that the point skipping logic does not discard too many useful points.
       // This was needed for the Hesai JT128 but could also be useful for other lidars.
-      constexpr uint32_t num_rings = 128; // This is set to 128 since that is the largest number of channels in common lidars. AFAIK only velodyne alpha prime has 256 channels.
+      constexpr uint32_t num_rings =
+        128;  // This is set to 128 since that is the largest number of channels in common lidars. AFAIK only velodyne alpha prime has 256 channels.
       const size_t num_points = msg_cloud.size();
       // Single pass to count points per ring
       std::array<size_t, num_rings> ring_counts{};
@@ -260,8 +264,9 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     // Intensity filter
     float intensity = 0.0f;
     if constexpr (std::is_same<PointT, PointOusterOdyssey>::value) {
-      if (std::isnan(pin.reflectivity) || pin.reflectivity < config_.intensity_min ||
-          pin.reflectivity > config_.intensity_max)
+      if (
+        std::isnan(pin.reflectivity) || pin.reflectivity < config_.intensity_min ||
+        pin.reflectivity > config_.intensity_max)
         continue;
       intensity = static_cast<float>(pin.reflectivity);
     } else {
@@ -279,7 +284,8 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
     // Decode time to be nanoseconds since the header timestamp
     uint32_t t_ns;
     if constexpr (
-      std::is_same<PointT, PointOuster>::value || std::is_same<PointT, PointOusterOdyssey>::value || std::is_same<PointT, PointOusterR8>::value) {
+      std::is_same<PointT, PointOuster>::value || std::is_same<PointT, PointOusterOdyssey>::value ||
+      std::is_same<PointT, PointOusterR8>::value) {
       t_ns = pin.t;
     } else if constexpr (std::is_same<PointT, PointHesai>::value) {
       t_ns = (pin.timestamp - header_ts_) * 1e9;
@@ -287,8 +293,9 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
       t_ns = pin.timestamp - header_ts_ * 1e9;
     } else if constexpr (std::is_same<PointT, PointLivoxFromCustom2>::value) {
       t_ns = pin.t;
-    } else if constexpr (std::is_same<PointT, PointVelodyne>::value || 
-                         std::is_same<PointT, PointVelodyneAnybotics>::value) {
+    } else if constexpr (
+      std::is_same<PointT, PointVelodyne>::value ||
+      std::is_same<PointT, PointVelodyneAnybotics>::value) {
       t_ns = pin.time * 1e9;
     } else if constexpr (std::is_same<PointT, PointRslidar>::value) {
       t_ns = (pin.timestamp - header_ts_) * 1e9;
@@ -317,8 +324,7 @@ void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
       !std::is_same<PointT, PointLivoxFromCustom2>::value &&
       !std::is_same<PointT, PointVelodyneAnybotics>::value &&
       !std::is_same<PointT, PointOusterOdyssey>::value) {
-      if (std::isnan(pin.ring))
-      {
+      if (std::isnan(pin.ring)) {
         logger_->warn("Point ring number is NaN. Skipping the point but check your input data");
         continue;
       }
@@ -545,9 +551,7 @@ void Manager::define(
   const graph::Manager::DeclarationResult dr)
 {
   Stopwatch sw;
-  logger_->debug(
-    "Defining with {} new factors for key: {}", new_factors.size(),
-    gdkf(new_key_));
+  logger_->debug("Defining with {} new factors for key: {}", new_factors.size(), gdkf(new_key_));
 
   graph_manager_->define(new_factors, optimized_values, dr);
 

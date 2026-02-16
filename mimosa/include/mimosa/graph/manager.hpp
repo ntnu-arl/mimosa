@@ -60,7 +60,7 @@ struct ManagerConfig
   std::string body_frame = "body";
   std::string logs_directory = "/tmp/";
   std::string log_level = "info";
-  float max_measurement_latency = 0.1;          // s
+  float max_measurement_latency = 0.1;  // s
   SmootherConfig smoother;
 };
 

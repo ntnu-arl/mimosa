@@ -7,9 +7,9 @@
 #pragma once
 
 // mimosa
-#include "mimosa/sensor_manager_base.hpp"
 #include "mimosa/lidar/geometric.hpp"
 #include "mimosa/lidar/photometric.hpp"
+#include "mimosa/sensor_manager_base.hpp"
 #include "mimosa_msgs/LidarManagerDebug.h"
 
 // pcl_conversions

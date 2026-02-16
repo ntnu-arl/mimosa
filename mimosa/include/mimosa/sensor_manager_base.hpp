@@ -48,12 +48,10 @@ inline void declare_sensor_manager_config_base(
     field(base_config.T_B_S, "T_B_S", "gtsam::Pose3");
     {
       NameSpace ns("manager");
-      field(
-        base_config.log_level, "log_level", "trace|debug|info|warn|error|critical");
+      field(base_config.log_level, "log_level", "trace|debug|info|warn|error|critical");
       field(base_config.enabled, "enabled", "bool");
       field(base_config.use_to_init, "use_to_init", "bool");
-      field(
-        base_config.initial_skip, "initial_skip", "number of messages to drop at the start");
+      field(base_config.initial_skip, "initial_skip", "number of messages to drop at the start");
       field(base_config.ts_offset, "ts_offset", "s");
     }
   }
@@ -92,7 +90,8 @@ protected:
   bool initialized_ = false;
   const std::string manager_type_;
   double header_ts_;
-  double corrected_ts_; // The mechanism to get the corrected timestamp is sensor-specific and is implemented in the derived class
+  double
+    corrected_ts_;  // The mechanism to get the corrected timestamp is sensor-specific and is implemented in the derived class
 
   int initial_skip_;
   double prev_ts_ = 0.0;
@@ -104,21 +103,26 @@ protected:
   SensorManagerBase(
     const ConfigT & config, mimosa::imu::Manager::Ptr imu_manager,
     mimosa::graph::Manager::Ptr graph_manager, const std::string & manager_type)
-  : config_(config), imu_manager_(imu_manager), graph_manager_(graph_manager), manager_type_(manager_type)
+  : config_(config),
+    imu_manager_(imu_manager),
+    graph_manager_(graph_manager),
+    manager_type_(manager_type)
   {
     logger_ = createLogger(
-      config_.base.logs_directory + manager_type_ + "_manager.log", manager_type_ + "::Manager", config_.base.log_level);
+      config_.base.logs_directory + manager_type_ + "_manager.log", manager_type_ + "::Manager",
+      config_.base.log_level);
     logger_->info("Initialized with params:\n {}", config::toString(config_));
 
     initial_skip_ = config_.base.initial_skip;
   }
-  
+
   virtual void callback(const typename MsgT::ConstPtr & msg) = 0;
 
   inline void subscribeIfEnabled(ros::NodeHandle & pnh)
   {
     if (isEnabled()) {
-      sub_ = pnh.subscribe<MsgT>(manager_type_ + "/manager/" + manager_type_ + "_in", 5, &SensorManagerBase::callback, this);
+      sub_ = pnh.subscribe<MsgT>(
+        manager_type_ + "/manager/" + manager_type_ + "_in", 5, &SensorManagerBase::callback, this);
     }
   }
 
@@ -178,13 +182,15 @@ protected:
     }
     // For odometry we can check that the values
     if constexpr (std::is_same<MsgT, nav_msgs::Odometry>::value) {
-      if (std::isnan(msg->pose.pose.position.x) || std::isnan(msg->pose.pose.position.y) ||
-          std::isnan(msg->pose.pose.position.z)) {
+      if (
+        std::isnan(msg->pose.pose.position.x) || std::isnan(msg->pose.pose.position.y) ||
+        std::isnan(msg->pose.pose.position.z)) {
         logger_->warn("Received odometry message with NaN position. Ignoring this measurement");
         return false;
       }
-      if (std::isnan(msg->pose.pose.orientation.x) || std::isnan(msg->pose.pose.orientation.y) ||
-          std::isnan(msg->pose.pose.orientation.z) || std::isnan(msg->pose.pose.orientation.w)) {
+      if (
+        std::isnan(msg->pose.pose.orientation.x) || std::isnan(msg->pose.pose.orientation.y) ||
+        std::isnan(msg->pose.pose.orientation.z) || std::isnan(msg->pose.pose.orientation.w)) {
         logger_->warn("Received odometry message with NaN orientation. Ignoring this measurement");
         return false;
       }
@@ -196,7 +202,7 @@ protected:
   inline bool passesCommonValidations(const typename MsgT::ConstPtr & msg)
   {
     return isEnabled() && isImuReady() && handleInitialSkip() && validateTimestamp(msg) &&
-            validateMessage(msg);
+           validateMessage(msg);
   }
 
   bool handleDeclarationResult(graph::Manager::DeclarationResult result)
@@ -225,9 +231,11 @@ protected:
       case graph::Manager::DeclarationResult::FAILURE_OLDER_THAN_MAX_LATENCY:
         logger_->warn("Timestamp is older than max latency. Ignoring measurement");
         return false;
-      
+
       case graph::Manager::DeclarationResult::FAILURE_CANNOT_HANDLE_OUT_OF_ORDER:
-        logger_->error("Was not able to find the IMU factor to break. This should never happen. Contact developers with your rosbag");
+        logger_->error(
+          "Was not able to find the IMU factor to break. This should never happen. Contact "
+          "developers with your rosbag");
         return false;
 
       case graph::Manager::DeclarationResult::SUCCESS_INITIALIZED:

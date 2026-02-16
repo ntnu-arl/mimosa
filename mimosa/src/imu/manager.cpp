@@ -209,8 +209,7 @@ bool Manager::estimateAttitude(
     // Initial orientation is identity
     R_W_B = gtsam::Rot3::Identity();
     // Gravity is the direction that allows this to be identity
-    V3D gravity = -acc_mean.normalized() *
-                  config_.preintegration.gravity_magnitude;
+    V3D gravity = -acc_mean.normalized() * config_.preintegration.gravity_magnitude;
     estimated_acc_bias = acc_mean + gravity;
     preintegrator_params_ = generatePreintegratorParams(gravity);
   }
@@ -369,7 +368,6 @@ size_t Manager::getNumMeasurementsBetween(const double t1, const double t2)
   return count;
 }
 
-
 void Manager::updatePreintegrationTo(
   const double ts_start, const double ts_end, const gtsam::imuBias::ConstantBias & bias,
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> & preintegrator)
@@ -410,10 +408,9 @@ void Manager::addImuFactorNoLock(
      config_.preintegration.gyro_bias_random_walk, config_.preintegration.gyro_bias_random_walk,
      config_.preintegration.gyro_bias_random_walk)
       .finished();
-  graph.add(
-    gtsam::BetweenFactor<gtsam::imuBias::ConstantBias>(
-      B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
-      gtsam::noiseModel::Diagonal::Sigmas(imu_bias_random_walk * sqrt(preintegrator_->deltaTij()))));
+  graph.add(gtsam::BetweenFactor<gtsam::imuBias::ConstantBias>(
+    B(key_0), B(key_1), gtsam::imuBias::ConstantBias(V3D::Zero(), V3D::Zero()),
+    gtsam::noiseModel::Diagonal::Sigmas(imu_bias_random_walk * sqrt(preintegrator_->deltaTij()))));
 
   logger_->debug("Added IMU factor between keys {} and {}", gdkf(key_0), gdkf(key_1));
 }

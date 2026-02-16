@@ -164,8 +164,8 @@ public:
     const std::string & /*s*/ = "",
     const gtsam::KeyFormatter & keyFormatter = gtsam::DefaultKeyFormatter) const override
   {
-    std::cout << "DopplerHessianFactor(" << keyFormatter(keys()[0]) << ", " << keyFormatter(keys()[1]) << ", "
-              << keyFormatter(keys()[2]) << ")\n"
+    std::cout << "DopplerHessianFactor(" << keyFormatter(keys()[0]) << ", "
+              << keyFormatter(keys()[1]) << ", " << keyFormatter(keys()[2]) << ")\n"
               << "  Targets: " << targets_.size() << "\n"
               << "  Noise Sigma: " << noise_sigma_ << "\n"
               << "  Huber Threshold: " << huber_threshold_ << "\n"
@@ -176,8 +176,7 @@ public:
 
   double error([[maybe_unused]] const gtsam::Values & c) const override
   {
-    std::cout << "\033[1;31mCalling Error on Key: \033[0m\n"
-              << gdkf(keys()[0]) << "\n";
+    std::cout << "\033[1;31mCalling Error on Key: \033[0m\n" << gdkf(keys()[0]) << "\n";
     return 0.0;
   }
 

@@ -170,8 +170,8 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::lidar::PointVelodyneAnybotics,
-  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, ring, ring)(
-    float, time, time))
+  (float, x,
+   x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, ring, ring)(float, time, time))
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::lidar::PointRslidar, (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(
