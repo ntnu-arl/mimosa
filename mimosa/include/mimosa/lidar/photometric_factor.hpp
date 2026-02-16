@@ -129,8 +129,7 @@ public:
   {
     // This function is ignored since it only serves to increase computational cost
     std::cout << "\033[1;31mCalling Error on Key: \033[0m\n"
-              << gdkf(keys()[0])
-              << "with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
+              << gdkf(keys()[0]) << "with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
     return 0.0;
   }
 

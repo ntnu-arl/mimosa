@@ -59,11 +59,12 @@ void Geometric::downsample(
   Stopwatch sw;
 
   const double inv_leaf_size = 1.0 / leaf_size;
-  const FlatContainerMinimal::Setting voxel_settings{min_dist_in_voxel * min_dist_in_voxel, max_points_per_voxel};
+  const FlatContainerMinimal::Setting voxel_settings{
+    min_dist_in_voxel * min_dist_in_voxel, max_points_per_voxel};
 
   // Map from voxel coordinates to the container holding points for that voxel
   size_t flat_voxels_used = 0;
-  flat_voxels_.reserve(input_cloud.size() / 2); // Rough estimate
+  flat_voxels_.reserve(input_cloud.size() / 2);  // Rough estimate
   voxels_.clear();
   voxels_.reserve(input_cloud.size() / 2);
 
@@ -105,7 +106,8 @@ void Geometric::downsample(
   indices_.clear();
   indices_.reserve(flat_voxels_used * max_points_per_voxel);
   for (size_t i = 0; i < flat_voxels_used; ++i) {
-    indices_.insert(indices_.end(), flat_voxels_[i].get_indices().begin(), flat_voxels_[i].get_indices().end());
+    indices_.insert(
+      indices_.end(), flat_voxels_[i].get_indices().begin(), flat_voxels_[i].get_indices().end());
   }
 
   // Resize the output cloud to fit the selected points

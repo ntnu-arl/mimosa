@@ -7,8 +7,8 @@
 #pragma once
 
 // mimosa
-#include "mimosa/sensor_manager_base.hpp"
 #include "mimosa/odometry/utils.hpp"
+#include "mimosa/sensor_manager_base.hpp"
 
 namespace mimosa
 {

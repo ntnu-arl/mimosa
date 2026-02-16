@@ -36,16 +36,15 @@ void Manager::callback(const nav_msgs::Odometry::ConstPtr & msg)
 
   // Threshold d_optimality
   if (d_opt > config_.d_opt_thresh) {
-    logger_->error(
-      "D opt value {} is higher than threshold {}", d_opt,
-      config_.d_opt_thresh);
+    logger_->error("D opt value {} is higher than threshold {}", d_opt, config_.d_opt_thresh);
     return;
   }
 
   gtsam::NonlinearFactorGraph new_factors;
   gtsam::Pose3 T_Ow_Sk = toGtsam(msg->pose.pose);
   if (initialized_) {
-    gtsam::Pose3 T_Bkm1_Bk = config_.base.T_B_S * T_Ow_Skm1_.inverse() * T_Ow_Sk * config_.base.T_B_S.inverse();
+    gtsam::Pose3 T_Bkm1_Bk =
+      config_.base.T_B_S * T_Ow_Skm1_.inverse() * T_Ow_Sk * config_.base.T_B_S.inverse();
     gtsam::noiseModel::Diagonal::shared_ptr noise_model = gtsam::noiseModel::Diagonal::Sigmas(
       (gtsam::Vector(6) << deg2rad(config_.sigma_rot_deg), deg2rad(config_.sigma_rot_deg),
        deg2rad(config_.sigma_rot_deg), config_.sigma_trans_m, config_.sigma_trans_m,

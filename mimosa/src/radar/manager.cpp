@@ -84,8 +84,8 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   gtsam::NonlinearFactorGraph new_factors;
   auto dhf = std::make_shared<DopplerHessianFactor>(
-    valid_targets_, config_.base.T_B_S, angular_velocity_mean, X(0), V(0), B(0), config_.noise_sigma,
-    config_.huber_threshold, config_.outlier_threshold);
+    valid_targets_, config_.base.T_B_S, angular_velocity_mean, X(0), V(0), B(0),
+    config_.noise_sigma, config_.huber_threshold, config_.outlier_threshold);
   new_factors.add(dhf);
 
   logger_->debug("Declaring (ts: {})", corrected_ts_);
@@ -142,8 +142,9 @@ void Manager::preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg)
   valid_points.reserve(points.size());
   for (const auto & point : points) {
     // NaN filter
-    if (std::isnan(point.x) || std::isnan(point.y) || std::isnan(point.z) || std::isnan(point.intensity) || std::isnan(point.velocity))
-    {
+    if (
+      std::isnan(point.x) || std::isnan(point.y) || std::isnan(point.z) ||
+      std::isnan(point.intensity) || std::isnan(point.velocity)) {
       logger_->trace("Point contains NaN values. Skipping this point.");
       continue;
     }

@@ -12,8 +12,8 @@
 // ROS
 #include <nav_msgs/Path.h>
 #include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <visualization_msgs/MarkerArray.h>
 
 // GTSAM
 #include <gtsam/geometry/Pose3.h>
@@ -108,7 +108,7 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, 1> MX1D;
 typedef Eigen::MatrixX3d MX3D;
 typedef Eigen::Matrix<double, 6, 6> M6D;
 typedef Eigen::Matrix<double, 6, 1> V6D;
-inline auto& gdkf = gtsam::DefaultKeyFormatter;
+inline auto & gdkf = gtsam::DefaultKeyFormatter;
 
 inline std::unique_ptr<spdlog::logger> createLogger(
   const std::string & log_path, const std::string & logger_name, const std::string & level,
@@ -169,8 +169,8 @@ constexpr T rad2deg(const T rad)
 }
 
 inline bool fieldsMatch(
-  const std::vector<sensor_msgs::PointField> & a,
-  const std::vector<sensor_msgs::PointField> & b, const bool allow_extra_fields_in_a = true)
+  const std::vector<sensor_msgs::PointField> & a, const std::vector<sensor_msgs::PointField> & b,
+  const bool allow_extra_fields_in_a = true)
 {
   // Assumption: 'a' is the point fields from the incoming point cloud message
   //             'b' is the point fields from the expected point type

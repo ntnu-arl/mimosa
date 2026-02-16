@@ -169,8 +169,7 @@ public:
   {
     // This function is ignored since it only serves to increase computational cost
     std::cout << "\033[1;31mCalling Error on Key: \033[0m\n"
-              << gdkf(keys()[0])
-              << " with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
+              << gdkf(keys()[0]) << " with value: " << c.at<gtsam::Pose3>(keys()[0]) << "\n";
     return 0.0;
   }
 
@@ -462,12 +461,14 @@ public:
         keys()[0], keys()[1], J_source_T_J_source, J_source_T_J_target, -J_source_T_b,
         J_target_T_J_target, -J_target_T_b, f);
     } else {
-      if (config_.reg_4_dof)
-      {
+      if (config_.reg_4_dof) {
         // Project the matrices
-        J_source_T_J_source.block<3,3>(0,0) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,0) * rot_projection_mat;
-        J_source_T_J_source.block<3,3>(0,3) = rot_projection_mat * J_source_T_J_source.block<3,3>(0,3);
-        J_source_T_J_source.block<3,3>(3,0) = J_source_T_J_source.block<3,3>(3,0) * rot_projection_mat;
+        J_source_T_J_source.block<3, 3>(0, 0) =
+          rot_projection_mat * J_source_T_J_source.block<3, 3>(0, 0) * rot_projection_mat;
+        J_source_T_J_source.block<3, 3>(0, 3) =
+          rot_projection_mat * J_source_T_J_source.block<3, 3>(0, 3);
+        J_source_T_J_source.block<3, 3>(3, 0) =
+          J_source_T_J_source.block<3, 3>(3, 0) * rot_projection_mat;
 
         // Project J_T_b
         J_source_T_b.head<3>() = rot_projection_mat * J_source_T_b.head<3>();

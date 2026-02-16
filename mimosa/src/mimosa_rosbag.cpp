@@ -10,8 +10,8 @@
 
 // Exteroceptive sensor managers
 #include "mimosa/lidar/manager.hpp"
-#include "mimosa/radar/manager.hpp"
 #include "mimosa/odometry/manager.hpp"
+#include "mimosa/radar/manager.hpp"
 
 // ROS
 #include <rosbag/bag.h>

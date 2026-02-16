@@ -31,7 +31,8 @@ Manager::Manager(ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager)
 
   // Setup trajectory logger
   trajectory_logger_ = createLogger(
-    config_.logs_directory + "graph_manager_odometry.tum", "graph::Manager::odometry", "trace", false);
+    config_.logs_directory + "graph_manager_odometry.tum", "graph::Manager::odometry", "trace",
+    false);
   trajectory_logger_->set_pattern("%v");
 
   pub_debug_ = pnh.advertise<mimosa_msgs::GraphManagerDebug>("graph/debug", 1);
@@ -190,13 +191,13 @@ Manager::DeclarationResult Manager::declare(
     }
   }
 
-  const auto latency = ts - smoother_timestamps.back(); // Hence negative means out of order
+  const auto latency = ts - smoother_timestamps.back();  // Hence negative means out of order
   logger_->trace("Measurement latency wrt latest state: {}", latency);
-  
+
   if (latency < -config_.max_measurement_latency) {
     logger_->warn(
-      "Timestamp {} is older than max measurement latency ({} s). Ignoring measurement", 
-      ts, config_.max_measurement_latency);
+      "Timestamp {} is older than max measurement latency ({} s). Ignoring measurement", ts,
+      config_.max_measurement_latency);
     discardCurrentKey();
     return DeclarationResult::FAILURE_OLDER_THAN_MAX_LATENCY;
   }
@@ -205,8 +206,7 @@ Manager::DeclarationResult Manager::declare(
   auto it = std::lower_bound(smoother_timestamps.begin(), smoother_timestamps.end(), ts);
 
   if (it == smoother_timestamps.begin()) {
-    if (ts_key_map_.size() == 1)
-    {
+    if (ts_key_map_.size() == 1) {
       logger_->debug("Measurement is before the initialization state. Ignoring measurement");
       discardCurrentKey();
       return DeclarationResult::FAILURE_OLDER_THAN_INITIALIZATION;
@@ -227,7 +227,9 @@ Manager::DeclarationResult Manager::declare(
     prev_it--;
     const auto prev_ts = *prev_it;
 
-    logger_->trace("prev_ts: {}, prev_key: {}, next_ts: {}, next_key: {}", prev_ts, ts_key_map_[prev_ts], next_ts, ts_key_map_[next_ts]);
+    logger_->trace(
+      "prev_ts: {}, prev_key: {}, next_ts: {}, next_key: {}", prev_ts, ts_key_map_[prev_ts],
+      next_ts, ts_key_map_[next_ts]);
 
     // If there are enough IMU measurements on both sides, then it is feasible to break the current IMU factor
     bool use_same_key = false;
@@ -264,7 +266,8 @@ Manager::DeclarationResult Manager::declare(
 
     // Now we actually do need to break the IMU factor
     Stopwatch sw;
-    logger_->debug("Breaking IMU with n_imu_before: {} and n_imu_after: {}", n_imu_before, n_imu_after);
+    logger_->debug(
+      "Breaking IMU with n_imu_before: {} and n_imu_after: {}", n_imu_before, n_imu_after);
 
     State prev_state;
     auto prev_key = ts_key_map_[prev_ts];
@@ -339,8 +342,7 @@ Manager::DeclarationResult Manager::declare(
             if (logger_->should_log(spdlog::level::trace)) {
               logger_->trace(
                 "Found imu factor to remove connecting keys {} and {}",
-                gdkf(imu_factor_1.keys()[0]),
-                gdkf(imu_factor_2.keys()[2]));
+                gdkf(imu_factor_1.keys()[0]), gdkf(imu_factor_2.keys()[2]));
               f->print();
             }
             factors_to_remove.push_back(i);
@@ -357,8 +359,7 @@ Manager::DeclarationResult Manager::declare(
             if (logger_->should_log(spdlog::level::trace)) {
               logger_->trace(
                 "Found bias between factor to remove connecting keys {} and {}",
-                gdkf(bias_between_factor_1.keys()[0]),
-                gdkf(bias_between_factor_2.keys()[1]));
+                gdkf(bias_between_factor_1.keys()[0]), gdkf(bias_between_factor_2.keys()[1]));
               f->print();
             }
             factors_to_remove.push_back(i);
@@ -372,13 +373,18 @@ Manager::DeclarationResult Manager::declare(
     }
 
     if (!imu_factor_found) {
-      logger_->error("Could not find the imu factor that connects the previous state to the current state");
+      logger_->error(
+        "Could not find the imu factor that connects the previous state to the current state");
     }
     if (!bias_between_factor_found) {
-      logger_->error("Could not find the bias between factor that connects the previous state to the current state");
+      logger_->error(
+        "Could not find the bias between factor that connects the previous state to the current "
+        "state");
     }
     if (!imu_factor_found || !bias_between_factor_found) {
-      logger_->error("Cannot handle out of order measurement as the required factors to break cannot be found. Discarding this measurement");
+      logger_->error(
+        "Cannot handle out of order measurement as the required factors to break cannot be found. "
+        "Discarding this measurement");
       discardCurrentKey();
       return DeclarationResult::FAILURE_CANNOT_HANDLE_OUT_OF_ORDER;
     }
@@ -483,7 +489,8 @@ Manager::DeclarationResult Manager::declare(
     debug_msg_.diff_against_imu_prior_trans_cm = pose_diff.translation().norm() * 100;
     debug_msg_.diff_against_imu_prior_rot_deg = rad2deg(pose_diff.rotation().axisAngle().second);
     const auto v = smoother_->calculateEstimate<V3D>(V(key));
-    debug_msg_.diff_against_imu_prior_vel_cm_p_s = (v - propagated_state.velocity()).norm() * 100; // Convert to cm/s
+    debug_msg_.diff_against_imu_prior_vel_cm_p_s =
+      (v - propagated_state.velocity()).norm() * 100;  // Convert to cm/s
 
     imu_manager_->setPropagationBaseState(state_);
     publishResults();
@@ -511,8 +518,7 @@ void Manager::getStateUptoNoLock(const double ts, State & state)
   logger_->trace("Getting state upto ts: {}", ts);
   if (ts_key_map_.empty()) {
     // This means that there are no states added yet. This only happens before initialization
-    if (initialized_)
-    {
+    if (initialized_) {
       logger_->error("ts_key_map_ is empty and initialized_ is true. This should not never happen");
     }
     return;
@@ -594,7 +600,8 @@ void Manager::defineNoLock(
     debug_msg_.diff_against_imu_prior_trans_cm = pose_diff.translation().norm() * 100;
     debug_msg_.diff_against_imu_prior_rot_deg = rad2deg(pose_diff.rotation().axisAngle().second);
     const auto v = optimized_values_.at<V3D>(V(state_.key()));
-    debug_msg_.diff_against_imu_prior_vel_cm_p_s = (v - state_.navState().velocity()).norm() * 100; // Convert to cm/s
+    debug_msg_.diff_against_imu_prior_vel_cm_p_s =
+      (v - state_.navState().velocity()).norm() * 100;  // Convert to cm/s
   }
   optimized_values = optimized_values_;
 
@@ -615,8 +622,8 @@ void Manager::defineNoLock(
 void Manager::updateStateToKeyTs(const gtsam::Key key, const double ts)
 {
   logger_->trace(
-    "Updating state to key: {} at ts: {} previous key: {} previous ts: {}",
-    gdkf(key), ts, gdkf(state_.key()), state_.ts());
+    "Updating state to key: {} at ts: {} previous key: {} previous ts: {}", gdkf(key), ts,
+    gdkf(state_.key()), state_.ts());
 
   // Update the state to be at key
   const auto p = smoother_->calculateEstimate<gtsam::Pose3>(X(key));
@@ -689,8 +696,7 @@ void Manager::initializeGraph(
 void Manager::publishResults()
 {
   broadcastTransform(
-    tf2_broadcaster_, state_.navState().pose(), config_.map_frame, config_.body_frame,
-    state_.ts());
+    tf2_broadcaster_, state_.navState().pose(), config_.map_frame, config_.body_frame, state_.ts());
 
   // Broadcast the nav to map transform
   const V3D n_g_direction = -V3D::UnitZ();

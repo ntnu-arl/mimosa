@@ -7,10 +7,11 @@
 #pragma once
 
 // mimosa
-#include "mimosa/sensor_manager_base.hpp"
+#include <mimosa_msgs/RadarManagerDebug.h>
+
 #include "mimosa/radar/factor.hpp"
 #include "mimosa/radar/utils.hpp"
-#include <mimosa_msgs/RadarManagerDebug.h>
+#include "mimosa/sensor_manager_base.hpp"
 
 namespace mimosa
 {

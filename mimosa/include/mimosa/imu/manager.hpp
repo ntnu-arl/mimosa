@@ -28,7 +28,7 @@
 
 namespace mimosa
 {
-typedef std::pair<double, V6D> ImuMeasurement; // < time, (acc, omega)> 
+typedef std::pair<double, V6D> ImuMeasurement;  // < time, (acc, omega)>
 typedef std::deque<ImuMeasurement> ImuBuffer;
 
 namespace imu
