@@ -9,18 +9,22 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>nav_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>sensor_msgs</depend>
-  <depend>pcl_conversions</depend>
-  <depend>tf2_ros</depend>
-  <depend>mimosa_msgs</depend>
-  <depend>geometry_msgs</depend>
+  <build_depend>pcl_ros</build_depend>
   <depend>config_utilities</depend>
   <depend>cv_bridge</depend>
-  <depend>visualization_msgs</depend>
-  <depend>rosbag</depend>
-  <depend>gtsam</depend>
+  <depend>geometry_msgs</depend>
   <depend>gtsam_points</depend>
+  <depend>gtsam</depend>
+  <depend>mimosa_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rosbag</depend>
+  <depend>roscpp</depend>
+  <depend>spdlog</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>rviz</exec_depend>
 </package>
