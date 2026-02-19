@@ -119,7 +119,7 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
 
       if (propagated_upto_ts_ < it_previous->first) {
         // Normally we will always be doing 1 step propagation, but if we have missed some imu
-        // measurements, we need to propagate upto the current imu measurement
+        // measurements, we need to propagate up to the current imu measurement
         updatePreintegrationTo(
           propagation_base_state_.ts(), it_previous->first, propagation_base_state_.imuBias(),
           propagation_preintegrator_);

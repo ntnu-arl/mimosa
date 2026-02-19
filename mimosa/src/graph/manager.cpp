@@ -515,7 +515,7 @@ void Manager::getStateUpto(const double ts, State & state)
 
 void Manager::getStateUptoNoLock(const double ts, State & state)
 {
-  logger_->trace("Getting state upto ts: {}", ts);
+  logger_->trace("Getting state up to ts: {}", ts);
   if (ts_key_map_.empty()) {
     // This means that there are no states added yet. This only happens before initialization
     if (initialized_) {
@@ -532,7 +532,7 @@ void Manager::getStateUptoNoLock(const double ts, State & state)
     if (std::abs(ts - ts_key_map_.begin()->first) > 4e-3) {  // 4ms
       logCriticalException<std::runtime_error>(
         logger_, fmt::format(
-                   "No state available upto ts: {} the only ts in there is {} . Size of map: {}",
+                   "No state available up to ts: {} the only ts in there is {} . Size of map: {}",
                    ts, ts_key_map_.begin()->first, ts_key_map_.size()));
     } else {
       logger_->warn(

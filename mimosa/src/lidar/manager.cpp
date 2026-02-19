@@ -430,7 +430,7 @@ void Manager::deskewPoints()
       state.gravity());
   }
 
-  logger_->debug("Got state upto : {} with ts: {}", header_ts_, state.ts());
+  logger_->debug("Got state up to : {} with ts: {}", header_ts_, state.ts());
   // Preintegrate the imu measurements
   ImuBuffer imu_measurements;
   // Note that this should always be from the last state to the end of the current scan due to the preintegrator
