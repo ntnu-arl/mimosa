@@ -31,7 +31,7 @@ fi
 
 for estimate_file_name in "${estimate_file_names[@]}"; do
   estimate_file="$folder_path/$estimate_file_name"
-  
+
   # Check if estimate file exists
   if [[ ! -f "$estimate_file" ]]; then
     echo "[WARNING] Skipping $estimate_file - file does not exist"

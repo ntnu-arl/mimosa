@@ -59,32 +59,32 @@ def extract_tum_from_bag(bag_path: Path, topic: str, output_tum: Path) -> bool:
     """Extract trajectory from bag and save as TUM format."""
     bag_dir = bag_path.parent
     bag_name = bag_path.name
-    
+
     # Run evo_traj to extract all topics as TUM
     cmd = ["evo_traj", "bag", bag_name, "--save_as_tum", "--all_topics"]
     if not run_command(cmd, cwd=str(bag_dir)):
         return False
-    
+
     # Find the generated TUM file for our topic
     expected_tum_name = topic_to_filename(topic)
     generated_tum = bag_dir / expected_tum_name
-    
+
     if not generated_tum.exists():
         print(f"  Error: Expected TUM file {generated_tum} not found")
         # List what was generated for debugging
         tum_files = list(bag_dir.glob("*.tum"))
         print(f"  Generated TUM files: {[f.name for f in tum_files]}")
         return False
-    
+
     # Move to the desired output name
     shutil.move(str(generated_tum), str(output_tum))
     print(f"  Created: {output_tum.name}")
-    
+
     # Clean up other generated TUM files
     for tum_file in bag_dir.glob("*.tum"):
         if tum_file != output_tum:
             tum_file.unlink()
-    
+
     return True
 
 
@@ -125,7 +125,7 @@ def run_evo_res(result_zips: List[Path], output_path: Path) -> bool:
     if not result_zips:
         print("  No result files to process")
         return False
-    
+
     cmd = ["evo_res"] + [str(z) for z in result_zips] + ["--save_table", str(output_path), "--no_warnings", "--silent"]
     return run_command(cmd)
 
@@ -134,83 +134,83 @@ def main():
     base_folder = Path(BASE_FOLDER).expanduser().resolve()
     gt_tum = base_folder / "gt_odometry.tum"
     result_bags_dir = base_folder / "result_bags"
-    
+
     print(f"Base folder: {base_folder}")
     print(f"Ground truth: {gt_tum}")
     print(f"Methods: {list(METHODS.keys())}")
-    
+
     if not gt_tum.exists():
         print(f"Error: Ground truth file not found: {gt_tum}")
         return 1
-    
+
     if not result_bags_dir.exists():
         print(f"Error: Result bags directory not found: {result_bags_dir}")
         return 1
-    
+
     all_rpe_results = []
     all_ate_results = []
-    
+
     # Process each method
     for method, topic in METHODS.items():
         print(f"\n{'='*60}")
         print(f"Processing method: {method}")
         print(f"Topic: {topic}")
         print("=" * 60)
-        
+
         method_dir = result_bags_dir / method
         if not method_dir.exists():
             print(f"Warning: Method directory not found: {method_dir}")
             continue
-        
+
         # Find all bag files in the method directory
         bag_files = list(method_dir.glob("*.bag"))
         if not bag_files:
             print(f"Warning: No bag files found in {method_dir}")
             continue
-        
+
         for bag_file in sorted(bag_files):
             bag_name = bag_file.stem  # filename without extension
             print(f"\n  Processing: {bag_file.name}")
-            
+
             # Output paths
             traj_tum = method_dir / f"{bag_name}.tum"
             rpe_zip = method_dir / f"rpe_{bag_name}.zip"
             ate_zip = method_dir / f"ape_{bag_name}.zip"
-            
+
             # Step 1: Extract TUM trajectory from bag
             if not extract_tum_from_bag(bag_file, topic, traj_tum):
                 print(f"  Skipping {bag_name} due to extraction error")
                 continue
-            
+
             # Step 2: Compute RPE
             print(f"  Computing RPE...")
             if compute_rpe(gt_tum, traj_tum, rpe_zip):
                 all_rpe_results.append(rpe_zip)
-            
+
             # Step 3: Compute ATE
             print(f"  Computing ATE...")
             if compute_ate(gt_tum, traj_tum, ate_zip):
                 all_ate_results.append(ate_zip)
-    
+
     # Generate summary results
     print(f"\n{'='*60}")
     print("Generating summary results")
     print("=" * 60)
-    
+
     if all_rpe_results:
         print("\nRPE Summary:")
         rpe_table = base_folder / "rpe_summary.csv"
         run_evo_res(all_rpe_results, rpe_table)
-    
+
     if all_ate_results:
         print("\nATE Summary:")
         ate_table = base_folder / "ate_summary.csv"
         run_evo_res(all_ate_results, ate_table)
-    
+
     print(f"\n{'='*60}")
     print("Evaluation complete!")
     print("=" * 60)
-    
+
     return 0
 
 

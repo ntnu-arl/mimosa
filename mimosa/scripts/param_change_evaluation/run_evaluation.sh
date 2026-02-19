@@ -31,34 +31,34 @@ echo "=========================================="
 for override_file in "$OVERRIDES_DIR"/*.yaml; do
     # Get filename without path and extension
     experiment_name=$(basename "$override_file" .yaml)
-    
+
     echo ""
     echo "Running experiment: $experiment_name"
     echo "Override file: $override_file"
     echo "------------------------------------------"
-    
+
     # Run the launch file with this override
     roslaunch mimosa hornbill_rosbag.launch \
         bag_name:="$BAG_NAME" \
         config_override:="$override_file"
-    
+
     # Capture exit status
     exit_status=$?
-    
+
     # Move/rename results if needed
     if [ -f "$(rospack find mimosa)/data/mimosa_results.bag" ]; then
         mv "$(rospack find mimosa)/data/mimosa_results.bag" \
            "$RESULTS_DIR/${experiment_name}_results.bag"
         echo "Results saved to: $RESULTS_DIR/${experiment_name}_results.bag"
     fi
-    
+
     if [ $exit_status -ne 0 ]; then
         echo "Warning: Experiment $experiment_name exited with status $exit_status"
     fi
-    
+
     echo "Finished: $experiment_name"
     echo "=========================================="
-    
+
     # Optional: add a small delay between runs
     sleep 2
 done

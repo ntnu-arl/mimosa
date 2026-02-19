@@ -140,7 +140,7 @@ lidar:
 
 radar:
   sensor_frame: mimosa_radar
-  T_B_S: [0.08373, 0.0213, 0.02691, 0.6830127, 0.1830128, -0.1830128, 0.6830127] # x, y, z, x, y, z, w 
+  T_B_S: [0.08373, 0.0213, 0.02691, 0.6830127, 0.1830128, -0.1830128, 0.6830127] # x, y, z, x, y, z, w
   manager:
     log_level: warn
     use_to_init: false

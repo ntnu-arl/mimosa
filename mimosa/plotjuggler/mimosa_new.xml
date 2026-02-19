@@ -288,4 +288,3 @@ return math.sqrt(dx * dx + dy * dy + dz * dz)</function>
  <snippets/>
  <!-- - - - - - - - - - - - - - - -->
 </root>
-
