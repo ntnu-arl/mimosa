@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-catkin-tools \
     libgoogle-glog-dev \
     libspdlog-dev \
+    libyaml-cpp-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
