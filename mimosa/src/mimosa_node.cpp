@@ -16,6 +16,9 @@
 // ROS
 #include <ros/callback_queue.h>
 
+// C++
+#include <thread>
+
 int main(int argc, char ** argv)
 {
   config::Settings().print_missing = true;
