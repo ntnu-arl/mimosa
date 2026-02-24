@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'LICENSE', '.gitignore']
+  pull_request:
+    paths-ignore: ['**.md', 'LICENSE', '.gitignore']
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+
+  build:
+    name: Build (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            image: ghcr.io/${{ github.repository }}/ci-base:amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            image: ghcr.io/${{ github.repository }}/ci-base:arm64
+
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Link into catkin workspace
+        run: ln -s "$GITHUB_WORKSPACE" /catkin_ws/src/mimosa
+
+      - name: Build mimosa
+        run: |
+          cd /catkin_ws
+          . devel/setup.bash
+          catkin build mimosa --no-status --force-color
