@@ -48,6 +48,7 @@ jobs:
         run: ln -s "$GITHUB_WORKSPACE" /catkin_ws/src/mimosa
 
       - name: Build mimosa
+        shell: bash
         run: |
           cd /catkin_ws
           . devel/setup.bash
