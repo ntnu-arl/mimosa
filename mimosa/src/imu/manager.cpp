@@ -350,6 +350,8 @@ void Manager::getInterpolatedMeasurements(
 
 size_t Manager::getNumMeasurementsBetween(const double t1, const double t2)
 {
+  std::lock_guard<std::mutex> lock(buffer_mutex_);
+
   const double t_start = std::min(t1, t2);
   const double t_end = std::max(t1, t2);
 
