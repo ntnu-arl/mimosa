@@ -1,12 +1,36 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.12)
 project(mimosa_msgs)
 
-# Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+# Detect ROS version
+find_package(roscpp QUIET)
+if(roscpp_FOUND)
+  set(DETECTED_ROS_VERSION 1)
+  add_compile_definitions(DETECTED_ROS_VERSION=1)
+  message(STATUS "Building for ROS1")
+else()
+  set(DETECTED_ROS_VERSION 2)
+  add_compile_definitions(DETECTED_ROS_VERSION=2)
+  message(STATUS "Building for ROS2")
+endif()
 
-# Find catkin macros and libraries if COMPONENTS list like find_package(catkin
-# REQUIRED COMPONENTS xyz) is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS geometry_msgs message_generation)
+if(DETECTED_ROS_VERSION
+   EQUAL
+   1
+)
+  # Find catkin macros and libraries for ROS1
+  find_package(
+    catkin REQUIRED
+    COMPONENTS std_msgs
+               geometry_msgs
+               message_generation
+  )
+else()
+  # Find ament macros and libraries for ROS2
+  find_package(ament_cmake REQUIRED)
+  find_package(std_msgs REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(rosidl_default_generators REQUIRED)
+endif()
 
 # System dependencies are found with CMake's conventions find_package(Boost
 # REQUIRED COMPONENTS system)
@@ -36,15 +60,37 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs message_generation)
 # MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 # Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  GraphManagerDebug.msg
-  ImuManagerDebug.msg
-  LidarGeometricDebug.msg
-  LidarManagerDebug.msg
-  LidarPhotometricDebug.msg
-  RadarManagerDebug.msg
+set(MSG_FILES
+    GraphManagerDebug.msg
+    ImuManagerDebug.msg
+    LidarGeometricDebug.msg
+    LidarManagerDebug.msg
+    LidarPhotometricDebug.msg
+    RadarManagerDebug.msg
 )
+
+if(DETECTED_ROS_VERSION
+   EQUAL
+   1
+)
+  add_message_files(FILES ${MSG_FILES})
+
+  generate_messages(
+    DEPENDENCIES
+    std_msgs
+    geometry_msgs
+  )
+else()
+  list(TRANSFORM MSG_FILES PREPEND "msg/")
+
+  rosidl_generate_interfaces(
+    ${PROJECT_NAME}
+    ${MSG_FILES}
+    DEPENDENCIES
+    std_msgs
+    geometry_msgs
+  )
+endif()
 
 # Generate services in the 'srv' folder add_service_files( FILES Service1.srv
 # Service2.srv )
@@ -53,7 +99,6 @@ add_message_files(
 # Action2.action )
 
 # Generate added messages and services with any dependencies listed here
-generate_messages(DEPENDENCIES geometry_msgs)
 
 # ##############################################################################
 # Declare ROS dynamic reconfigure parameters ##
@@ -78,13 +123,26 @@ generate_messages(DEPENDENCIES geometry_msgs)
 # that dependent projects also need CATKIN_DEPENDS: catkin_packages dependent
 # projects also need DEPENDS: system dependencies of this project that dependent
 # projects also need
-catkin_package(
-  # INCLUDE_DIRS include LIBRARIES mimosa_msgs
-  CATKIN_DEPENDS
-  geometry_msgs
-  message_runtime
-  # DEPENDS system_lib
+if(DETECTED_ROS_VERSION
+   EQUAL
+   1
 )
+  # ############################################################################
+  # catkin specific configuration ##
+  # ############################################################################
+  catkin_package(
+    CATKIN_DEPENDS
+    std_msgs
+    geometry_msgs
+    message_runtime
+  )
+else()
+  # ############################################################################
+  # ament specific configuration ##
+  # ############################################################################
+  ament_export_dependencies(rosidl_default_runtime)
+  ament_package()
+endif()
 
 # ##############################################################################
 # Build ##
