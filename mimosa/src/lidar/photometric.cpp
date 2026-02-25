@@ -800,7 +800,7 @@ void Photometric::publishFeatures(
     marker.scale.x = 0.01;
     marker.color.r = 1.0;
     marker.color.a = 1.0;
-    int center_idx = config.patch_size * config.patch_size / 2;
+    // int center_idx = config.patch_size * config.patch_size / 2;
     // for (const auto & feature : last_frame_features_) {
     //   const gtsam::Pose3 & T_W_Be = values.at<gtsam::Pose3>(feature.key);
     //   const V3D & W_p = T_W_Be * config.T_B_L * feature.Le_ps[center_idx];

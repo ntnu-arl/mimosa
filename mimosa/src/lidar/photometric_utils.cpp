@@ -164,7 +164,7 @@ bool project(
               << " idx: " << std::distance(yaw_angles[approx_y].begin(), great - 1) << std::endl;
   }
 
-  float old_x = uv.x();
+  // float old_x = uv.x();
   uv.x() = new_x;
 
   if (!inFOV(uv, config)) {
