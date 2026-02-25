@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 project(mimosa_msgs)
 
-# Detect ROS version
-find_package(roscpp QUIET)
-if(roscpp_FOUND)
-  set(DETECTED_ROS_VERSION 1)
-  add_compile_definitions(DETECTED_ROS_VERSION=1)
-  message(STATUS "Building for ROS1")
-else()
-  set(DETECTED_ROS_VERSION 2)
-  add_compile_definitions(DETECTED_ROS_VERSION=2)
-  message(STATUS "Building for ROS2")
-endif()
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cmake"
+)
+include(DetectROSVersion)
 
 if(DETECTED_ROS_VERSION
    EQUAL

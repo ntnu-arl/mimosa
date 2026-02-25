@@ -4,6 +4,13 @@ project(mimosa)
 add_compile_options(-std=c++17)
 add_definitions(-DUSE_OPENMP=1)
 
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  "${CMAKE_CURRENT_SOURCE_DIR}/../cmake"
+)
+include(DetectROSVersion)
+
 # ##############################################################################
 # Dependencies ##
 # ##############################################################################
