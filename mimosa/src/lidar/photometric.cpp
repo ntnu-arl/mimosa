@@ -77,8 +77,8 @@ std::vector<int> Photometric::getIdxToPixelMap(int axis) const
   std::vector<int> idx_to_u = std::vector<int>(config.cols * config.rows, -1);
   std::vector<int> idx_to_v = std::vector<int>(config.cols * config.rows, -1);
 
-  for (size_t v = 0; v < config.rows; v++) {
-    for (size_t u = 0; u < config.cols; u++) {
+  for (int v = 0; v < config.rows; v++) {
+    for (int u = 0; u < config.cols; u++) {
       const int uu = (u + config.cols - config.pixel_shift_by_row[v]) % config.cols;
       const int idx = v * config.cols + (config.destagger ? uu : u);
       idx_to_u[idx] = u;
@@ -101,7 +101,7 @@ void Photometric::preprocess(
     return;
   }
 
-  if (points_deskewed.size() > config.rows * config.cols) {
+  if (points_deskewed.size() > static_cast<size_t>(config.rows * config.cols)) {
     logCriticalException<std::runtime_error>(
       logger_, fmt::format(
                  "Number of points exceeds the image size: {} > {} \nPerhaps check the params that "
@@ -302,8 +302,8 @@ void Photometric::preprocess(
 
   // Set the corrected intensities
   // #pragma omp parallel for
-  for (size_t v = 0; v < config.rows; v++) {
-    for (size_t u = 0; u < config.cols; u++) {
+  for (int v = 0; v < config.rows; v++) {
+    for (int u = 0; u < config.cols; u++) {
       const int idx = current_frame_->img_deskewed_cloud_idx.ptr<int>(v)[u];
       if (idx == -1) continue;
       points_deskewed[idx].intensity = current_frame_->img_intensity.ptr<float>(v)[u];
@@ -542,8 +542,8 @@ void Photometric::detectFeatures(
   // Sort the pixels by gradient magnitude
   std::vector<std::pair<double, cv::Point>> gradients;
   gradients.reserve(img_grad_magnitude.total());
-  for (size_t v = 0; v < config.rows; v++) {
-    for (size_t u = 0; u < config.cols; u++) {
+  for (int v = 0; v < config.rows; v++) {
+    for (int u = 0; u < config.cols; u++) {
       if (detection_mask.ptr<uchar>(v)[u] == 0) continue;
 
       if (img_grad_magnitude.ptr<uchar>(v)[u] > config.gradient_threshold) {
@@ -728,7 +728,7 @@ void Photometric::detectFeatures(
     feature.normal = normal;
 
     VXD intensities(feature.intensities.size());
-    for (int i = 0; i < feature.intensities.size(); i++) {
+    for (size_t i = 0; i < feature.intensities.size(); i++) {
       intensities(i) = feature.intensities[i];
     }
 

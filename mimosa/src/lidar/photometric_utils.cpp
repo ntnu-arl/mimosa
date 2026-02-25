@@ -218,8 +218,8 @@ bool projectUndistorted(
   }
 
   distortion_idx = -1;
-  size_t row = Lk_uv(1);
-  size_t col = Lk_uv(0);
+  int row = Lk_uv(1);
+  int col = Lk_uv(0);
 
   int idx = vectorIndexFromRowCol(row, col, config);
   // Check if there are any points from the undistorted pointcloud that project to the column in this pixel
@@ -300,8 +300,8 @@ bool projectUndistorted(
   }
 
   int distortion_idx = -1;
-  size_t row = Lk_uv(1);
-  size_t col = Lk_uv(0);
+  int row = Lk_uv(1);
+  int col = Lk_uv(0);
 
   int idx = vectorIndexFromRowCol(row, col, config);
   // Check if there are any points from the undistorted pointcloud that project to the column in this pixel

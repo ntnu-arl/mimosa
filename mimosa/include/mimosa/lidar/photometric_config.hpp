@@ -29,8 +29,8 @@ struct PhotometricConfig
 
   gtsam::Pose3 T_B_L = gtsam::Pose3::Identity();
 
-  size_t rows = 128;
-  size_t cols = 512;
+  int rows = 128;
+  int cols = 512;
   float range_min = 0.1;
   float range_max = 100;
   int erosion_buffer = 2;
