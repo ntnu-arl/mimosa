@@ -371,7 +371,7 @@ void Photometric::createMask()
 }
 
 void Photometric::getFactors(
-  const gtsam::Values & values, gtsam::NonlinearFactorGraph & graph,
+  const gtsam::Values & /*values*/, gtsam::NonlinearFactorGraph & graph,
   const M66 & eigenvectors_block_matrix, const V6D & selection)
 {
   if (!config.enabled) return;
