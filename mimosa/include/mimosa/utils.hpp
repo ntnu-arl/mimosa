@@ -38,6 +38,7 @@
 
 // mimosa
 #include "mimosa/custom_yaml_types.hpp"
+#include "mimosa/ros_interface.hpp"
 
 // spdlog
 #include <spdlog/sinks/basic_file_sink.h>
