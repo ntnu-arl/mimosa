@@ -56,7 +56,6 @@ public:
 private:
   template <typename PointT>
   void preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg);
-  void getFactors(gtsam::NonlinearFactorGraph & new_factors);
 };
 }  // namespace radar
 }  // namespace mimosa

@@ -181,8 +181,6 @@ void Manager::preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg)
   debug_msg_.t_preprocess = sw.elapsedMs();
 }
 
-void Manager::getFactors(gtsam::NonlinearFactorGraph & new_factors) {}
-
 void declare_config(ManagerConfig & config)
 {
   using namespace config;
