@@ -15,22 +15,72 @@ include(DetectROSVersion)
 # Dependencies ##
 # ##############################################################################
 
-find_package(
-  catkin REQUIRED
-  COMPONENTS cv_bridge
-             geometry_msgs
-             ${PROJECT_NAME}_msgs
-             nav_msgs
-             pcl_conversions
-             pcl_ros
-             rosbag
-             roscpp
-             sensor_msgs
-             std_msgs
-             tf2_ros
-             visualization_msgs
+# ROS
+set(COMMON_ROS_DEPS
+    cv_bridge
+    geometry_msgs
+    ${PROJECT_NAME}_msgs
+    nav_msgs
+    pcl_conversions
+    pcl_ros
+    sensor_msgs
+    std_msgs
+    tf2_ros
+    visualization_msgs
 )
 
+# ROS-specific configuration
+if(DETECTED_ROS_VERSION
+   EQUAL
+   1
+)
+  find_package(
+    catkin REQUIRED
+    COMPONENTS ${COMMON_ROS_DEPS}
+               roscpp
+               rosbag
+  )
+  catkin_package(
+    INCLUDE_DIRS
+    include
+    LIBRARIES
+    ${PROJECT_NAME}_lib
+    CATKIN_DEPENDS
+    message_runtime
+    ${COMMON_ROS_DEPS}
+  )
+  set(ROS_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+  set(ROS_LIBRARIES ${catkin_LIBRARIES})
+  set(ARCHIVE_DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+  set(LIBRARY_DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+  set(RUNTIME_DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  set(INCLUDE_DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+  set(SHARE_DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+else()
+  find_package(ament_cmake REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(rosbag2_cpp REQUIRED)
+
+  foreach(DEP ${COMMON_ROS_DEPS})
+    find_package(${DEP} REQUIRED)
+  endforeach()
+
+  set(ROS2_DEPENDENCIES
+      rclcpp
+      rosbag2_cpp
+      ${COMMON_ROS_DEPS}
+  )
+  set(ROS_INCLUDE_DIRS "")
+  set(ROS_LIBRARIES "")
+  set(ARCHIVE_DESTINATION lib)
+  set(LIBRARY_DESTINATION lib)
+  set(RUNTIME_DESTINATION bin)
+  set(INCLUDE_DESTINATION include/${PROJECT_NAME})
+  set(SHARE_DESTINATION share/${PROJECT_NAME})
+endif()
+
+# Non-ROS dependencies
 find_package(config_utilities REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(
@@ -49,26 +99,10 @@ message(STATUS "OpenCV Version: ${OpenCV_VERSION}, Path: ${OpenCV_DIR}")
 message(STATUS "GTSAM Version: ${GTSAM_VERSION}, Path: ${GTSAM_DIR}")
 message(STATUS "gtsam_points Path: ${gtsam_points_DIR}")
 
-catkin_package(
-  INCLUDE_DIRS
-  include
-  LIBRARIES
-  ${PROJECT_NAME}_lib
-  CATKIN_DEPENDS
-  geometry_msgs
-  message_runtime
-  ${PROJECT_NAME}_msgs
-  nav_msgs
-  roscpp
-  sensor_msgs
-  std_msgs
-  visualization_msgs
-)
-
 include_directories(
   include
   SYSTEM
-  ${catkin_INCLUDE_DIRS}
+  ${ROS_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${GTSAM_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
@@ -98,7 +132,7 @@ endforeach()
 
 # Common libraries used by all targets
 set(COMMON_LIBS
-    ${catkin_LIBRARIES}
+    ${ROS_LIBRARIES}
     config_utilities::config_utilities
     ${PCL_LIBRARIES}
     gtsam
@@ -108,80 +142,76 @@ set(COMMON_LIBS
     spdlog::spdlog
 )
 
-# Strict compiler warnings for executables
-set(STRICT_WARNINGS
-    $<$<CXX_COMPILER_ID:MSVC>:/W4
-    /WX>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall
-    -Wextra
-    -Wpedantic
-    -Werror>
-)
+# Helper function to configure targets for ROS version
+function(configure_ros_target TARGET_NAME)
+  if(DETECTED_ROS_VERSION
+     EQUAL
+     1
+  )
+    add_dependencies(
+      ${TARGET_NAME}
+      ${${PROJECT_NAME}_EXPORTED_TARGETS}
+      ${catkin_EXPORTED_TARGETS}
+    )
+  else()
+    ament_target_dependencies(${TARGET_NAME} ${ROS2_DEPENDENCIES})
+  endif()
+
+  target_compile_features(
+    ${TARGET_NAME} PUBLIC c_std_99 cxx_std_17
+  ) # Require C99 and C++17
+  target_compile_options(
+    ${TARGET_NAME}
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4
+            /WX>
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall
+            -Wextra
+            -Wpedantic
+            -Werror>
+            -pthread
+            -fexceptions
+            ${OpenMP_CXX_FLAGS}
+  )
+  target_compile_definitions(
+    ${TARGET_NAME} PRIVATE DETECTED_ROS_VERSION=${DETECTED_ROS_VERSION}
+  )
+  target_link_libraries(${TARGET_NAME} ${COMMON_LIBS})
+endfunction()
 
 # Library
 add_library(${PROJECT_NAME}_lib ${SOURCES})
-add_dependencies(
+add_library(
+  ${PROJECT_NAME}::${PROJECT_NAME}_lib
+  ALIAS
   ${PROJECT_NAME}_lib
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
 )
-target_compile_options(
-  ${PROJECT_NAME}_lib
-  PRIVATE -pthread
-          -fexceptions
-          ${OpenMP_CXX_FLAGS}
-)
-target_link_libraries(${PROJECT_NAME}_lib ${COMMON_LIBS})
+configure_ros_target(${PROJECT_NAME}_lib)
 install(
   TARGETS ${PROJECT_NAME}_lib
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION ${ARCHIVE_DESTINATION}
+  LIBRARY DESTINATION ${LIBRARY_DESTINATION}
+  RUNTIME DESTINATION ${RUNTIME_DESTINATION}
 )
 
 # Executables
 set(EXECUTABLES node rosbag)
 foreach(EXEC ${EXECUTABLES})
   add_executable(${PROJECT_NAME}_${EXEC} src/${PROJECT_NAME}_${EXEC}.cpp)
-  add_dependencies(
-    ${PROJECT_NAME}_${EXEC}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-    ${catkin_EXPORTED_TARGETS}
-  )
-  target_link_libraries(
-    ${PROJECT_NAME}_${EXEC}
-    ${PROJECT_NAME}_lib
-    ${COMMON_LIBS}
-  )
-  target_compile_options(
-    ${PROJECT_NAME}_${EXEC}
-    PRIVATE ${STRICT_WARNINGS}
-            -pthread
-            -fexceptions
-            ${OpenMP_CXX_FLAGS}
-  )
+  configure_ros_target(${PROJECT_NAME}_${EXEC})
+  target_link_libraries(${PROJECT_NAME}_${EXEC} ${PROJECT_NAME}_lib)
   install(TARGETS ${PROJECT_NAME}_${EXEC}
-          RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+          RUNTIME DESTINATION ${RUNTIME_DESTINATION}
   )
 endforeach()
 
 install(
   DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${INCLUDE_DESTINATION}
   FILES_MATCHING
   PATTERN "*.h*"
 )
+install(DIRECTORY config launch DESTINATION ${SHARE_DESTINATION})
 
-set(EXTRA_INSTALL_DIRS config launch)
-foreach(directory IN LISTS ARGV)
-  install(DIRECTORY ${directory}
-          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
-endforeach()
-
-set(SCRIPTS batch_process.sh evaluate.sh)
-foreach(script IN LISTS SCRIPTS)
-  install(PROGRAMS scripts/${script}
-          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-endforeach()
+install(PROGRAMS scripts/batch_process.sh scripts/evaluate.sh
+        DESTINATION ${RUNTIME_DESTINATION}
+)
