@@ -63,7 +63,7 @@ private:
   uint32_t monotonic_feature_id_ = 0;
 
 public:
-  Photometric(ros::NodeHandle & pnh);
+  Photometric(const std::string & config_path, ros::NodeHandle & pnh);
   void preprocess(
     const pcl::PointCloud<Point> & points_raw, pcl::PointCloud<Point> & points_deskewed,
     const boost::container::flat_map<uint32_t, gtsam::Pose3> & interpolated_map_T_Le_Lt,

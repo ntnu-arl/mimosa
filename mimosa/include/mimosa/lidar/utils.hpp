@@ -26,6 +26,7 @@
 #include <Eigen/Core>
 #include <algorithm>
 #include <boost/functional/hash/hash.hpp>
+#include <filesystem>
 #include <numeric>
 
 namespace mimosa
@@ -85,6 +86,27 @@ inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields
   }
 
   return PType::Unknown;
+}
+
+/**
+ * @brief Load a YAML config file and merge the sensor JSON file (if specified under lidar/sensor_json)
+ * into the YAML node tree under lidar/sensor.
+ *
+ * @param config_path Absolute path to the YAML config file.
+ * @return YAML::Node The merged YAML node tree.
+ */
+inline YAML::Node loadConfigWithSensorJson(const std::string & config_path)
+{
+  YAML::Node node = YAML::LoadFile(config_path);
+
+  if (node["lidar"] && node["lidar"]["sensor_json"]) {
+    std::string sensor_json_relative = node["lidar"]["sensor_json"].as<std::string>();
+    std::filesystem::path config_dir = std::filesystem::path(config_path).parent_path();
+    std::string sensor_json_path = (config_dir / sensor_json_relative).string();
+    node["lidar"]["sensor"] = YAML::LoadFile(sensor_json_path);
+  }
+
+  return node;
 }
 
 inline void publishImage(

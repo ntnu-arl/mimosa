@@ -11,10 +11,11 @@ namespace mimosa
 namespace odometry
 {
 Manager::Manager(
-  ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
+  const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
   mimosa::graph::Manager::Ptr graph_manager)
 : SensorManagerBase<ManagerConfig, nav_msgs::Odometry>(
-    config::checkValid(config::fromRos<ManagerConfig>(pnh)), imu_manager, graph_manager, "odometry")
+    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), imu_manager,
+    graph_manager, "odometry")
 {
   subscribeIfEnabled(pnh);
 }

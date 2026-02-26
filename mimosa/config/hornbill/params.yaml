@@ -57,6 +57,7 @@ lidar:
   sensor_frame: mimosa_lidar
   T_B_S: [0.0166, 0.02158, 0.03375, 0, 0, 0, 1] # x, y, z, x, y, z, w
   T_B_OdometryLoggerFrame: [-0.006253, 0.011775, 0.10825, 0, 0, 0, 1] # x, y, z, x, y, z, w
+  sensor_json: os_hornbill.json
   manager:
     log_level: warn
     enabled: true

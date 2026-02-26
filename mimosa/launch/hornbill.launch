@@ -6,8 +6,7 @@
     <remap from="/mimosa_node/lidar/manager/lidar_in" to="/ouster/points" />
     <remap from="/mimosa_node/radar/manager/radar_in" to="/radar/cloud" />
 
-    <rosparam file="$(find mimosa)/config/hornbill/params.yaml"/>
-    <rosparam file="$(find mimosa)/config/hornbill/os_hornbill.json" command="load" ns="lidar/sensor"/>
+    <param name="config_path" value="$(find mimosa)/config/hornbill/params.yaml"/>
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />

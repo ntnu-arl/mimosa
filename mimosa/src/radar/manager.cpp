@@ -11,10 +11,11 @@ namespace mimosa
 namespace radar
 {
 Manager::Manager(
-  ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
+  const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
   mimosa::graph::Manager::Ptr graph_manager)
 : SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
-    config::checkValid(config::fromRos<ManagerConfig>(pnh)), imu_manager, graph_manager, "radar")
+    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), imu_manager,
+    graph_manager, "radar")
 {
   pub_debug_ = pnh.advertise<mimosa_msgs::RadarManagerDebug>("radar/manager/debug", 1);
   pub_filtered_points_ =

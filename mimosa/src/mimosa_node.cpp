@@ -25,6 +25,8 @@ int main(int argc, char ** argv)
 
   ros::init(argc, argv, "mimosa_node");
   ros::NodeHandle pnh("~");
+  std::string config_path;
+  pnh.param<std::string>("config_path", config_path, "config/mimosa.yaml");
   ros::AsyncSpinner spinner(2);
   spinner.start();
 
@@ -34,8 +36,8 @@ int main(int argc, char ** argv)
   ros::CallbackQueue callback_queue_imu;
   pnh_imu.setCallbackQueue(&callback_queue_imu);
 
-  auto imu_manager = std::make_shared<mimosa::imu::Manager>(pnh_imu);
-  auto graph_manager = std::make_shared<mimosa::graph::Manager>(pnh, imu_manager);
+  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, pnh_imu);
+  auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, pnh, imu_manager);
 
   std::thread imu_thread([&callback_queue_imu]() {
     ros::SingleThreadedSpinner spinner;
@@ -43,9 +45,9 @@ int main(int argc, char ** argv)
   });
 
   // Exteroceptive sensor managers
-  mimosa::lidar::Manager lidar_manager(pnh, imu_manager, graph_manager);
-  mimosa::radar::Manager radar_manager(pnh, imu_manager, graph_manager);
-  mimosa::odometry::Manager odometry_manager(pnh, imu_manager, graph_manager);
+  mimosa::lidar::Manager lidar_manager(config_path, pnh, imu_manager, graph_manager);
+  mimosa::radar::Manager radar_manager(config_path, pnh, imu_manager, graph_manager);
+  mimosa::odometry::Manager odometry_manager(config_path, pnh, imu_manager, graph_manager);
 
   ros::waitForShutdown();
   imu_thread.join();

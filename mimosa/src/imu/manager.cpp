@@ -10,8 +10,8 @@ namespace mimosa
 {
 namespace imu
 {
-Manager::Manager(ros::NodeHandle & pnh)
-: config_(config::checkValid(config::fromRos<ManagerConfig>(pnh)))
+Manager::Manager(const std::string & config_path, ros::NodeHandle & pnh)
+: config_(config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)))
 {
   // Prepare logger
   logger_ =

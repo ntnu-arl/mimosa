@@ -34,7 +34,7 @@ private:
 
 public:
   Manager(
-    ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
+    const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
     mimosa::graph::Manager::Ptr graph_manager);
   void callback(const nav_msgs::Odometry::ConstPtr & msg) override;
 };

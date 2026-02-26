@@ -57,6 +57,7 @@ lidar:
   sensor_frame: mimosa_lidar
   T_B_S: [0.0035, 0.0197, 0.078359, 0, 0, 0, 1] # x, y, z, x, y, z, w
   T_B_OdometryLoggerFrame: [0, 0, 0, 0, 0, 0, 1] # x, y, z, x, y, z, w
+  sensor_json: ../os_dummy.json
   manager:
     log_level: warn
     enabled: true

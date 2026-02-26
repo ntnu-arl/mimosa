@@ -10,8 +10,8 @@ namespace mimosa
 {
 namespace lidar
 {
-Geometric::Geometric(ros::NodeHandle & pnh)
-: config(config::checkValid(config::fromRos<GeometricConfig>(pnh)))
+Geometric::Geometric(const std::string & config_path, ros::NodeHandle & pnh)
+: config(config::checkValid(config::fromYamlFile<GeometricConfig>(config_path)))
 {
   // Prepare config
   logger_ = createLogger(

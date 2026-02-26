@@ -16,8 +16,7 @@
     <param name="s" value="$(arg s)"/>
     <param name="lidar_collection_delay" value="$(arg lidar_collection_delay)"/>
 
-    <rosparam file="$(find mimosa)/config/parrot/params.yaml"/>
-    <rosparam file="$(find mimosa)/config/os_dummy.json" command="load" ns="lidar/sensor"/>
+    <param name="config_path" value="$(find mimosa)/config/parrot/params.yaml"/>
 
     <!-- Override config loaded second (overwrites matching keys) -->
     <rosparam file="$(arg config_override)" if="$(eval config_override != '')"/>

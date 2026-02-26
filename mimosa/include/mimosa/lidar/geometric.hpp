@@ -77,7 +77,7 @@ private:
     const double min_dist_in_voxel = 0.1);
 
 public:
-  Geometric(ros::NodeHandle & pnh);
+  Geometric(const std::string & config_path, ros::NodeHandle & pnh);
   void preprocess(
     const pcl::PointCloud<Point> & points_deskewed, const std::vector<size_t> & idxs,
     const double ts);

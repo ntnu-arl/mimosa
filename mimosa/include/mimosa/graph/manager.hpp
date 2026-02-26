@@ -118,7 +118,8 @@ private:
   ros::Publisher pub_optimized_path_;
 
 public:
-  Manager(ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager);
+  Manager(
+    const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager);
   // The one step factors are for things that do not require the two step process. Eg. Radar
   DeclarationResult declare(
     const double ts, gtsam::Key & key, const bool use_to_init,

@@ -52,17 +52,19 @@ int main(int argc, char ** argv)
 
   ros::init(argc, argv, "mimosa_node");
   ros::NodeHandle pnh("~");
+  std::string config_path;
+  pnh.param<std::string>("config_path", config_path, "config/mimosa.yaml");
   ros::Publisher clock_pub = pnh.advertise<rosgraph_msgs::Clock>("/clock", 10);
 
   ros::param::set("/use_sim_time", true);
 
-  auto imu_manager = std::make_shared<mimosa::imu::Manager>(pnh);
-  auto graph_manager = std::make_shared<mimosa::graph::Manager>(pnh, imu_manager);
+  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, pnh);
+  auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, pnh, imu_manager);
 
   // Exteroceptive sensor managers
-  mimosa::lidar::Manager lidar_manager(pnh, imu_manager, graph_manager);
-  mimosa::radar::Manager radar_manager(pnh, imu_manager, graph_manager);
-  mimosa::odometry::Manager odometry_manager(pnh, imu_manager, graph_manager);
+  mimosa::lidar::Manager lidar_manager(config_path, pnh, imu_manager, graph_manager);
+  mimosa::radar::Manager radar_manager(config_path, pnh, imu_manager, graph_manager);
+  mimosa::odometry::Manager odometry_manager(config_path, pnh, imu_manager, graph_manager);
 
   // Read the bag name from parameter server
   std::string bag_name;

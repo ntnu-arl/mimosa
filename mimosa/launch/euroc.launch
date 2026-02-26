@@ -7,8 +7,7 @@
     <!-- <remap from="/mimosa_node/radar/manager/radar_in" to="/radar/cloud" /> -->
     <remap from="/mimosa_node/odometry/manager/odometry_in" to="/rovio/odometry" />
 
-    <rosparam file="$(find mimosa)/config/euroc/params.yaml"/>
-    <rosparam file="$(find mimosa)/config/os_dummy.json" command="load" ns="lidar/sensor"/>
+    <param name="config_path" value="$(find mimosa)/config/euroc/params.yaml"/>
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mimosa)/rviz/mimosa.rviz" if="$(arg viz)" />

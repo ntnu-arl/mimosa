@@ -10,8 +10,9 @@ namespace mimosa
 {
 namespace lidar
 {
-Photometric::Photometric(ros::NodeHandle & pnh)
-: config(config::checkValid(config::fromRos<PhotometricConfig>(pnh))),
+Photometric::Photometric(const std::string & config_path, ros::NodeHandle & pnh)
+: config(
+    config::checkValid(config::fromYaml<PhotometricConfig>(loadConfigWithSensorJson(config_path)))),
   erosion_kernel_([&]() {
     int k_size = config.patch_size + config.erosion_buffer;
     return cv::Mat::ones(k_size, k_size, CV_32FC1);

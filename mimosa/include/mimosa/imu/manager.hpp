@@ -109,7 +109,7 @@ private:
 
 public:
   using Ptr = std::shared_ptr<Manager>;
-  Manager(ros::NodeHandle & pnh);
+  Manager(const std::string & config_path, ros::NodeHandle & pnh);
   // * This function is public to allow other sensor managers to create their own preintegrators if needed
   inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams() const
   {

@@ -11,16 +11,17 @@ namespace mimosa
 namespace lidar
 {
 Manager::Manager(
-  ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
+  const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
   mimosa::graph::Manager::Ptr graph_manager)
 : SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
-    config::checkValid(config::fromRos<ManagerConfig>(pnh)), imu_manager, graph_manager, "lidar"),
+    config::checkValid(config::fromYaml<ManagerConfig>(loadConfigWithSensorJson(config_path))),
+    imu_manager, graph_manager, "lidar"),
   z_offset_(-config_.lidar_to_sensor_transform[11] / 1000.0),
   range_min_sq_(config_.range_min * config_.range_min),
   range_max_sq_(config_.range_max * config_.range_max)
 {
-  geometric_ = std::make_unique<Geometric>(pnh);
-  photometric_ = std::make_unique<Photometric>(pnh);
+  geometric_ = std::make_unique<Geometric>(config_path, pnh);
+  photometric_ = std::make_unique<Photometric>(config_path, pnh);
 
   // Checks that span across configs
   if (!config_.create_full_res_pointcloud && photometric_->config.enabled) {
