@@ -11,7 +11,8 @@ namespace mimosa
 namespace graph
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager)
+  const std::string & config_path, ros::NodeHandle & pnh,
+  mimosa::imu::Manager::SharedPtr imu_manager)
 : config_(config::checkValid(config::fromYamlFile<ManagerConfig>(config_path))),
   imu_manager_(imu_manager),
   isam2_params_(getISAM2Params())

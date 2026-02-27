@@ -44,7 +44,7 @@ struct Feature
 
 struct Frame
 {
-  using Ptr = std::shared_ptr<Frame>;
+  using SharedPtr = std::shared_ptr<Frame>;
   using ConstPtr = std::shared_ptr<const Frame>;
 
   double ts;

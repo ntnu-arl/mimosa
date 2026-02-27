@@ -69,7 +69,7 @@ void declare_config(ManagerConfig & config);
 class Manager
 {
 public:
-  using Ptr = std::shared_ptr<Manager>;
+  using SharedPtr = std::shared_ptr<Manager>;
 
   enum class DeclarationResult
   {
@@ -91,7 +91,7 @@ private:
   std::unique_ptr<spdlog::logger> trajectory_logger_;
 
   // Member variables
-  mimosa::imu::Manager::Ptr imu_manager_;
+  mimosa::imu::Manager::SharedPtr imu_manager_;
   const gtsam::ISAM2Params isam2_params_;
   bool initialized_ = false;
 
@@ -119,7 +119,8 @@ private:
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager);
+    const std::string & config_path, ros::NodeHandle & pnh,
+    mimosa::imu::Manager::SharedPtr imu_manager);
   // The one step factors are for things that do not require the two step process. Eg. Radar
   DeclarationResult declare(
     const double ts, gtsam::Key & key, const bool use_to_init,

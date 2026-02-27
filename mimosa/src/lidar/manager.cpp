@@ -11,8 +11,8 @@ namespace mimosa
 namespace lidar
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
-  mimosa::graph::Manager::Ptr graph_manager)
+  const std::string & config_path, ros::NodeHandle & pnh,
+  mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager)
 : SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
     config::checkValid(config::fromYaml<ManagerConfig>(loadConfigWithSensorJson(config_path))),
     imu_manager, graph_manager, "lidar"),

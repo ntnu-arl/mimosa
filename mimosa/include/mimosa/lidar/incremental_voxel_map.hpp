@@ -22,7 +22,7 @@ namespace lidar
 class IncrementalVoxelMapPCL
 {
 public:
-  using Ptr = std::shared_ptr<IncrementalVoxelMapPCL>;
+  using SharedPtr = std::shared_ptr<IncrementalVoxelMapPCL>;
 
 private:
   gtsam_points::iVox::Ptr ivox_;

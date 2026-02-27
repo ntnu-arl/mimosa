@@ -108,7 +108,7 @@ private:
     const double ts1, const V6D & meas1, const double ts2, const V6D & meas2, const double ts);
 
 public:
-  using Ptr = std::shared_ptr<Manager>;
+  using SharedPtr = std::shared_ptr<Manager>;
   Manager(const std::string & config_path, ros::NodeHandle & pnh);
   // * This function is public to allow other sensor managers to create their own preintegrators if needed
   inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams() const

@@ -82,8 +82,8 @@ protected:
   std::unique_ptr<spdlog::logger> logger_;
   ros::Subscriber sub_;
   tf2_ros::StaticTransformBroadcaster tf2_static_broadcaster_;
-  mimosa::imu::Manager::Ptr imu_manager_;
-  mimosa::graph::Manager::Ptr graph_manager_;
+  mimosa::imu::Manager::SharedPtr imu_manager_;
+  mimosa::graph::Manager::SharedPtr graph_manager_;
 
   // Common timing variables
   gtsam::Key new_key_;
@@ -101,8 +101,8 @@ public:
 
 protected:
   SensorManagerBase(
-    const ConfigT & config, mimosa::imu::Manager::Ptr imu_manager,
-    mimosa::graph::Manager::Ptr graph_manager, const std::string & manager_type)
+    const ConfigT & config, mimosa::imu::Manager::SharedPtr imu_manager,
+    mimosa::graph::Manager::SharedPtr graph_manager, const std::string & manager_type)
   : config_(config),
     imu_manager_(imu_manager),
     graph_manager_(graph_manager),

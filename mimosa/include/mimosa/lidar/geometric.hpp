@@ -44,10 +44,10 @@ private:
   // Member variables
   pcl::PointCloud<Point>::Ptr Be_cloud_;
   pcl::PointCloud<Point> sm_Be_cloud_ds_;
-  ICPFactor::Ptr factor_;
+  ICPFactor::SharedPtr factor_;
 
   // Variables for map
-  IncrementalVoxelMapPCL::Ptr ivox_map_;
+  IncrementalVoxelMapPCL::SharedPtr ivox_map_;
   std::vector<gtsam::Pose3> map_poses_;
   geometry_msgs::PoseArray keyframe_poses_;
 

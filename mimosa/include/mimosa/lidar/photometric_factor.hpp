@@ -30,7 +30,7 @@ class PhotometricFactor : public gtsam::NonlinearFactor
   // The extracted features are deskewed and in the LiDAR frame corresponding to the a frame
 
 public:
-  using Ptr = std::shared_ptr<PhotometricFactor>;
+  using SharedPtr = std::shared_ptr<PhotometricFactor>;
 
   enum class RejectStatus
   {

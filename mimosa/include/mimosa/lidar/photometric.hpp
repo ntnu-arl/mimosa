@@ -43,9 +43,9 @@ private:
   const std::vector<int> idx_to_v_;
   cv::Mat static_mask_;
 
-  Frame::Ptr current_frame_;
+  Frame::SharedPtr current_frame_;
   std::vector<Feature> map_Le_features_;
-  PhotometricFactor::Ptr photometric_factor_;
+  PhotometricFactor::SharedPtr photometric_factor_;
 
   mimosa_msgs::LidarPhotometricDebug debug_msg_;
 

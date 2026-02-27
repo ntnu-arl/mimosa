@@ -76,8 +76,8 @@ private:
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh, mimosa::imu::Manager::Ptr imu_manager,
-    mimosa::graph::Manager::Ptr graph_manager);
+    const std::string & config_path, ros::NodeHandle & pnh,
+    mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager);
   void callback(const sensor_msgs::PointCloud2::ConstPtr & msg) override;
 
 private:

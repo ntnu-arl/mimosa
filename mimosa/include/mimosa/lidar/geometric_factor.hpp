@@ -30,7 +30,7 @@ class ICPFactor : public gtsam::NonlinearFactor
   // All clouds are assumed to be deskewed already and in the body frame
 
 public:
-  using Ptr = std::shared_ptr<ICPFactor>;
+  using SharedPtr = std::shared_ptr<ICPFactor>;
 
   enum class RejectStatus
   {
@@ -73,7 +73,7 @@ public:
 
 private:
   const bool is_binary_;
-  IncrementalVoxelMapPCL::Ptr ivox_target_;
+  IncrementalVoxelMapPCL::SharedPtr ivox_target_;
   pcl::PointCloud<Point> cloud_source_;
 
   mutable std::vector<V3D> transed_point_target_;  // Transformed points in target frame
@@ -117,7 +117,7 @@ private:
 
 public:
   ICPFactor(
-    const gtsam::Key key_source, IncrementalVoxelMapPCL::Ptr ivox_target,
+    const gtsam::Key key_source, IncrementalVoxelMapPCL::SharedPtr ivox_target,
     const pcl::PointCloud<Point> & cloud_source, const RegistrationConfig & config)
   : Base(std::vector<gtsam::Key>{key_source}),
     is_binary_(false),
@@ -130,7 +130,7 @@ public:
 
   ICPFactor(
     const gtsam::Key key_source, const gtsam::Key key_target,
-    IncrementalVoxelMapPCL::Ptr ivox_target, const pcl::PointCloud<Point> & cloud_source,
+    IncrementalVoxelMapPCL::SharedPtr ivox_target, const pcl::PointCloud<Point> & cloud_source,
     const RegistrationConfig & config)
   : Base(std::vector<gtsam::Key>{key_source, key_target}),
     is_binary_(true),
