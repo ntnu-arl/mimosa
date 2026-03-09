@@ -194,17 +194,7 @@ install(
 )
 
 # Executables
-set(EXECUTABLES node)
-if(DETECTED_ROS_VERSION
-   EQUAL
-   1
-)
-  list(
-    APPEND
-    EXECUTABLES
-    rosbag
-  )
-endif()
+set(EXECUTABLES node rosbag)
 foreach(EXEC ${EXECUTABLES})
   add_executable(${PROJECT_NAME}_${EXEC} src/${PROJECT_NAME}_${EXEC}.cpp)
   configure_ros_target(${PROJECT_NAME}_${EXEC})

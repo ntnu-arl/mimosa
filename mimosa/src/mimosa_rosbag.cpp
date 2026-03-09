@@ -14,9 +14,15 @@
 #include "mimosa/radar/manager.hpp"
 
 // ROS
+#if DETECTED_ROS_VERSION == 1
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <rosgraph_msgs/Clock.h>
+#else
+#include <spdlog/spdlog.h>
+
+#include <rosbag2_cpp/reader.hpp>
+#endif
 
 // C++
 #include <fcntl.h>
@@ -50,15 +56,26 @@ int main(int argc, char ** argv)
 {
   config::Settings().print_missing = true;
 
+  // ROS initialization and parameter setup
+#if DETECTED_ROS_VERSION == 1
   ros::init(argc, argv, "mimosa_node");
   auto pnh = std::make_shared<ros::NodeHandle>("~");
   std::string config_path;
   pnh->param<std::string>("config_path", config_path, "config/mimosa.yaml");
   ros::Publisher clock_pub = pnh->advertise<rosgraph_msgs::Clock>("/clock", 10);
-
   ros::param::set("/use_sim_time", true);
-
   mimosa::ri::NodeHandle nh = pnh;
+#else
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<rclcpp::Node>(
+    "mimosa_node",
+    rclcpp::NodeOptions().parameter_overrides({rclcpp::Parameter("use_sim_time", true)}));
+  std::string config_path =
+    node->declare_parameter<std::string>("config_path", "config/mimosa.yaml");
+  auto clock_pub = node->create_publisher<rosgraph_msgs::msg::Clock>("/clock", 10);
+  mimosa::ri::NodeHandle nh = node;
+#endif
+
   auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, nh);
   auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, nh, imu_manager);
 
@@ -69,10 +86,18 @@ int main(int argc, char ** argv)
 
   // Read the bag name from parameter server
   std::string bag_name;
+#if DETECTED_ROS_VERSION == 1
   if (!pnh->getParam("bag_name", bag_name)) {
     ROS_ERROR("Bag name not provided");
     return 1;
   }
+#else
+  bag_name = node->declare_parameter<std::string>("bag_name", "");
+  if (bag_name.empty()) {
+    spdlog::error("Bag name not provided");
+    return 1;
+  }
+#endif
 
   std::cout << "bag_name: " << bag_name << std::endl;
 
@@ -95,8 +120,14 @@ int main(int argc, char ** argv)
 
   // Iterate through files in the directory
   for (const auto & entry : std::filesystem::directory_iterator(bag_dir)) {
+#if DETECTED_ROS_VERSION == 1
+    bool is_bag_entry = entry.is_regular_file();
+#else
+    // ROS2 bags are directories containing metadata.yaml and .db3 files
+    bool is_bag_entry = entry.is_regular_file() || entry.is_directory();
+#endif
     if (
-      entry.is_regular_file() &&
+      is_bag_entry &&
       std::regex_match(entry.path().filename().string(), std::regex(regex_pattern))) {
       bag_paths.push_back(entry.path().string());
     }
@@ -106,16 +137,23 @@ int main(int argc, char ** argv)
   std::sort(bag_paths.begin(), bag_paths.end());
 
   float s_offset;
+  float lidar_collection_delay;
+#if DETECTED_ROS_VERSION == 1
   if (!pnh->getParam("s", s_offset)) {
     s_offset = 0.0;
   }
-  std::cout << "s_offset: " << s_offset << std::endl;
-
-  float lidar_collection_delay = 0.113;  // s
+  lidar_collection_delay = 0.113;  // s
   if (!pnh->getParam("lidar_collection_delay", lidar_collection_delay)) {
     lidar_collection_delay = 0.0;
   }
-  std::queue<sensor_msgs::PointCloud2::ConstPtr> lidar_msg_queue;
+#else
+  s_offset = static_cast<float>(node->declare_parameter<double>("s", 0.0));
+  lidar_collection_delay =
+    static_cast<float>(node->declare_parameter<double>("lidar_collection_delay", 0.0));
+#endif
+  std::cout << "s_offset: " << s_offset << std::endl;
+
+  std::queue<mimosa::ri::ConstSharedPtr<mimosa::ri::SensorMsgsPointCloud2>> lidar_msg_queue;
 
   // Print out the bag_paths
   std::cout << "Opening these bags:" << std::endl;
@@ -139,8 +177,10 @@ int main(int argc, char ** argv)
   setNonBlocking(true);
 
   bool paused = false;
-
   bool first = true;
+
+  // --- Bag reading loop ---
+#if DETECTED_ROS_VERSION == 1
   ros::Time start_time;
 
   for (const auto & path : bag_paths) {
@@ -171,17 +211,13 @@ int main(int argc, char ** argv)
       if (ch != EOF) {
         if (ch == ' ') {
           paused = !paused;
-          // printf("Paused: %s\n", paused ? "Yes" : "No");
         } else if (paused && ch == 's') {
-          // Step through messages when 's' is pressed
-          // printf("Stepping\n");
           step = true;
         }
       }
 
       if (paused) {
         if (!step) {
-          // When paused, wait briefly before checking again
           usleep(10000);  // Sleep for 10 milliseconds
           continue;
         }
@@ -204,8 +240,6 @@ int main(int argc, char ** argv)
         sensor_msgs::PointCloud2::ConstPtr msg = m.instantiate<sensor_msgs::PointCloud2>();
         if (msg != nullptr) {
           if (lidar_collection_delay != 0) {
-            // This message needs to be held back until the lidar collection delay has passed
-            // Other messages should continue to be processed during this time
             lidar_msg_queue.push(msg);
           } else {
             lidar_manager.callback(msg);
@@ -242,6 +276,111 @@ int main(int argc, char ** argv)
     bag.close();
     std::cout << "Finished processing bag: " << path << std::endl;
   }
+
+#else  // ROS2
+  int64_t start_time_ns = 0;
+
+  for (const auto & path : bag_paths) {
+    if (!rclcpp::ok()) {
+      break;
+    }
+
+    rosbag2_cpp::Reader reader;
+    std::cout << "Processing bag: " << path << std::endl;
+    reader.open(path);
+
+    // Get the start time of the bags
+    if (first) {
+      auto metadata = reader.get_metadata();
+      start_time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        metadata.starting_time.time_since_epoch())
+                        .count();
+      first = false;
+    }
+
+    rosbag2_storage::StorageFilter filter;
+    filter.topics = topics;
+    reader.set_filter(filter);
+
+    while (reader.has_next()) {
+      if (!rclcpp::ok()) {
+        break;
+      }
+
+      // Check for key press
+      int ch = getchar();
+      bool step = false;
+      if (ch != EOF) {
+        if (ch == ' ') {
+          paused = !paused;
+        } else if (paused && ch == 's') {
+          step = true;
+        }
+      }
+
+      if (paused) {
+        if (!step) {
+          usleep(10000);  // Sleep for 10 milliseconds
+          continue;
+        }
+      }
+
+      auto bag_msg = reader.read_next();
+      int64_t msg_time_ns = bag_msg->recv_timestamp;
+
+      if ((msg_time_ns - start_time_ns) < static_cast<int64_t>(s_offset * 1e9)) {
+        continue;
+      }
+
+      // Publish the time on the /clock topic
+      rosgraph_msgs::msg::Clock clock_msg;
+      clock_msg.clock.sec = static_cast<int32_t>(msg_time_ns / 1000000000LL);
+      clock_msg.clock.nanosec = static_cast<uint32_t>(msg_time_ns % 1000000000LL);
+      clock_pub->publish(clock_msg);
+
+      rclcpp::SerializedMessage serialized_msg(*bag_msg->serialized_data);
+
+      if (bag_msg->topic_name == lidar_topic) {
+        auto msg = std::make_shared<mimosa::ri::SensorMsgsPointCloud2>();
+        rclcpp::Serialization<mimosa::ri::SensorMsgsPointCloud2> serializer;
+        serializer.deserialize_message(&serialized_msg, msg.get());
+        if (lidar_collection_delay != 0) {
+          lidar_msg_queue.push(msg);
+        } else {
+          lidar_manager.callback(msg);
+        }
+      } else if (bag_msg->topic_name == imu_topic) {
+        auto msg = std::make_shared<mimosa::ri::SensorMsgsImu>();
+        rclcpp::Serialization<mimosa::ri::SensorMsgsImu> serializer;
+        serializer.deserialize_message(&serialized_msg, msg.get());
+        imu_manager->callback(msg);
+
+        if (!lidar_msg_queue.empty()) {
+          rclcpp::Time imu_stamp(msg->header.stamp);
+          rclcpp::Time lidar_stamp(lidar_msg_queue.front()->header.stamp);
+          if (imu_stamp - lidar_stamp > rclcpp::Duration::from_seconds(lidar_collection_delay)) {
+            lidar_manager.callback(lidar_msg_queue.front());
+            lidar_msg_queue.pop();
+          }
+        }
+      } else if (bag_msg->topic_name == radar_topic) {
+        auto msg = std::make_shared<mimosa::ri::SensorMsgsPointCloud2>();
+        rclcpp::Serialization<mimosa::ri::SensorMsgsPointCloud2> serializer;
+        serializer.deserialize_message(&serialized_msg, msg.get());
+        radar_manager.callback(msg);
+      } else if (bag_msg->topic_name == odometry_topic) {
+        auto msg = std::make_shared<mimosa::ri::NavMsgsOdometry>();
+        rclcpp::Serialization<mimosa::ri::NavMsgsOdometry> serializer;
+        serializer.deserialize_message(&serialized_msg, msg.get());
+        odometry_manager.callback(msg);
+      }
+    }
+
+    std::cout << "Finished processing bag: " << path << std::endl;
+  }
+
+  rclcpp::shutdown();
+#endif
 
   // Restore terminal settings
   setNonBlocking(false);
