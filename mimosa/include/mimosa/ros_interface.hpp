@@ -124,6 +124,10 @@ inline TransformBroadcaster create_transform_broadcaster(NodeHandle)
   return std::make_shared<tf2_ros::TransformBroadcaster>();
 }
 
+// Callback group (no-op in ROS1; isolation is achieved via separate NodeHandles)
+using CallbackGroup = std::shared_ptr<void>;
+inline CallbackGroup create_callback_group(NodeHandle &) { return nullptr; }
+
 // Utility functions
 template <typename MessageType>
 Publisher<MessageType> create_publisher(
@@ -135,7 +139,7 @@ Publisher<MessageType> create_publisher(
 template <typename MessageType>
 Subscriber<MessageType> create_subscriber(
   NodeHandle & nh, const std::string & topic, int queue_size,
-  std::function<void(const typename MessageType::ConstPtr &)> callback)
+  std::function<void(const typename MessageType::ConstPtr &)> callback, CallbackGroup = nullptr)
 {
   return std::make_shared<ros::Subscriber>(nh->subscribe<MessageType>(topic, queue_size, callback));
 }
@@ -231,6 +235,13 @@ inline TransformBroadcaster create_transform_broadcaster(NodeHandle & nh)
   return std::make_shared<tf2_ros::TransformBroadcaster>(nh);
 }
 
+// Callback group for isolating callbacks onto dedicated threads
+using CallbackGroup = rclcpp::CallbackGroup::SharedPtr;
+inline CallbackGroup create_callback_group(NodeHandle & node)
+{
+  return node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+}
+
 // Utility functions
 template <typename MessageType>
 Publisher<MessageType> create_publisher(
@@ -248,12 +259,17 @@ Publisher<MessageType> create_publisher(
 template <typename MessageType>
 Subscriber<MessageType> create_subscriber(
   NodeHandle & node, const std::string & topic, int queue_size,
-  std::function<void(const std::shared_ptr<MessageType>)> callback)
+  std::function<void(const std::shared_ptr<MessageType>)> callback,
+  CallbackGroup cb_group = nullptr)
 {
   rclcpp::QoS qos(queue_size);
   // Auto-prefix with ~/ to match ROS1 private NodeHandle behavior
   const std::string full_topic = (topic.empty() || topic[0] == '/') ? topic : "~/" + topic;
-  return node->template create_subscription<MessageType>(full_topic, qos, callback);
+  rclcpp::SubscriptionOptions options;
+  if (cb_group) {
+    options.callback_group = cb_group;
+  }
+  return node->template create_subscription<MessageType>(full_topic, qos, callback, options);
 }
 
 inline Time now(NodeHandle & node) { return node->now(); }

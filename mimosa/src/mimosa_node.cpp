@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
   imu_thread.join();
 
 #else
-  // ROS2: init, node, and spin
+  // ROS2: init, multi-threaded executor, and dedicated callback group for IMU
   rclcpp::init(argc, argv);
   auto node = std::make_shared<rclcpp::Node>("mimosa_node");
 
@@ -68,7 +68,10 @@ int main(int argc, char ** argv)
 
   mimosa::ri::NodeHandle nh = node;
 
-  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, nh);
+  // Create a dedicated callback group for IMU so it is never blocked by other callbacks
+  auto imu_cb_group = mimosa::ri::create_callback_group(nh);
+
+  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, nh, imu_cb_group);
   auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, nh, imu_manager);
 
   // Exteroceptive sensor managers
@@ -76,7 +79,11 @@ int main(int argc, char ** argv)
   mimosa::radar::Manager radar_manager(config_path, nh, imu_manager, graph_manager);
   mimosa::odometry::Manager odometry_manager(config_path, nh, imu_manager, graph_manager);
 
-  rclcpp::spin(node);
+  // Use a multi-threaded executor so callbacks on different topics run in parallel,
+  // and the IMU callback group gets its own thread
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(node);
+  executor.spin();
   rclcpp::shutdown();
 
 #endif

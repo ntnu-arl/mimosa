@@ -10,7 +10,7 @@ namespace mimosa
 {
 namespace imu
 {
-Manager::Manager(const std::string & config_path, ri::NodeHandle & nh)
+Manager::Manager(const std::string & config_path, ri::NodeHandle & nh, ri::CallbackGroup cb_group)
 : config_(config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)))
 {
   // Prepare logger
@@ -24,10 +24,10 @@ Manager::Manager(const std::string & config_path, ri::NodeHandle & nh)
     nh, "imu/manager/localizability_marker_array", 1);
   pub_odometry_ = ri::create_publisher<ri::NavMsgsOdometry>(nh, "imu/manager/odometry", 1);
 
-  // Subscribe to IMU messages
+  // Subscribe to IMU messages (with optional callback group for thread isolation)
   sub_ = ri::create_subscriber<ri::SensorMsgsImu>(
     nh, "imu/manager/imu_in", 1000,
-    [this](const ri::ConstSharedPtr<ri::SensorMsgsImu> & msg) { this->callback(msg); });
+    [this](const ri::ConstSharedPtr<ri::SensorMsgsImu> & msg) { this->callback(msg); }, cb_group);
 }
 
 std::shared_ptr<gtsam::PreintegrationParams> Manager::generatePreintegratorParams(

@@ -105,7 +105,8 @@ private:
 
 public:
   using SharedPtr = std::shared_ptr<Manager>;
-  Manager(const std::string & config_path, ri::NodeHandle & nh);
+  Manager(
+    const std::string & config_path, ri::NodeHandle & nh, ri::CallbackGroup cb_group = nullptr);
   // * This function is public to allow other sensor managers to create their own preintegrators if needed
   inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams() const
   {
