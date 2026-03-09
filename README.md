@@ -2,6 +2,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-BSD-green.svg)
 ![ROS Version](https://img.shields.io/badge/ROS-Noetic-blue)
+![ROS Version](https://img.shields.io/badge/ROS2-Jazzy-blue)
 
 This package implements a tightly-coupled multi-modal fusion framework. It currently supports fusing LiDAR (Geometric, Photometric), Radar, any Odometry and IMU to provide robust state estimation in challenging environments. The framework is designed to be modular and easily extensible to add new sensors.
 
@@ -30,32 +31,56 @@ Consecutive odometry measurements (e.g., from a VIO system) are used to create r
 
 ## Setup
 
-These instructions assume that `ros-noetic-desktop-full` is installed on your Ubuntu 20.04 system.
+This package supports both **ROS1 (Noetic)** and **ROS2 (Jazzy)**. The same codebase builds on both via a `ros_interface.hpp` abstraction layer.
 
-  ```bash
-  # dependencies
+### Common Setup
+
+```bash
+  # System wide dependencies
   sudo apt install python3-catkin-tools \
   libgoogle-glog-dev \
   libspdlog-dev
 
-  mkdir catkin_ws/src && cd catkin_ws/src
+  # Create a workspace and clone the code
+  mkdir your_ws/src && cd your_ws/src
 
+  # Local dependencies
   git clone git@github.com:ntnu-arl/config_utilities.git -b dev/mimosa
   git clone git@github.com:ntnu-arl/gtsam.git -b feature/imu_factor_with_gravity
   git clone git@github.com:ntnu-arl/gtsam_points.git -b minimal_updated
 
   # get this code
   git clone git@github.com:ntnu-arl/mimosa.git
+```
 
-  # build it
-  cd ..
+### ROS Version Specific Setup
+
+#### ROS1 (Noetic)
+
+These instructions assume that `ros-noetic-desktop-full` is installed on your Ubuntu 20.04 system.
+
+  ```bash
+  cd your_ws
+
   catkin config -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF
   catkin build mimosa
+  ```
+
+#### ROS2 (Jazzy)
+
+These instructions assume that `ros-jazzy-desktop` is installed on your Ubuntu 24.04 system.
+
+  ```bash
+  cd your_ws
+
+  colcon build --packages-up-to mimosa --cmake-args -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF
   ```
 
 ## Usage
 
 This package can be run either online (`mimosa_node`) or offline using a rosbag (`mimosa_rosbag`). The online version is for deployment on a robot, while the offline version is for testing and debugging. Both versions are identical in terms of functionality since they use the same callbacks. The offline version just allows you to read a rosbag and process the callbacks directly instead of receiving them over the network.
+
+ROS1 launch files use the `.launch` XML format. ROS2 launch files use the `_launch.py` Python format.
 
 ### Examples
 
@@ -75,6 +100,7 @@ The bags should be replayed with `--clock` option and the global `/use_sim_time`
 
 Then you can launch the system as:
 
+**ROS1:**
 ```bash
 # Terminal 1
 roslaunch simcore.launch
@@ -93,6 +119,15 @@ roslaunch mimosa magpie.launch
 rosbag play --clock /path/to/your/rosbag.bag
 ```
 
+**ROS2:**
+```bash
+# Terminal 1 - Launch mimosa (example with parrot config)
+ros2 launch mimosa parrot_launch.py
+
+# Terminal 2 - Replay the bag
+ros2 bag play /path/to/your/ros2bag --clock
+```
+
 #### LiDAR(Photometric-Geometric)-IMU Fusion
 
 ##### [ENWIDE Dataset](https://projects.asl.ethz.ch/datasets/enwide)
@@ -100,6 +135,7 @@ rosbag play --clock /path/to/your/rosbag.bag
 Download the dataset from [https://projects.asl.ethz.ch/datasets/enwide](https://projects.asl.ethz.ch/datasets/enwide).
 After downloading any of the sequences in the dataset, you can run the following command to launch the example:
 
+**ROS1:**
 ```bash
 roslaunch mimosa enwide_rosbag.launch bag_name:="/path/to/your/rosbag.bag" viz:="true"
 ```
@@ -109,8 +145,17 @@ roslaunch mimosa enwide_rosbag.launch bag_name:="/path/to/your/rosbag.bag" viz:=
 Download the dataset from [https://ori-drs.github.io/newer-college-dataset/download/](https://ori-drs.github.io/newer-college-dataset/download/).
 After downloading any of the sequences in the dataset, you can run the following command to launch the example:
 
+**ROS1:**
 ```bash
 roslaunch mimosa newer_college_rosbag.launch bag_name:="/path/to/your/rosbag.bag" viz:="true"
+```
+
+#### Offline Rosbag Processing (ROS2)
+
+The `mimosa_rosbag` node reads a ROS2 bag directly and processes messages without needing `ros2 bag play`. This is the ROS2 equivalent of the `*_rosbag.launch` files:
+
+```bash
+ros2 launch mimosa parrot_rosbag_launch.py bag_name:="/path/to/your/ros2bag" viz:="true"
 ```
 
 ##### Complete Dataset Example
@@ -141,12 +186,14 @@ python dataset_evaluation.py
 
 To run on your own data, you need to set up the following:
 
-1. Take the most relevant launch file
+1. Take the most relevant launch file (`.launch` for ROS1, `_launch.py` for ROS2)
 2. Modify the remapping of the input topics to your sensor topics in the launch file
 3. Modify parameters in the corresponding config file
    1. e.g. for velodyne the `point_skip_factor` must be 1
    2. Set your transforms for `T_B_S` for each of the sensors you are using. This is the transform from the Sensor frame to the Body frame (i.e. pose of Sensor in the Body frame).
 4. Launch your launch file
+
+For ROS2, only the `parrot` configuration currently has launch files (`parrot_launch.py`, `parrot_rosbag_launch.py`). These can be used as templates to create launch files for other configurations.
 
 ## License
 
