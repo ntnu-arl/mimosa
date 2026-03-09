@@ -98,7 +98,10 @@ protected:
   double prev_ts_ = 0.0;
 
 public:
-  inline std::string getSubscribedTopic() const { return ri::get_topic_name<MsgT>(sub_); }
+  inline std::string getSubscribedTopic() const
+  {
+    return sub_ ? ri::get_topic_name<MsgT>(sub_) : std::string();
+  }
 
 protected:
   SensorManagerBase(

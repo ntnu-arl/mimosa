@@ -130,7 +130,7 @@ public:
   void setPropagationBaseState(const State & state);
   inline std::string getSubscribedTopic() const
   {
-    return ri::get_topic_name<ri::SensorMsgsImu>(sub_);
+    return sub_ ? ri::get_topic_name<ri::SensorMsgsImu>(sub_) : std::string();
   }
 };
 
