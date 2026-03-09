@@ -26,7 +26,7 @@ struct ManagerConfig
 
 void declare_config(ManagerConfig & config);
 
-class Manager : public SensorManagerBase<ManagerConfig, nav_msgs::Odometry>
+class Manager : public SensorManagerBase<ManagerConfig, ri::NavMsgsOdometry>
 {
 private:
   gtsam::Key prev_key_;
@@ -34,9 +34,9 @@ private:
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh,
+    const std::string & config_path, ri::NodeHandle & nh,
     mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager);
-  void callback(const nav_msgs::Odometry::ConstPtr & msg) override;
+  void callback(const ri::ConstSharedPtr<ri::NavMsgsOdometry> & msg) override;
 };
 
 }  // namespace odometry

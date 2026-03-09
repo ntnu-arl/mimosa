@@ -49,7 +49,7 @@ enum class PType
   mmWaveDopplerResidual
 };
 
-inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields)
+inline PType decodePointType(const std::vector<ri::SensorMsgsPointField> & fields)
 {
   if (fieldsMatch(fields, getFieldsFromPointType<rioPoint>())) {
     return PType::Rio;

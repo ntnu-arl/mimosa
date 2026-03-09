@@ -11,22 +11,22 @@ namespace mimosa
 namespace odometry
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh,
-  mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager)
-: SensorManagerBase<ManagerConfig, nav_msgs::Odometry>(
-    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), imu_manager,
+  const std::string & config_path, ri::NodeHandle & nh, mimosa::imu::Manager::SharedPtr imu_manager,
+  mimosa::graph::Manager::SharedPtr graph_manager)
+: SensorManagerBase<ManagerConfig, ri::NavMsgsOdometry>(
+    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), nh, imu_manager,
     graph_manager, "odometry")
 {
-  subscribeIfEnabled(pnh);
+  subscribeIfEnabled();
 }
 
-void Manager::callback(const nav_msgs::Odometry::ConstPtr & msg)
+void Manager::callback(const ri::ConstSharedPtr<ri::NavMsgsOdometry> & msg)
 {
   Stopwatch sw;
   if (!passesCommonValidations(msg)) {
     return;
   }
-  corrected_ts_ = msg->header.stamp.toSec() + config_.base.ts_offset;
+  corrected_ts_ = ri::stamp_to_seconds(msg->header.stamp) + config_.base.ts_offset;
 
   MXD cov;
   convert(msg->pose.covariance, cov);

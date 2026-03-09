@@ -51,24 +51,25 @@ int main(int argc, char ** argv)
   config::Settings().print_missing = true;
 
   ros::init(argc, argv, "mimosa_node");
-  ros::NodeHandle pnh("~");
+  auto pnh = std::make_shared<ros::NodeHandle>("~");
   std::string config_path;
-  pnh.param<std::string>("config_path", config_path, "config/mimosa.yaml");
-  ros::Publisher clock_pub = pnh.advertise<rosgraph_msgs::Clock>("/clock", 10);
+  pnh->param<std::string>("config_path", config_path, "config/mimosa.yaml");
+  ros::Publisher clock_pub = pnh->advertise<rosgraph_msgs::Clock>("/clock", 10);
 
   ros::param::set("/use_sim_time", true);
 
-  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, pnh);
-  auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, pnh, imu_manager);
+  mimosa::ri::NodeHandle nh = pnh;
+  auto imu_manager = std::make_shared<mimosa::imu::Manager>(config_path, nh);
+  auto graph_manager = std::make_shared<mimosa::graph::Manager>(config_path, nh, imu_manager);
 
   // Exteroceptive sensor managers
-  mimosa::lidar::Manager lidar_manager(config_path, pnh, imu_manager, graph_manager);
-  mimosa::radar::Manager radar_manager(config_path, pnh, imu_manager, graph_manager);
-  mimosa::odometry::Manager odometry_manager(config_path, pnh, imu_manager, graph_manager);
+  mimosa::lidar::Manager lidar_manager(config_path, nh, imu_manager, graph_manager);
+  mimosa::radar::Manager radar_manager(config_path, nh, imu_manager, graph_manager);
+  mimosa::odometry::Manager odometry_manager(config_path, nh, imu_manager, graph_manager);
 
   // Read the bag name from parameter server
   std::string bag_name;
-  if (!pnh.getParam("bag_name", bag_name)) {
+  if (!pnh->getParam("bag_name", bag_name)) {
     ROS_ERROR("Bag name not provided");
     return 1;
   }
@@ -105,13 +106,13 @@ int main(int argc, char ** argv)
   std::sort(bag_paths.begin(), bag_paths.end());
 
   float s_offset;
-  if (!pnh.getParam("s", s_offset)) {
+  if (!pnh->getParam("s", s_offset)) {
     s_offset = 0.0;
   }
   std::cout << "s_offset: " << s_offset << std::endl;
 
   float lidar_collection_delay = 0.113;  // s
-  if (!pnh.getParam("lidar_collection_delay", lidar_collection_delay)) {
+  if (!pnh->getParam("lidar_collection_delay", lidar_collection_delay)) {
     lidar_collection_delay = 0.0;
   }
   std::queue<sensor_msgs::PointCloud2::ConstPtr> lidar_msg_queue;

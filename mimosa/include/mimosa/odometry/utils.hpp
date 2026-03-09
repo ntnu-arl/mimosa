@@ -21,7 +21,8 @@ inline double calcDoptimality(const MXD & covMat)
   return std::exp(std::log(std::pow(covMat.determinant(), (1.0 / covMat.rows()))));
 }
 
-inline void convert(const boost::array<double, 36> & in, MXD & out)
+template <typename ArrayT>
+inline void convert(const ArrayT & in, MXD & out)
 {
   out = MXD::Zero(6, 6);
   for (size_t i = 0; i < 6; ++i) {

@@ -11,12 +11,8 @@
 #include "mimosa/stopwatch.hpp"
 #include "mimosa/utils.hpp"
 
-// mimosa_msgs
-#include "mimosa_msgs/ImuManagerDebug.h"
-
-// ROS
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Imu.h>
+// mimosa - ros_interface provides all message types
+#include "mimosa/ros_interface.hpp"
 
 // GTSAM
 #include <gtsam/navigation/ImuFactor.h>
@@ -73,7 +69,7 @@ private:
   std::unique_ptr<spdlog::logger> logger_;
 
   // Inputs
-  ros::Subscriber sub_;
+  ri::Subscriber<ri::SensorMsgsImu> sub_;
 
   // Member variables
   ImuBuffer buffer_;
@@ -82,7 +78,7 @@ private:
   std::shared_ptr<gtsam::PreintegrationParams> preintegrator_params_;
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> preintegrator_;
   std::mutex preintegrator_mutex_;
-  mimosa_msgs::ImuManagerDebug debug_msg_;
+  ri::MimosaMsgsImuManagerDebug debug_msg_;
 
   // Propagation
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> propagation_preintegrator_;
@@ -91,9 +87,9 @@ private:
   std::mutex propagation_mutex_;
 
   // Outputs
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_localizability_marker_array_;
-  ros::Publisher pub_odometry_;
+  ri::Publisher<ri::MimosaMsgsImuManagerDebug> pub_debug_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_localizability_marker_array_;
+  ri::Publisher<ri::NavMsgsOdometry> pub_odometry_;
 
   void updatePreintegrationTo(
     const double ts_start, const double ts_end, const gtsam::imuBias::ConstantBias & imu_bias,
@@ -109,14 +105,14 @@ private:
 
 public:
   using SharedPtr = std::shared_ptr<Manager>;
-  Manager(const std::string & config_path, ros::NodeHandle & pnh);
+  Manager(const std::string & config_path, ri::NodeHandle & nh);
   // * This function is public to allow other sensor managers to create their own preintegrators if needed
   inline std::shared_ptr<gtsam::PreintegrationParams> getPreintegratorParams() const
   {
     return preintegrator_params_;
   }
   inline bool hasRecievedFirstMessage() const { return has_recieved_first_message_; }
-  void callback(const sensor_msgs::Imu::ConstPtr & msg);
+  void callback(const ri::ConstSharedPtr<ri::SensorMsgsImu> & msg);
   bool estimateAttitude(gtsam::Rot3 & R_W_B, V3D & estimated_acc_bias, V3D & estimated_gyro_bias);
   void getInterpolatedMeasurements(
     const double ts_start, const double ts_end, ImuBuffer & measurements,
@@ -131,7 +127,10 @@ public:
 
   const ManagerConfig & config() const { return config_; }
   void setPropagationBaseState(const State & state);
-  inline std::string getSubscribedTopic() const { return sub_.getTopic(); }
+  inline std::string getSubscribedTopic() const
+  {
+    return ri::get_topic_name<ri::SensorMsgsImu>(sub_);
+  }
 };
 
 }  // namespace imu

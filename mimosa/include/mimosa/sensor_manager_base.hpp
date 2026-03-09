@@ -80,8 +80,9 @@ protected:
   // Common member variables
   const ConfigT config_;
   std::unique_ptr<spdlog::logger> logger_;
-  ros::Subscriber sub_;
-  tf2_ros::StaticTransformBroadcaster tf2_static_broadcaster_;
+  ri::NodeHandle nh_;
+  ri::Subscriber<MsgT> sub_;
+  ri::StaticTransformBroadcaster tf2_static_broadcaster_;
   mimosa::imu::Manager::SharedPtr imu_manager_;
   mimosa::graph::Manager::SharedPtr graph_manager_;
 
@@ -97,13 +98,14 @@ protected:
   double prev_ts_ = 0.0;
 
 public:
-  inline std::string getSubscribedTopic() const { return sub_.getTopic(); }
+  inline std::string getSubscribedTopic() const { return ri::get_topic_name<MsgT>(sub_); }
 
 protected:
   SensorManagerBase(
-    const ConfigT & config, mimosa::imu::Manager::SharedPtr imu_manager,
+    const ConfigT & config, ri::NodeHandle & nh, mimosa::imu::Manager::SharedPtr imu_manager,
     mimosa::graph::Manager::SharedPtr graph_manager, const std::string & manager_type)
   : config_(config),
+    nh_(nh),
     imu_manager_(imu_manager),
     graph_manager_(graph_manager),
     manager_type_(manager_type)
@@ -116,20 +118,24 @@ protected:
     initial_skip_ = config_.base.initial_skip;
   }
 
-  virtual void callback(const typename MsgT::ConstPtr & msg) = 0;
+  virtual void callback(const ri::ConstSharedPtr<MsgT> & msg) = 0;
 
-  inline void subscribeIfEnabled(ros::NodeHandle & pnh)
+  inline void subscribeIfEnabled()
   {
     if (isEnabled()) {
-      sub_ = pnh.subscribe<MsgT>(
-        manager_type_ + "/manager/" + manager_type_ + "_in", 5, &SensorManagerBase::callback, this);
+      sub_ = ri::create_subscriber<MsgT>(
+        nh_, manager_type_ + "/manager/" + manager_type_ + "_in", 5,
+        [this](const ri::ConstSharedPtr<MsgT> & msg) { this->callback(msg); });
     }
   }
 
   inline void broadcastStaticTransform(double timestamp)
   {
+    if (!tf2_static_broadcaster_) {
+      tf2_static_broadcaster_ = ri::create_static_transform_broadcaster(nh_);
+    }
     broadcastTransform(
-      tf2_static_broadcaster_, config_.base.T_B_S, config_.base.body_frame,
+      *tf2_static_broadcaster_, config_.base.T_B_S, config_.base.body_frame,
       config_.base.sensor_frame, timestamp);
   }
 
@@ -155,9 +161,9 @@ protected:
     return true;  // Don't skip
   }
 
-  inline bool validateTimestamp(const typename MsgT::ConstPtr & msg)
+  inline bool validateTimestamp(const ri::ConstSharedPtr<MsgT> & msg)
   {
-    header_ts_ = msg->header.stamp.toSec();
+    header_ts_ = ri::stamp_to_seconds(msg->header.stamp);
 
     if (header_ts_ <= prev_ts_) {
       logger_->error(
@@ -171,17 +177,17 @@ protected:
     return true;
   }
 
-  inline bool validateMessage(const typename MsgT::ConstPtr & msg)
+  inline bool validateMessage(const ri::ConstSharedPtr<MsgT> & msg)
   {
     // For a pointcloud the only check is that the data is not empty since actual checks by parsing are handled in the individual managers
-    if constexpr (std::is_same<MsgT, sensor_msgs::PointCloud2>::value) {
+    if constexpr (std::is_same<MsgT, ri::SensorMsgsPointCloud2>::value) {
       if (msg->data.empty()) {
         logger_->warn("Received empty message. Ignoring this measurement");
         return false;
       }
     }
     // For odometry we can check that the values
-    if constexpr (std::is_same<MsgT, nav_msgs::Odometry>::value) {
+    if constexpr (std::is_same<MsgT, ri::NavMsgsOdometry>::value) {
       if (
         std::isnan(msg->pose.pose.position.x) || std::isnan(msg->pose.pose.position.y) ||
         std::isnan(msg->pose.pose.position.z)) {
@@ -199,7 +205,7 @@ protected:
   }
 
   // If true, this function will set the value of header_ts_
-  inline bool passesCommonValidations(const typename MsgT::ConstPtr & msg)
+  inline bool passesCommonValidations(const ri::ConstSharedPtr<MsgT> & msg)
   {
     return isEnabled() && isImuReady() && handleInitialSkip() && validateTimestamp(msg) &&
            validateMessage(msg);
@@ -249,7 +255,7 @@ protected:
           logger_, fmt::format(
                      "Unknown declaration result. Maybe the graph::manager::DeclarationResult API "
                      "has been updated. Received: {}",
-                     result));
+                     static_cast<int>(result)));
         return false;
     }
   }

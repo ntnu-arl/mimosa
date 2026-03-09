@@ -11,20 +11,20 @@ namespace mimosa
 namespace radar
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh,
-  mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager)
-: SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
-    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), imu_manager,
+  const std::string & config_path, ri::NodeHandle & nh, mimosa::imu::Manager::SharedPtr imu_manager,
+  mimosa::graph::Manager::SharedPtr graph_manager)
+: SensorManagerBase<ManagerConfig, ri::SensorMsgsPointCloud2>(
+    config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)), nh, imu_manager,
     graph_manager, "radar")
 {
-  pub_debug_ = pnh.advertise<mimosa_msgs::RadarManagerDebug>("radar/manager/debug", 1);
+  pub_debug_ = ri::create_publisher<ri::MimosaMsgsRadarManagerDebug>(nh, "radar/manager/debug", 1);
   pub_filtered_points_ =
-    pnh.advertise<sensor_msgs::PointCloud2>("radar/manager/filtered_points", 1);
+    ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "radar/manager/filtered_points", 1);
 
-  subscribeIfEnabled(pnh);
+  subscribeIfEnabled();
 }
 
-void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
+void Manager::callback(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg)
 {
   Stopwatch sw;
   if (!passesCommonValidations(msg)) {
@@ -102,16 +102,16 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   debug_msg_.n_points_static = dhf->getStatic().size();
   debug_msg_.n_points_dynamic = dhf->getDynamic().size();
-  debug_msg_.header.stamp.fromSec(corrected_ts_);
+  ri::from_seconds(debug_msg_.header.stamp, corrected_ts_);
   debug_msg_.t_full = sw.elapsedMs();
   logger_->debug(
     "Finished processing pointcloud in {} ms. Was assigned key: {}", debug_msg_.t_full,
     gdkf(new_key_));
-  pub_debug_.publish(debug_msg_);
+  pub_debug_->publish(debug_msg_);
 }
 
 template <typename PointT>
-void Manager::preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg)
+void Manager::preprocess(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg)
 {
   Stopwatch sw;
   pcl::PointCloud<mmWavePoint> points;

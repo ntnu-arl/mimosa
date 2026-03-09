@@ -140,7 +140,7 @@ Subscriber<MessageType> create_subscriber(
   return std::make_shared<ros::Subscriber>(nh->subscribe<MessageType>(topic, queue_size, callback));
 }
 
-inline Time now() { return ros::Time::now(); }
+inline Time now(NodeHandle = {}) { return ros::Time::now(); }
 inline void spin_once() { ros::spinOnce(); }
 inline bool ok() { return ros::ok(); }
 
@@ -155,6 +155,23 @@ inline size_t get_num_subscribers(const std::shared_ptr<ros::Publisher> & pub)
 }
 
 inline const std::string PrivateTopicPrefix = std::string("");
+
+// Stamp conversion utility (ros::Time is the stamp type in ROS1)
+inline double stamp_to_seconds(const Time & stamp) { return stamp.toSec(); }
+
+// Get topic name from subscriber
+template <typename MsgT>
+inline std::string get_topic_name(const Subscriber<MsgT> & sub)
+{
+  return sub->getTopic();
+}
+
+// Publish helper
+template <typename PubT, typename MsgT>
+inline void publish(const PubT & pub, const MsgT & msg)
+{
+  pub->publish(msg);
+}
 
 #else
 // ROS2 type aliases
@@ -223,7 +240,9 @@ Publisher<MessageType> create_publisher(
   if (latch) {
     qos = qos.transient_local();
   }
-  return node->template create_publisher<MessageType>(topic, qos);
+  // Auto-prefix with ~/ to match ROS1 private NodeHandle behavior
+  const std::string full_topic = (topic.empty() || topic[0] == '/') ? topic : "~/" + topic;
+  return node->template create_publisher<MessageType>(full_topic, qos);
 }
 
 template <typename MessageType>
@@ -232,7 +251,9 @@ Subscriber<MessageType> create_subscriber(
   std::function<void(const std::shared_ptr<MessageType>)> callback)
 {
   rclcpp::QoS qos(queue_size);
-  return node->template create_subscription<MessageType>(topic, qos, callback);
+  // Auto-prefix with ~/ to match ROS1 private NodeHandle behavior
+  const std::string full_topic = (topic.empty() || topic[0] == '/') ? topic : "~/" + topic;
+  return node->template create_subscription<MessageType>(full_topic, qos, callback);
 }
 
 inline Time now(NodeHandle & node) { return node->now(); }
@@ -255,6 +276,26 @@ inline size_t get_num_subscribers(const Publisher<MessageType> & pub)
 }
 
 inline const std::string PrivateTopicPrefix = std::string("~/");
+
+// Stamp conversion utility (builtin_interfaces::msg::Time is the stamp type in ROS2)
+inline double stamp_to_seconds(const builtin_interfaces::msg::Time & stamp)
+{
+  return static_cast<double>(stamp.sec) + static_cast<double>(stamp.nanosec) * 1e-9;
+}
+
+// Get topic name from subscriber
+template <typename MsgT>
+inline std::string get_topic_name(const Subscriber<MsgT> & sub)
+{
+  return sub->get_topic_name();
+}
+
+// Publish helper
+template <typename PubT, typename MsgT>
+inline void publish(const PubT & pub, const MsgT & msg)
+{
+  pub->publish(msg);
+}
 
 #endif
 

@@ -10,7 +10,7 @@ namespace mimosa
 {
 namespace lidar
 {
-Geometric::Geometric(const std::string & config_path, ros::NodeHandle & pnh)
+Geometric::Geometric(const std::string & config_path, ri::NodeHandle & nh)
 : config(config::checkValid(config::fromYamlFile<GeometricConfig>(config_path)))
 {
   // Prepare config
@@ -27,18 +27,21 @@ Geometric::Geometric(const std::string & config_path, ros::NodeHandle & pnh)
   ivox_map_->underlying()->voxel_insertion_setting().set_min_dist_in_cell(
     config.scan_to_map.target_ivox_map_min_dist_in_voxel);
 
-  pub_sm_cloud_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/geometric/sm_cloud", 1);
-  pub_sm_cloud_ds_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/geometric/sm_cloud_ds", 1);
-  pub_sm_correspondances_ma_ =
-    pnh.advertise<visualization_msgs::MarkerArray>("lidar/geometric/sm_correspondances_ma", 1);
-  pub_debug_ = pnh.advertise<mimosa_msgs::LidarGeometricDebug>("lidar/geometric/debug", 1);
-  pub_map_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/geometric/map", 1);
-  pub_localizability_marker_array_ = pnh.advertise<visualization_msgs::MarkerArray>(
-    "lidar/geometric/localizability_marker_array", 1, true);
-  pub_degen_marker_array_ =
-    pnh.advertise<visualization_msgs::MarkerArray>("lidar/geometric/degen_marker_array", 1, true);
+  pub_sm_cloud_ =
+    ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "lidar/geometric/sm_cloud", 1);
+  pub_sm_cloud_ds_ =
+    ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "lidar/geometric/sm_cloud_ds", 1);
+  pub_sm_correspondances_ma_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "lidar/geometric/sm_correspondances_ma", 1);
+  pub_debug_ =
+    ri::create_publisher<ri::MimosaMsgsLidarGeometricDebug>(nh, "lidar/geometric/debug", 1);
+  pub_map_ = ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "lidar/geometric/map", 1);
+  pub_localizability_marker_array_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "lidar/geometric/localizability_marker_array", 1, true);
+  pub_degen_marker_array_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "lidar/geometric/degen_marker_array", 1, true);
   pub_keyframe_poses_ =
-    pnh.advertise<geometry_msgs::PoseArray>("lidar/geometric/keyframe_poses", 1);
+    ri::create_publisher<ri::GeometryMsgsPoseArray>(nh, "lidar/geometric/keyframe_poses", 1);
 
   keyframe_poses_.header.frame_id = config.map_frame;
 }
@@ -163,7 +166,7 @@ void Geometric::preprocess(
   Be_cloud_->width = Be_cloud_->size();
   Be_cloud_->height = 1;
 
-  if (pub_sm_cloud_.getNumSubscribers()) {
+  if (ri::get_num_subscribers(pub_sm_cloud_)) {
     publishCloud(pub_sm_cloud_, *Be_cloud_, config.body_frame, ts_);
   }
 
@@ -171,7 +174,7 @@ void Geometric::preprocess(
     *Be_cloud_, sm_Be_cloud_ds_, config.scan_to_map.source_voxel_grid_filter_leaf_size, 20,
     config.scan_to_map.source_voxel_grid_min_dist_in_voxel);
 
-  if (pub_sm_cloud_ds_.getNumSubscribers()) {
+  if (ri::get_num_subscribers(pub_sm_cloud_ds_)) {
     publishCloud(pub_sm_cloud_ds_, sm_Be_cloud_ds_, config.body_frame, ts_);
   }
 
@@ -195,10 +198,10 @@ void Geometric::getFactors(
   // The factor_ is linearized so that localizability can be computed
   auto tmp = factor_->linearize(values);
 
-  if (pub_sm_correspondances_ma_.getNumSubscribers()) {
-    visualization_msgs::MarkerArray ma;
+  if (ri::get_num_subscribers(pub_sm_correspondances_ma_)) {
+    ri::VisualizationMsgsMarkerArray ma;
     fillMarkerArray(*factor_, ma, config.map_frame, ts_);
-    pub_sm_correspondances_ma_.publish(ma);
+    pub_sm_correspondances_ma_->publish(ma);
   }
 
   // Get the localizability
@@ -242,13 +245,13 @@ void Geometric::getFactors(
 
     // logger_->info("degen_directions: {}", degen_directions.transpose());
 
-    if (pub_degen_marker_array_.getNumSubscribers()) {
+    if (ri::get_num_subscribers(pub_degen_marker_array_)) {
       // Create the marker for the axis
-      visualization_msgs::MarkerArray ma;
+      ri::VisualizationMsgsMarkerArray ma;
       addTriadMarker(eigenvectors_trans, config.body_frame, ts_, "DegenTrans", ma);
       addTriadMarker(eigenvectors_rot, config.body_frame, ts_, "DegenRot", ma);
 
-      pub_degen_marker_array_.publish(ma);
+      pub_degen_marker_array_->publish(ma);
     }
   }
 
@@ -263,13 +266,13 @@ void Geometric::getFactors(
   //   eigenvectors_rot *= -1;
   // }
 
-  if (pub_localizability_marker_array_.getNumSubscribers()) {
+  if (ri::get_num_subscribers(pub_localizability_marker_array_)) {
     // Create the marker for the axis
-    visualization_msgs::MarkerArray ma;
+    ri::VisualizationMsgsMarkerArray ma;
     addTriadMarker(eigenvectors_trans, config.body_frame, ts_, "LocalizabilityTrans", ma);
     addTriadMarker(eigenvectors_rot, config.body_frame, ts_, "LocalizabilityRot", ma);
 
-    pub_localizability_marker_array_.publish(ma);
+    pub_localizability_marker_array_->publish(ma);
   }
 
   convert(localizability_trans_comp, debug_msg_.localizability_trans_comp);
@@ -328,20 +331,20 @@ void Geometric::getFactors(
 }
 
 void Geometric::fillMarkerArray(
-  const ICPFactor & factor, visualization_msgs::MarkerArray & ma, const std::string & frame_id,
+  const ICPFactor & factor, ri::VisualizationMsgsMarkerArray & ma, const std::string & frame_id,
   const double ts)
 {
   const std::vector<ICPFactor::RejectStatus> & statuses = factor.getStatuses();
   const std::vector<V3D> & corres_means_target = factor.getCorresMeansTarget();
   const std::vector<V3D> & corres_normals_target = factor.getCorresNormalsTarget();
 
-  visualization_msgs::Marker triangles;
+  ri::VisualizationMsgsMarker triangles;
   triangles.header.frame_id = frame_id;
-  triangles.header.stamp.fromSec(ts);
+  ri::from_seconds(triangles.header.stamp, ts);
   triangles.ns = "planes";
   triangles.id = 0;
-  triangles.type = visualization_msgs::Marker::TRIANGLE_LIST;
-  triangles.action = visualization_msgs::Marker::ADD;
+  triangles.type = ri::VisualizationMsgsMarker::TRIANGLE_LIST;
+  triangles.action = ri::VisualizationMsgsMarker::ADD;
   triangles.pose.orientation.w = 1.0;
   triangles.scale.x = 1.0;
   triangles.scale.y = 1.0;
@@ -351,13 +354,13 @@ void Geometric::fillMarkerArray(
   triangles.color.b = 0.0;
   triangles.color.a = 1.0;
 
-  visualization_msgs::Marker normals;
+  ri::VisualizationMsgsMarker normals;
   normals.header.frame_id = frame_id;
-  normals.header.stamp.fromSec(ts);
+  ri::from_seconds(normals.header.stamp, ts);
   normals.ns = "normals";
   normals.id = 0;
-  normals.type = visualization_msgs::Marker::LINE_LIST;
-  normals.action = visualization_msgs::Marker::ADD;
+  normals.type = ri::VisualizationMsgsMarker::LINE_LIST;
+  normals.action = ri::VisualizationMsgsMarker::ADD;
   normals.pose.orientation.w = 1.0;
   normals.scale.x = 0.01;
   normals.color.r = 1.0;
@@ -391,7 +394,7 @@ void Geometric::fillMarkerArray(
     Eigen::Vector3d p3 = p - u - v;
 
     // Add the three vertices of the triangle
-    geometry_msgs::Point vertex;
+    ri::GeometryMsgsPoint vertex;
     vertex.x = p1.x();
     vertex.y = p1.y();
     vertex.z = p1.z();
@@ -408,7 +411,7 @@ void Geometric::fillMarkerArray(
     triangles.points.push_back(vertex);
 
     // Add the normal line (from point to point + normal)
-    geometry_msgs::Point start, end;
+    ri::GeometryMsgsPoint start, end;
     start.x = p.x();
     start.y = p.y();
     start.z = p.z();
@@ -496,26 +499,26 @@ void Geometric::updateMap(const gtsam::Key key, const gtsam::Values & values)
     debug_msg_.t_insertion = sw.lapMs();
 
     map_poses_.push_back(T_W_Be);
-    geometry_msgs::Pose p;
+    ri::GeometryMsgsPose p;
     convert(T_W_Be, p);
     keyframe_poses_.poses.push_back(p);
 
-    if (pub_map_.getNumSubscribers()) {
+    if (ri::get_num_subscribers(pub_map_)) {
       // Publish the updated map
       pcl::PointCloud<Point>::Ptr W_map = ivox_map_->getCloud();
       publishCloud(pub_map_, *W_map, config.map_frame, ts_);
     }
 
-    keyframe_poses_.header.stamp.fromSec(ts_);
-    pub_keyframe_poses_.publish(keyframe_poses_);
+    ri::from_seconds(keyframe_poses_.header.stamp, ts_);
+    pub_keyframe_poses_->publish(keyframe_poses_);
   }
   debug_msg_.t_update_map = sw.elapsedMs();
 }
 
 void Geometric::publishDebug()
 {
-  debug_msg_.header.stamp.fromSec(ts_);
-  pub_debug_.publish(debug_msg_);
+  ri::from_seconds(debug_msg_.header.stamp, ts_);
+  pub_debug_->publish(debug_msg_);
 }
 
 }  // namespace lidar

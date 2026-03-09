@@ -11,17 +11,17 @@ namespace mimosa
 namespace lidar
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh,
-  mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager)
-: SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>(
-    config::checkValid(config::fromYaml<ManagerConfig>(loadConfigWithSensorJson(config_path))),
+  const std::string & config_path, ri::NodeHandle & nh, mimosa::imu::Manager::SharedPtr imu_manager,
+  mimosa::graph::Manager::SharedPtr graph_manager)
+: SensorManagerBase<ManagerConfig, ri::SensorMsgsPointCloud2>(
+    config::checkValid(config::fromYaml<ManagerConfig>(loadConfigWithSensorJson(config_path))), nh,
     imu_manager, graph_manager, "lidar"),
   z_offset_(-config_.lidar_to_sensor_transform[11] / 1000.0),
   range_min_sq_(config_.range_min * config_.range_min),
   range_max_sq_(config_.range_max * config_.range_max)
 {
-  geometric_ = std::make_unique<Geometric>(config_path, pnh);
-  photometric_ = std::make_unique<Photometric>(config_path, pnh);
+  geometric_ = std::make_unique<Geometric>(config_path, nh);
+  photometric_ = std::make_unique<Photometric>(config_path, nh);
 
   // Checks that span across configs
   if (!config_.create_full_res_pointcloud && photometric_->config.enabled) {
@@ -31,8 +31,9 @@ Manager::Manager(
 
   debug_msg_.initialized = initialized_;
 
-  pub_points_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/manager/points_full_res", 1);
-  pub_debug_ = pnh.advertise<mimosa_msgs::LidarManagerDebug>("lidar/manager/debug", 1);
+  pub_points_ =
+    ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "lidar/manager/points_full_res", 1);
+  pub_debug_ = ri::create_publisher<ri::MimosaMsgsLidarManagerDebug>(nh, "lidar/manager/debug", 1);
 
   // Setup trajectory logger
   trajectory_logger_ = createLogger(
@@ -40,10 +41,10 @@ Manager::Manager(
     false);
   trajectory_logger_->set_pattern("%v");
 
-  subscribeIfEnabled(pnh);
+  subscribeIfEnabled();
 }
 
-void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
+void Manager::callback(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg)
 {
   Stopwatch sw;
   if (!passesCommonValidations(msg)) {
@@ -140,15 +141,15 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
 
   publishResults(T_W_Bk_opt);
 
-  debug_msg_.header.stamp.fromSec(corrected_ts_);
+  ri::from_seconds(debug_msg_.header.stamp, corrected_ts_);
   debug_msg_.t_full = sw.elapsedMs();
   logger_->debug(
     "Callback complete for key {}. Full processing time: {} ms", gdkf(new_key_), debug_msg_.t_full);
-  pub_debug_.publish(debug_msg_);
+  pub_debug_->publish(debug_msg_);
 }
 
 template <typename PointT>
-void Manager::prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg)
+void Manager::prepareInput(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg)
 {
   Stopwatch sw;
 

@@ -11,8 +11,7 @@ namespace mimosa
 namespace graph
 {
 Manager::Manager(
-  const std::string & config_path, ros::NodeHandle & pnh,
-  mimosa::imu::Manager::SharedPtr imu_manager)
+  const std::string & config_path, ri::NodeHandle & nh, mimosa::imu::Manager::SharedPtr imu_manager)
 : config_(config::checkValid(config::fromYamlFile<ManagerConfig>(config_path))),
   imu_manager_(imu_manager),
   isam2_params_(getISAM2Params())
@@ -37,11 +36,14 @@ Manager::Manager(
     false);
   trajectory_logger_->set_pattern("%v");
 
-  pub_debug_ = pnh.advertise<mimosa_msgs::GraphManagerDebug>("graph/debug", 1);
-  pub_path_ = pnh.advertise<nav_msgs::Path>("graph/path", 1);
-  pub_odometry_ = pnh.advertise<nav_msgs::Odometry>("graph/odometry", 1);
-  pub_transform_stamped_ = pnh.advertise<geometry_msgs::TransformStamped>("graph/transform", 1);
-  pub_optimized_path_ = pnh.advertise<nav_msgs::Path>("graph/optimized_path", 1);
+  pub_debug_ = ri::create_publisher<ri::MimosaMsgsGraphManagerDebug>(nh, "graph/debug", 1);
+  pub_path_ = ri::create_publisher<ri::NavMsgsPath>(nh, "graph/path", 1);
+  pub_odometry_ = ri::create_publisher<ri::NavMsgsOdometry>(nh, "graph/odometry", 1);
+  pub_transform_stamped_ =
+    ri::create_publisher<ri::GeometryMsgsTransformStamped>(nh, "graph/transform", 1);
+  pub_optimized_path_ = ri::create_publisher<ri::NavMsgsPath>(nh, "graph/optimized_path", 1);
+  tf2_broadcaster_ = ri::create_transform_broadcaster(nh);
+  tf2_static_broadcaster_ = ri::create_static_transform_broadcaster(nh);
 }
 
 gtsam::ISAM2Params Manager::getISAM2Params() const
@@ -698,18 +700,22 @@ void Manager::initializeGraph(
 void Manager::publishResults()
 {
   broadcastTransform(
-    tf2_broadcaster_, state_.navState().pose(), config_.map_frame, config_.body_frame, state_.ts());
+    *tf2_broadcaster_, state_.navState().pose(), config_.map_frame, config_.body_frame,
+    state_.ts());
 
   // Broadcast the nav to map transform
   const V3D n_g_direction = -V3D::UnitZ();
   V3D w_g_direction = state_.gravity().unitVector();
   // n_g = T_N_W * w_g
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
   gtsam::Pose3 T_N_W = gtsam::Pose3(
     gtsam::Rot3(Eigen::Quaterniond().setFromTwoVectors(w_g_direction, n_g_direction)), V3D::Zero());
+#pragma GCC diagnostic pop
   broadcastTransform(
-    tf2_static_broadcaster_, T_N_W, config_.navigation_frame, config_.map_frame, 0.0);
+    *tf2_static_broadcaster_, T_N_W, config_.navigation_frame, config_.map_frame, 0.0);
 
-  static nav_msgs::Path path;
+  static ri::NavMsgsPath path;
   path.header.frame_id = config_.map_frame;
   publishPath(pub_path_, path, state_.navState().pose(), state_.ts());
 
@@ -722,37 +728,37 @@ void Manager::publishResults()
     q.y(), q.z(), q.w());
 
   // Publish odometry
-  static nav_msgs::Odometry odometry;
-  if (pub_odometry_.getNumSubscribers()) {
+  static ri::NavMsgsOdometry odometry;
+  if (ri::get_num_subscribers(pub_odometry_)) {
     odometry.header.frame_id = config_.map_frame;
     odometry.child_frame_id = config_.body_frame;
-    odometry.header.stamp.fromSec(state_.ts());
+    ri::from_seconds(odometry.header.stamp, state_.ts());
     convert(state_.navState().pose(), odometry.pose.pose);
     convert(state_.navState().velocity(), odometry.twist.twist.linear);
-    pub_odometry_.publish(odometry);
+    pub_odometry_->publish(odometry);
   }
 
   // Publish transform stamped
-  static geometry_msgs::TransformStamped ts_frame_child;
-  if (pub_transform_stamped_.getNumSubscribers()) {
+  static ri::GeometryMsgsTransformStamped ts_frame_child;
+  if (ri::get_num_subscribers(pub_transform_stamped_)) {
     ts_frame_child.header.frame_id = config_.map_frame;
     ts_frame_child.child_frame_id = config_.body_frame;
-    ts_frame_child.header.stamp.fromSec(state_.ts());
+    ri::from_seconds(ts_frame_child.header.stamp, state_.ts());
     convert(state_.navState().pose(), ts_frame_child.transform);
-    pub_transform_stamped_.publish(ts_frame_child);
+    pub_transform_stamped_->publish(ts_frame_child);
   }
 
   // Publish debug message
-  debug_msg_.header.stamp.fromSec(state_.ts());
+  ri::from_seconds(debug_msg_.header.stamp, state_.ts());
   convert(state_.imuBias().accelerometer(), debug_msg_.acc_bias);
   convert(state_.imuBias().gyroscope(), debug_msg_.gyro_bias);
   convert(
     state_.gravity().unitVector() * imu_manager_->config().preintegration.gravity_magnitude,
     debug_msg_.gravity);
-  pub_debug_.publish(debug_msg_);
+  pub_debug_->publish(debug_msg_);
 
   // Iterate over the optimized values and publish the poses
-  nav_msgs::Path opt_path;
+  ri::NavMsgsPath opt_path;
   opt_path.header.frame_id = config_.map_frame;
   for (const auto & [key, value] : optimized_values_) {
     // Check if key is of pose type
@@ -760,14 +766,14 @@ void Manager::publishResults()
       continue;
     }
 
-    geometry_msgs::PoseStamped pose;
+    ri::GeometryMsgsPoseStamped pose;
     pose.header.frame_id = config_.map_frame;
-    pose.header.stamp.fromSec(state_.ts());
+    ri::from_seconds(pose.header.stamp, state_.ts());
     convert(value.cast<gtsam::Pose3>(), pose.pose);
     opt_path.poses.push_back(pose);
   }
 
-  pub_optimized_path_.publish(opt_path);
+  pub_optimized_path_->publish(opt_path);
 }
 
 void declare_config(SmootherConfig & config)

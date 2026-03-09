@@ -10,7 +10,7 @@ namespace mimosa
 {
 namespace lidar
 {
-Photometric::Photometric(const std::string & config_path, ros::NodeHandle & pnh)
+Photometric::Photometric(const std::string & config_path, ri::NodeHandle & nh)
 : config(
     config::checkValid(config::fromYaml<PhotometricConfig>(loadConfigWithSensorJson(config_path)))),
   erosion_kernel_([&]() {
@@ -25,29 +25,33 @@ Photometric::Photometric(const std::string & config_path, ros::NodeHandle & pnh)
     return mask;
   }()),
   idx_to_u_(getIdxToPixelMap(0)),
-  idx_to_v_(getIdxToPixelMap(1))
+  idx_to_v_(getIdxToPixelMap(1)),
+  nh_(nh)
 {
   // Prepare config
   logger_ = createLogger(
     config.logs_directory + "lidar_photometric.log", "lidar::Photometric", config.log_level);
   logger_->info("lidar::Photometric initialized with params:\n {}", config::toString(config, true));
 
-  pub_img_intensity_ = pnh.advertise<sensor_msgs::Image>("lidar/photometric/img_intensity", 1);
+  pub_img_intensity_ =
+    ri::create_publisher<ri::SensorMsgsImage>(nh, "lidar/photometric/img_intensity", 1);
   pub_img_new_features_ =
-    pnh.advertise<sensor_msgs::Image>("lidar/photometric/img_new_features", 1);
-  pub_img_tracked_keyframe_features_ =
-    pnh.advertise<sensor_msgs::Image>("lidar/photometric/img_tracked_keyframe_features", 1);
-  pub_features_ = pnh.advertise<sensor_msgs::PointCloud2>("lidar/photometric/features", 1);
+    ri::create_publisher<ri::SensorMsgsImage>(nh, "lidar/photometric/img_new_features", 1);
+  pub_img_tracked_keyframe_features_ = ri::create_publisher<ri::SensorMsgsImage>(
+    nh, "lidar/photometric/img_tracked_keyframe_features", 1);
+  pub_features_ =
+    ri::create_publisher<ri::SensorMsgsPointCloud2>(nh, "lidar/photometric/features", 1);
   pub_feature_marker_ =
-    pnh.advertise<visualization_msgs::Marker>("lidar/photometric/feature_marker", 1);
-  pub_img_mask_ = pnh.advertise<sensor_msgs::Image>("lidar/photometric/img_mask", 1);
+    ri::create_publisher<ri::VisualizationMsgsMarker>(nh, "lidar/photometric/feature_marker", 1);
+  pub_img_mask_ = ri::create_publisher<ri::SensorMsgsImage>(nh, "lidar/photometric/img_mask", 1);
 
-  pub_feature_marker_array_ = pnh.advertise<visualization_msgs::MarkerArray>(
-    "lidar/photometric/feature_marker_array", 1, true);
-  pub_localizability_marker_array_ = pnh.advertise<visualization_msgs::MarkerArray>(
-    "lidar/photometric/localizability_marker_array", 1, true);
+  pub_feature_marker_array_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "lidar/photometric/feature_marker_array", 1, true);
+  pub_localizability_marker_array_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "lidar/photometric/localizability_marker_array", 1, true);
 
-  pub_debug_ = pnh.advertise<mimosa_msgs::LidarPhotometricDebug>("lidar/photometric/debug", 1);
+  pub_debug_ =
+    ri::create_publisher<ri::MimosaMsgsLidarPhotometricDebug>(nh, "lidar/photometric/debug", 1);
 
   // Check if there is a static mask to be loaded
   if (config.static_mask_path != "") {
@@ -425,13 +429,13 @@ void Photometric::updateMap(const gtsam::Values & values, const std::vector<V3D>
     }
 
     // Create the marker for the axis
-    visualization_msgs::MarkerArray ma;
+    ri::VisualizationMsgsMarkerArray ma;
     addTriadMarker(
       eigenvectors_trans, config.body_frame, current_frame_->ts, "LocalizabilityTrans", ma);
     addTriadMarker(
       eigenvectors_rot, config.body_frame, current_frame_->ts, "LocalizabilityRot", ma);
 
-    pub_localizability_marker_array_.publish(ma);
+    pub_localizability_marker_array_->publish(ma);
 
     const std::vector<PhotometricFactor::RejectStatus> & statuses =
       photometric_factor_->getStatuses();
@@ -511,7 +515,7 @@ void Photometric::updateMap(const gtsam::Values & values, const std::vector<V3D>
     sw.elapsedMs();  // This is done here since we are publishing the debug msg in publishFeatures
 
   logger_->trace("Update map end {}", values.size());
-  publishFeatures(current_frame_, values, "mimosa_map", ros::Time::now().toSec());
+  publishFeatures(current_frame_, values, "mimosa_map", ri::to_seconds(ri::now(nh_)));
 }
 
 void Photometric::detectFeatures(
@@ -777,27 +781,27 @@ void Photometric::publishFeatures(
 
   publishImage(pub_img_intensity_, img_intensity_u8, "mono8", map_frame, ts);
 
-  if (pub_img_new_features_.getNumSubscribers()) {
+  if (ri::get_num_subscribers(pub_img_new_features_)) {
     cv::Mat img_new_features;
     // drawFeatures(img_intensity_u8, last_frame_features_, img_new_features);
     publishImage(pub_img_new_features_, img_new_features, "bgr8", map_frame, ts);
   }
 
-  if (pub_img_tracked_keyframe_features_.getNumSubscribers()) {
+  if (ri::get_num_subscribers(pub_img_tracked_keyframe_features_)) {
     cv::Mat img_tracked_keyframe_features;
     drawFeatures(img_intensity_u8, map_Le_features_, img_tracked_keyframe_features);
     publishImage(
       pub_img_tracked_keyframe_features_, img_tracked_keyframe_features, "bgr8", map_frame, ts);
   }
 
-  if (pub_feature_marker_.getNumSubscribers()) {
-    visualization_msgs::Marker marker;
+  if (ri::get_num_subscribers(pub_feature_marker_)) {
+    ri::VisualizationMsgsMarker marker;
     marker.header.frame_id = map_frame;
-    marker.header.stamp.fromSec(ts);
+    ri::from_seconds(marker.header.stamp, ts);
     marker.ns = "features";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::LINE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
+    marker.type = ri::VisualizationMsgsMarker::LINE_LIST;
+    marker.action = ri::VisualizationMsgsMarker::ADD;
     marker.scale.x = 0.01;
     marker.color.r = 1.0;
     marker.color.a = 1.0;
@@ -809,13 +813,13 @@ void Photometric::publishFeatures(
     //   marker.points.push_back(toGeometryMsgs(W_p));
     // }
 
-    pub_feature_marker_.publish(marker);
+    pub_feature_marker_->publish(marker);
   }
   logger_->trace("publishFeatures end");
 
   // Publish the debug message
-  debug_msg_.header.stamp.fromSec(ts);
-  pub_debug_.publish(debug_msg_);
+  ri::from_seconds(debug_msg_.header.stamp, ts);
+  pub_debug_->publish(debug_msg_);
 }
 
 }  // namespace lidar

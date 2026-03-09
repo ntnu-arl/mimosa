@@ -7,8 +7,6 @@
 #pragma once
 
 // mimosa
-#include <mimosa_msgs/RadarManagerDebug.h>
-
 #include "mimosa/radar/factor.hpp"
 #include "mimosa/radar/utils.hpp"
 #include "mimosa/sensor_manager_base.hpp"
@@ -36,26 +34,26 @@ struct ManagerConfig
 
 void declare_config(ManagerConfig & config);
 
-class Manager : public SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>
+class Manager : public SensorManagerBase<ManagerConfig, ri::SensorMsgsPointCloud2>
 {
 private:
   // Member variables
   TargetVector valid_targets_;
-  mimosa_msgs::RadarManagerDebug debug_msg_;
+  ri::MimosaMsgsRadarManagerDebug debug_msg_;
 
   // Outputs
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_filtered_points_;
+  ri::Publisher<ri::MimosaMsgsRadarManagerDebug> pub_debug_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_filtered_points_;
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh,
+    const std::string & config_path, ri::NodeHandle & nh,
     mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager);
-  void callback(const sensor_msgs::PointCloud2::ConstPtr & msg) override;
+  void callback(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg) override;
 
 private:
   template <typename PointT>
-  void preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg);
+  void preprocess(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg);
 };
 }  // namespace radar
 }  // namespace mimosa

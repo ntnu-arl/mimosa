@@ -10,7 +10,7 @@ namespace mimosa
 {
 namespace imu
 {
-Manager::Manager(const std::string & config_path, ros::NodeHandle & pnh)
+Manager::Manager(const std::string & config_path, ri::NodeHandle & nh)
 : config_(config::checkValid(config::fromYamlFile<ManagerConfig>(config_path)))
 {
   // Prepare logger
@@ -19,14 +19,15 @@ Manager::Manager(const std::string & config_path, ros::NodeHandle & pnh)
   logger_->debug("imu::Manager initialized with params:\n {}", config::toString(config_));
 
   // Publishers
-  pub_debug_ = pnh.advertise<mimosa_msgs::ImuManagerDebug>("imu/manager/debug", 1);
-  pub_localizability_marker_array_ =
-    pnh.advertise<visualization_msgs::MarkerArray>("imu/manager/localizability_marker_array", 1);
-  pub_odometry_ = pnh.advertise<nav_msgs::Odometry>("imu/manager/odometry", 1);
+  pub_debug_ = ri::create_publisher<ri::MimosaMsgsImuManagerDebug>(nh, "imu/manager/debug", 1);
+  pub_localizability_marker_array_ = ri::create_publisher<ri::VisualizationMsgsMarkerArray>(
+    nh, "imu/manager/localizability_marker_array", 1);
+  pub_odometry_ = ri::create_publisher<ri::NavMsgsOdometry>(nh, "imu/manager/odometry", 1);
 
   // Subscribe to IMU messages
-  sub_ = pnh.subscribe(
-    "imu/manager/imu_in", 1000, &Manager::callback, this, ros::TransportHints().tcpNoDelay());
+  sub_ = ri::create_subscriber<ri::SensorMsgsImu>(
+    nh, "imu/manager/imu_in", 1000,
+    [this](const ri::ConstSharedPtr<ri::SensorMsgsImu> & msg) { this->callback(msg); });
 }
 
 std::shared_ptr<gtsam::PreintegrationParams> Manager::generatePreintegratorParams(
@@ -56,9 +57,9 @@ std::shared_ptr<gtsam::PreintegrationParams> Manager::generatePreintegratorParam
   return generatePreintegratorParams(V3D(0, 0, -config_.preintegration.gravity_magnitude));
 }
 
-void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
+void Manager::callback(const ri::ConstSharedPtr<ri::SensorMsgsImu> & msg)
 {
-  const double ts = msg->header.stamp.toSec() + config_.ts_offset;
+  const double ts = ri::stamp_to_seconds(msg->header.stamp) + config_.ts_offset;
   // Check that the timestamp is strictly monotonic
   static double prev_ts = 0.0;
   if (ts <= prev_ts) {
@@ -150,14 +151,14 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
   }
 
   // Publish propagated odometry
-  nav_msgs::Odometry odometry;
-  if (pub_odometry_.getNumSubscribers()) {
+  ri::NavMsgsOdometry odometry;
+  if (ri::get_num_subscribers(pub_odometry_)) {
     odometry.header.frame_id = config_.map_frame;
     odometry.child_frame_id = config_.body_frame;
-    odometry.header.stamp.fromSec(ts);
+    ri::from_seconds(odometry.header.stamp, ts);
     convert(nav_state.pose(), odometry.pose.pose);
     convert(nav_state.velocity(), odometry.twist.twist.linear);
-    pub_odometry_.publish(odometry);
+    pub_odometry_->publish(odometry);
   }
 }
 
@@ -200,7 +201,10 @@ bool Manager::estimateAttitude(
 
     // Assuming bias is small (magnitude is less than 1m/s^2) the max angle between
     // the true gravity in the body frame and the acc_mean is 0.0922 rad or 5.28 degrees
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     gtsam::Rot3 R_I_W = gtsam::Rot3(Eigen::Quaterniond().setFromTwoVectors(gravity_W, acc_mean));
+#pragma GCC diagnostic pop
     R_W_B = R_I_W.inverse();
 
     // This orientation is correct up to 5.28 degrees assuming magnitude(bias) < 1m/s^2
@@ -468,17 +472,17 @@ void Manager::addImuFactorAndGetNavState(
   convert(localizability_rot, debug_msg_.imu_localizability_rot);
   convert(localizability_trans, debug_msg_.imu_localizability_trans);
 
-  debug_msg_.header.stamp.fromSec(ts_1);
-  pub_debug_.publish(debug_msg_);
+  ri::from_seconds(debug_msg_.header.stamp, ts_1);
+  pub_debug_->publish(debug_msg_);
 
   // Create the marker for the axis
-  visualization_msgs::MarkerArray ma;
+  ri::VisualizationMsgsMarkerArray ma;
   addTriadMarker(
     localizability_eigenvectors_trans, config_.body_frame, ts_1, "LocalizabilityTrans", ma);
   addTriadMarker(
     localizability_eigenvectors_rot, config_.body_frame, ts_1, "LocalizabilityRot", ma);
 
-  pub_localizability_marker_array_.publish(ma);
+  pub_localizability_marker_array_->publish(ma);
 }
 
 void Manager::setPropagationBaseState(const State & state)

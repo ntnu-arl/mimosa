@@ -11,8 +11,7 @@
 #include "mimosa/utils.hpp"
 
 // ROS
-#include <sensor_msgs/Image.h>
-#include <visualization_msgs/MarkerArray.h>
+#include "mimosa/ros_interface.hpp"
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -20,7 +19,11 @@
 #include <opencv2/imgproc.hpp>
 
 // cv_bridge
+#if DETECTED_ROS_VERSION == 1
 #include <cv_bridge/cv_bridge.h>
+#else
+#include <cv_bridge/cv_bridge.hpp>
+#endif
 
 // C++
 #include <Eigen/Core>
@@ -47,7 +50,7 @@ enum class PType
   Rslidar
 };
 
-inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields)
+inline PType decodePointType(const std::vector<ri::SensorMsgsPointField> & fields)
 {
   if (fieldsMatch(fields, getFieldsFromPointType<PointOuster>())) {
     return PType::Ouster;
@@ -109,14 +112,16 @@ inline YAML::Node loadConfigWithSensorJson(const std::string & config_path)
   return node;
 }
 
+template <typename PubT>
 inline void publishImage(
-  ros::Publisher & pub, const cv::Mat & img, const std::string & encoding,
-  const std::string & frame_id, const double ts)
+  PubT & pub, const cv::Mat & img, const std::string & encoding, const std::string & frame_id,
+  const double ts)
 {
-  sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-  msg->header.frame_id = frame_id;
-  msg->header.stamp.fromSec(ts);
-  pub.publish(msg);
+  ri::SensorMsgsImage msg;
+  cv_bridge::CvImage(ri::StdMsgsHeader(), encoding, img).toImageMsg(msg);
+  msg.header.frame_id = frame_id;
+  ri::from_seconds(msg.header.stamp, ts);
+  pub->publish(msg);
 }
 
 inline Point toPcl(const gtsam::Point3 & p)
@@ -153,7 +158,7 @@ inline void applyTransform(
 }
 
 template <typename PointT>
-inline void toPcl(const sensor_msgs::PointCloud2 & msg, pcl::PointCloud<PointT> & cloud)
+inline void toPcl(const ri::SensorMsgsPointCloud2 & msg, pcl::PointCloud<PointT> & cloud)
 {
   pcl_conversions::toPCL(msg.header, cloud.header);
   cloud.width = msg.width;

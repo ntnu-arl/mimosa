@@ -10,7 +10,6 @@
 #include "mimosa/lidar/geometric.hpp"
 #include "mimosa/lidar/photometric.hpp"
 #include "mimosa/sensor_manager_base.hpp"
-#include "mimosa_msgs/LidarManagerDebug.h"
 
 // pcl_conversions
 #include <pcl_conversions/pcl_conversions.h>
@@ -42,7 +41,7 @@ struct ManagerConfig
 
 void declare_config(ManagerConfig & config);
 
-class Manager : public SensorManagerBase<ManagerConfig, sensor_msgs::PointCloud2>
+class Manager : public SensorManagerBase<ManagerConfig, ri::SensorMsgsPointCloud2>
 {
 private:
   std::unique_ptr<spdlog::logger> trajectory_logger_;
@@ -63,26 +62,26 @@ private:
   const float range_max_sq_;
   std::unique_ptr<gtsam::PreintegratedImuMeasurements> imu_preintegrator_;
   gtsam::NavState propagated_state_;
-  mimosa_msgs::LidarManagerDebug debug_msg_;
+  ri::MimosaMsgsLidarManagerDebug debug_msg_;
   M66 geometric_eigenvectors_block_matrix_ = M66::Identity();
   V6D geometric_degen_directions_ = V6D::Ones();
 
   State prev_state_;
 
   // Outputs
-  ros::Publisher pub_points_;
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_path_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_points_;
+  ri::Publisher<ri::MimosaMsgsLidarManagerDebug> pub_debug_;
+  ri::Publisher<ri::NavMsgsPath> pub_path_;
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh,
+    const std::string & config_path, ri::NodeHandle & nh,
     mimosa::imu::Manager::SharedPtr imu_manager, mimosa::graph::Manager::SharedPtr graph_manager);
-  void callback(const sensor_msgs::PointCloud2::ConstPtr & msg) override;
+  void callback(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg) override;
 
 private:
   template <typename PointT>
-  void prepareInput(const sensor_msgs::PointCloud2::ConstPtr & msg);
+  void prepareInput(const ri::ConstSharedPtr<ri::SensorMsgsPointCloud2> & msg);
   void deskewPoints();
   void preprocess(const gtsam::Key key);
   void getFactors(const gtsam::Values & initial_values, gtsam::NonlinearFactorGraph & new_factors);

@@ -9,12 +9,6 @@
 // C++
 #include <stdexcept>
 
-// ROS
-#include <nav_msgs/Path.h>
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <visualization_msgs/MarkerArray.h>
-
 // GTSAM
 #include <gtsam/geometry/Pose3.h>
 #include <gtsam/inference/Symbol.h>
@@ -28,7 +22,11 @@
 // config_utilities
 #include "config_utilities/config.h"          // Enables declare_config().
 #include "config_utilities/formatting/asl.h"  // Simply including this file sets a style to format output.
+#if DETECTED_ROS_VERSION == 1
 #include "config_utilities/logging/log_to_ros.h"  // Simply including this file sets logging to roslog.
+#else
+#include "config_utilities/logging/log_to_stdout.h"
+#endif
 #include "config_utilities/parsing/yaml.h"        // Enable fromYamlFile()
 #include "config_utilities/printing.h"            // Enable toString()
 #include "config_utilities/traits.h"              // Enables isConfig()
@@ -49,9 +47,23 @@
 // The order of these includes is important to avoid fmt linker errors
 // clang-format on
 
-// TF2
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_ros/transform_broadcaster.h>
+// fmt v9+ requires explicit formatter specializations for types formatted via operator<<.
+#if FMT_VERSION >= 90000
+#include <fmt/ostream.h>
+
+// Eigen matrix/vector types
+template <typename Scalar, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
+struct fmt::formatter<Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>>
+: fmt::ostream_formatter
+{
+};
+
+// Eigen transpose expressions
+template <typename MatrixType>
+struct fmt::formatter<Eigen::Transpose<MatrixType>> : fmt::ostream_formatter
+{
+};
+#endif
 
 namespace mimosa
 {
@@ -170,7 +182,7 @@ constexpr T rad2deg(const T rad)
 }
 
 inline bool fieldsMatch(
-  const std::vector<sensor_msgs::PointField> & a, const std::vector<sensor_msgs::PointField> & b,
+  const std::vector<ri::SensorMsgsPointField> & a, const std::vector<ri::SensorMsgsPointField> & b,
   const bool allow_extra_fields_in_a = true)
 {
   // Assumption: 'a' is the point fields from the incoming point cloud message
@@ -195,31 +207,31 @@ inline bool fieldsMatch(
 }
 
 template <typename PointT>
-inline std::vector<sensor_msgs::PointField> getFieldsFromPointType()
+inline std::vector<ri::SensorMsgsPointField> getFieldsFromPointType()
 {
   pcl::PointCloud<PointT> cloud;
-  sensor_msgs::PointCloud2 ros_cloud;
+  ri::SensorMsgsPointCloud2 ros_cloud;
   pcl::toROSMsg(cloud, ros_cloud);
   return ros_cloud.fields;
 }
 
-inline geometry_msgs::Point toGeometryMsgs(const V3D & v)
+inline ri::GeometryMsgsPoint toGeometryMsgs(const V3D & v)
 {
-  geometry_msgs::Point p;
+  ri::GeometryMsgsPoint p;
   p.x = v(0);
   p.y = v(1);
   p.z = v(2);
   return p;
 }
 
-inline void convert(const gtsam::Point3 & p, geometry_msgs::Vector3 & v)
+inline void convert(const gtsam::Point3 & p, ri::GeometryMsgsVector3 & v)
 {
   v.x = p.x();
   v.y = p.y();
   v.z = p.z();
 }
 
-inline void convert(const gtsam::Quaternion & q, geometry_msgs::Quaternion & v)
+inline void convert(const gtsam::Quaternion & q, ri::GeometryMsgsQuaternion & v)
 {
   v.x = q.x();
   v.y = q.y();
@@ -227,13 +239,14 @@ inline void convert(const gtsam::Quaternion & q, geometry_msgs::Quaternion & v)
   v.w = q.w();
 }
 
-inline void convert(const gtsam::Pose3 & T_gtsam, geometry_msgs::Transform & T_gm)
+inline void convert(const gtsam::Pose3 & T_gtsam, ri::GeometryMsgsTransform & T_gm)
 {
   convert(T_gtsam.translation(), T_gm.translation);
   convert(T_gtsam.rotation().toQuaternion(), T_gm.rotation);
 }
 
-inline void convert(const V3D & v, boost::array<float, 3> & arr)
+template <typename ArrayT>
+inline void convert(const V3D & v, ArrayT & arr)
 {
   arr[0] = v(0);
   arr[1] = v(1);
@@ -245,57 +258,56 @@ inline void broadcastTransform(
   Broadcaster & tf2_broadcaster, const gtsam::Pose3 & T_frame_child, const std::string & frame_id,
   const std::string & child_frame_id, const double ts)
 {
-  geometry_msgs::TransformStamped ts_frame_child;
-  ts_frame_child.header.stamp.fromSec(ts);
+  ri::GeometryMsgsTransformStamped ts_frame_child;
+  ri::from_seconds(ts_frame_child.header.stamp, ts);
   ts_frame_child.header.frame_id = frame_id;
   ts_frame_child.child_frame_id = child_frame_id;
   convert(T_frame_child, ts_frame_child.transform);
   tf2_broadcaster.sendTransform(ts_frame_child);
 }
 
-inline gtsam::Point3 toGtsam(const geometry_msgs::Point & gm_p)
+inline gtsam::Point3 toGtsam(const ri::GeometryMsgsPoint & gm_p)
 {
   return gtsam::Point3(gm_p.x, gm_p.y, gm_p.z);
 }
 
-inline gtsam::Quaternion toGtsam(const geometry_msgs::Quaternion & gm_q)
+inline gtsam::Quaternion toGtsam(const ri::GeometryMsgsQuaternion & gm_q)
 {
   return gtsam::Quaternion(gm_q.w, gm_q.x, gm_q.y, gm_q.z);
 }
 
-inline gtsam::Pose3 toGtsam(const geometry_msgs::Pose & gm_p)
+inline gtsam::Pose3 toGtsam(const ri::GeometryMsgsPose & gm_p)
 {
   return gtsam::Pose3(gtsam::Rot3(toGtsam(gm_p.orientation)), toGtsam(gm_p.position));
 }
 
-inline void convert(const gtsam::Pose3 & T, geometry_msgs::Pose & pose)
+inline void convert(const gtsam::Pose3 & T, ri::GeometryMsgsPose & pose)
 {
   pose.position = toGeometryMsgs(T.translation());
   convert(T.rotation().toQuaternion(), pose.orientation);
 }
 
-inline void publishPath(
-  ros::Publisher & pub, nav_msgs::Path & path, const gtsam::Pose3 & T, const double ts)
+template <typename PubT>
+inline void publishPath(PubT & pub, ri::NavMsgsPath & path, const gtsam::Pose3 & T, const double ts)
 {
-  geometry_msgs::PoseStamped pose;
+  ri::GeometryMsgsPoseStamped pose;
   pose.header.frame_id = path.header.frame_id;
-  pose.header.stamp.fromSec(ts);
-  path.header.stamp.fromSec(ts);
+  ri::from_seconds(pose.header.stamp, ts);
+  ri::from_seconds(path.header.stamp, ts);
   convert(T, pose.pose);
   path.poses.push_back(pose);
-  pub.publish(path);
+  pub->publish(path);
 }
 
-template <typename PointT>
+template <typename PointT, typename PubT>
 inline void publishCloud(
-  ros::Publisher & pub, const pcl::PointCloud<PointT> & cloud, const std::string & frame_id,
-  const double ts)
+  PubT & pub, const pcl::PointCloud<PointT> & cloud, const std::string & frame_id, const double ts)
 {
-  sensor_msgs::PointCloud2 msg;
+  ri::SensorMsgsPointCloud2 msg;
   pcl::toROSMsg(cloud, msg);
-  msg.header.stamp.fromSec(ts);
+  ri::from_seconds(msg.header.stamp, ts);
   msg.header.frame_id = frame_id;
-  pub.publish(msg);
+  pub->publish(msg);
 }
 
 template <typename ExceptionType>
@@ -315,16 +327,16 @@ inline void computeLocalizability(const M33 & J_T_J, V3D & localizability, M33 &
 
 inline void addTriadMarker(
   const M33 & vectors, const std::string & frame_id, const double ts, const std::string & ns,
-  visualization_msgs::MarkerArray & ma)
+  ri::VisualizationMsgsMarkerArray & ma)
 {
   for (int i = 0; i < 3; i++) {
-    visualization_msgs::Marker marker;
+    ri::VisualizationMsgsMarker marker;
     marker.header.frame_id = frame_id;
-    marker.header.stamp.fromSec(ts);
+    ri::from_seconds(marker.header.stamp, ts);
     marker.ns = ns;
     marker.id = i;
-    marker.type = visualization_msgs::Marker::ARROW;
-    marker.action = visualization_msgs::Marker::ADD;
+    marker.type = ri::VisualizationMsgsMarker::ARROW;
+    marker.action = ri::VisualizationMsgsMarker::ADD;
     marker.pose.orientation.w = 1;
     marker.scale.x = 0.03;
     marker.scale.y = 0.05;
@@ -334,7 +346,7 @@ inline void addTriadMarker(
     marker.color.g = i == 2;
     marker.color.b = i == 0;
 
-    geometry_msgs::Point point;
+    ri::GeometryMsgsPoint point;
     point.x = 0;
     point.y = 0;
     point.z = 0;

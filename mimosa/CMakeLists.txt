@@ -75,7 +75,7 @@ else()
   set(ROS_LIBRARIES "")
   set(ARCHIVE_DESTINATION lib)
   set(LIBRARY_DESTINATION lib)
-  set(RUNTIME_DESTINATION bin)
+  set(RUNTIME_DESTINATION lib/${PROJECT_NAME})
   set(INCLUDE_DESTINATION include/${PROJECT_NAME})
   set(SHARE_DESTINATION share/${PROJECT_NAME})
 endif()
@@ -194,7 +194,17 @@ install(
 )
 
 # Executables
-set(EXECUTABLES node rosbag)
+set(EXECUTABLES node)
+if(DETECTED_ROS_VERSION
+   EQUAL
+   1
+)
+  list(
+    APPEND
+    EXECUTABLES
+    rosbag
+  )
+endif()
 foreach(EXEC ${EXECUTABLES})
   add_executable(${PROJECT_NAME}_${EXEC} src/${PROJECT_NAME}_${EXEC}.cpp)
   configure_ros_target(${PROJECT_NAME}_${EXEC})
@@ -215,3 +225,11 @@ install(DIRECTORY config launch DESTINATION ${SHARE_DESTINATION})
 install(PROGRAMS scripts/batch_process.sh scripts/evaluate.sh
         DESTINATION ${RUNTIME_DESTINATION}
 )
+
+if(NOT
+   DETECTED_ROS_VERSION
+   EQUAL
+   1
+)
+  ament_package()
+endif()

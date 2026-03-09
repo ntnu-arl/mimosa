@@ -24,10 +24,6 @@
 #include "mimosa/state.hpp"
 #include "mimosa/stopwatch.hpp"
 #include "mimosa/utils.hpp"
-#include "mimosa_msgs/LidarGeometricDebug.h"
-
-// ROS
-#include <geometry_msgs/PoseArray.h>
 
 namespace mimosa
 {
@@ -49,7 +45,7 @@ private:
   // Variables for map
   IncrementalVoxelMapPCL::SharedPtr ivox_map_;
   std::vector<gtsam::Pose3> map_poses_;
-  geometry_msgs::PoseArray keyframe_poses_;
+  ri::GeometryMsgsPoseArray keyframe_poses_;
 
   // Variables for downsampling
   std::vector<FlatContainerMinimal> flat_voxels_;
@@ -57,19 +53,19 @@ private:
   std::vector<size_t> indices_;
 
   double ts_;
-  mimosa_msgs::LidarGeometricDebug debug_msg_;
+  ri::MimosaMsgsLidarGeometricDebug debug_msg_;
 
-  ros::Publisher pub_sm_cloud_;
-  ros::Publisher pub_sm_cloud_ds_;
-  ros::Publisher pub_sm_correspondances_ma_;
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_map_;
-  ros::Publisher pub_localizability_marker_array_;
-  ros::Publisher pub_degen_marker_array_;
-  ros::Publisher pub_keyframe_poses_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_sm_cloud_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_sm_cloud_ds_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_sm_correspondances_ma_;
+  ri::Publisher<ri::MimosaMsgsLidarGeometricDebug> pub_debug_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_map_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_localizability_marker_array_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_degen_marker_array_;
+  ri::Publisher<ri::GeometryMsgsPoseArray> pub_keyframe_poses_;
 
   void fillMarkerArray(
-    const ICPFactor & factor, visualization_msgs::MarkerArray & ma, const std::string & frame_id,
+    const ICPFactor & factor, ri::VisualizationMsgsMarkerArray & ma, const std::string & frame_id,
     const double ts);
   void downsample(
     const pcl::PointCloud<Point> & input_cloud, pcl::PointCloud<Point> & output_cloud,
@@ -77,7 +73,7 @@ private:
     const double min_dist_in_voxel = 0.1);
 
 public:
-  Geometric(const std::string & config_path, ros::NodeHandle & pnh);
+  Geometric(const std::string & config_path, ri::NodeHandle & nh);
   void preprocess(
     const pcl::PointCloud<Point> & points_deskewed, const std::vector<size_t> & idxs,
     const double ts);

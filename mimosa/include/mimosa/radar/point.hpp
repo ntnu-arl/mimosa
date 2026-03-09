@@ -7,7 +7,8 @@
 #pragma once
 
 #include <pcl/point_types.h>
-#include <sensor_msgs/PointField.h>
+
+#include "mimosa/ros_interface.hpp"
 
 namespace mimosa
 {

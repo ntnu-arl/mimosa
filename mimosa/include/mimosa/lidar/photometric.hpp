@@ -19,7 +19,6 @@
 #include "mimosa/state.hpp"
 #include "mimosa/stopwatch.hpp"
 #include "mimosa/utils.hpp"
-#include "mimosa_msgs/LidarPhotometricDebug.h"
 
 // C++
 #include <algorithm>
@@ -47,23 +46,24 @@ private:
   std::vector<Feature> map_Le_features_;
   PhotometricFactor::SharedPtr photometric_factor_;
 
-  mimosa_msgs::LidarPhotometricDebug debug_msg_;
+  ri::MimosaMsgsLidarPhotometricDebug debug_msg_;
 
-  ros::Publisher pub_img_intensity_;
-  ros::Publisher pub_img_new_features_;
-  ros::Publisher pub_img_tracked_keyframe_features_;
-  ros::Publisher pub_img_mask_;
+  ri::Publisher<ri::SensorMsgsImage> pub_img_intensity_;
+  ri::Publisher<ri::SensorMsgsImage> pub_img_new_features_;
+  ri::Publisher<ri::SensorMsgsImage> pub_img_tracked_keyframe_features_;
+  ri::Publisher<ri::SensorMsgsImage> pub_img_mask_;
 
-  ros::Publisher pub_features_;
-  ros::Publisher pub_feature_marker_;
-  ros::Publisher pub_feature_marker_array_;
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_localizability_marker_array_;
+  ri::Publisher<ri::SensorMsgsPointCloud2> pub_features_;
+  ri::Publisher<ri::VisualizationMsgsMarker> pub_feature_marker_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_feature_marker_array_;
+  ri::Publisher<ri::MimosaMsgsLidarPhotometricDebug> pub_debug_;
+  ri::Publisher<ri::VisualizationMsgsMarkerArray> pub_localizability_marker_array_;
 
+  ri::NodeHandle nh_;
   uint32_t monotonic_feature_id_ = 0;
 
 public:
-  Photometric(const std::string & config_path, ros::NodeHandle & pnh);
+  Photometric(const std::string & config_path, ri::NodeHandle & nh);
   void preprocess(
     const pcl::PointCloud<Point> & points_raw, pcl::PointCloud<Point> & points_deskewed,
     const boost::container::flat_map<uint32_t, gtsam::Pose3> & interpolated_map_T_Le_Lt,

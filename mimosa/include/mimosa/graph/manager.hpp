@@ -10,11 +10,6 @@
 #include "mimosa/imu/manager.hpp"
 #include "mimosa/state.hpp"
 #include "mimosa/stopwatch.hpp"
-#include "mimosa_msgs/GraphManagerDebug.h"
-
-// ROS
-#include <geometry_msgs/TransformStamped.h>
-#include <nav_msgs/Odometry.h>
 
 // GTSAM
 #include <gtsam_unstable/nonlinear/IncrementalFixedLagSmoother.h>
@@ -106,20 +101,20 @@ private:
   gtsam::Values optimized_values_;
   std::map<double, gtsam::Key> ts_key_map_;
   std::mutex graph_mutex_;
-  mimosa_msgs::GraphManagerDebug debug_msg_;
+  ri::MimosaMsgsGraphManagerDebug debug_msg_;
 
   // Outputs
-  tf2_ros::TransformBroadcaster tf2_broadcaster_;
-  tf2_ros::StaticTransformBroadcaster tf2_static_broadcaster_;
-  ros::Publisher pub_path_;
-  ros::Publisher pub_odometry_;
-  ros::Publisher pub_transform_stamped_;
-  ros::Publisher pub_debug_;
-  ros::Publisher pub_optimized_path_;
+  ri::TransformBroadcaster tf2_broadcaster_;
+  ri::StaticTransformBroadcaster tf2_static_broadcaster_;
+  ri::Publisher<ri::NavMsgsPath> pub_path_;
+  ri::Publisher<ri::NavMsgsOdometry> pub_odometry_;
+  ri::Publisher<ri::GeometryMsgsTransformStamped> pub_transform_stamped_;
+  ri::Publisher<ri::MimosaMsgsGraphManagerDebug> pub_debug_;
+  ri::Publisher<ri::NavMsgsPath> pub_optimized_path_;
 
 public:
   Manager(
-    const std::string & config_path, ros::NodeHandle & pnh,
+    const std::string & config_path, ri::NodeHandle & nh,
     mimosa::imu::Manager::SharedPtr imu_manager);
   // The one step factors are for things that do not require the two step process. Eg. Radar
   DeclarationResult declare(
