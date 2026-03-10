@@ -1,4 +1,4 @@
-name: Build CI Base Image
+name: Build CI Base Images
 
 on:
   workflow_dispatch:
@@ -9,10 +9,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/${{ github.repository }}/ci-base
 
 jobs:
-  build:
+  build-ros1:
+    name: ROS1 Base (${{ matrix.arch }})
     strategy:
       matrix:
         include:
@@ -46,6 +46,45 @@ jobs:
           context: .github/docker
           file: .github/docker/ci-base.Dockerfile
           push: true
-          tags: ${{ env.IMAGE }}:${{ matrix.arch }}
+          tags: ghcr.io/${{ github.repository }}/ci-base:${{ matrix.arch }}
           cache-from: type=gha,scope=ci-base-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=ci-base-${{ matrix.arch }}
+
+  build-ros2:
+    name: ROS2 Base (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/docker
+          file: .github/docker/ci-base-ros2.Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/ci-base-ros2:${{ matrix.arch }}
+          cache-from: type=gha,scope=ci-base-ros2-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=ci-base-ros2-${{ matrix.arch }}

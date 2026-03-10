@@ -24,8 +24,8 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
-  build:
-    name: Build (${{ matrix.arch }})
+  build-ros1:
+    name: Build ROS1 (${{ matrix.arch }})
     strategy:
       matrix:
         include:
@@ -53,3 +53,33 @@ jobs:
           cd /catkin_ws
           . devel/setup.bash
           catkin build mimosa --no-status --force-color
+
+  build-ros2:
+    name: Build ROS2 (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+            image: ghcr.io/${{ github.repository }}/ci-base-ros2:amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            image: ghcr.io/${{ github.repository }}/ci-base-ros2:arm64
+
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Link into colcon workspace
+        run: ln -s "$GITHUB_WORKSPACE" /colcon_ws/src/mimosa
+
+      - name: Build mimosa
+        shell: bash
+        run: |
+          cd /colcon_ws
+          . install/setup.bash
+          colcon build --packages-up-to mimosa --event-handlers console_cohesion+
