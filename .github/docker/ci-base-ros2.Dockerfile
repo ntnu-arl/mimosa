@@ -43,6 +43,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
  && colcon build \
     --cmake-args \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS=-Wno-error \
     -DGTSAM_POSE3_EXPMAP=ON \
     -DGTSAM_ROT3_EXPMAP=ON \
     -DGTSAM_USE_QUATERNIONS=ON \
