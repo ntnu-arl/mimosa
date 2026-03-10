@@ -11,8 +11,8 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build-ros1:
-    name: ROS1 Base (${{ matrix.arch }})
+  build-ros1-noetic:
+    name: ROS1 Noetic Base (${{ matrix.arch }})
     strategy:
       matrix:
         include:
@@ -51,9 +51,11 @@ jobs:
           cache-to: type=gha,mode=max,scope=ci-base-${{ matrix.arch }}
 
   build-ros2:
-    name: ROS2 Base (${{ matrix.arch }})
+    name: ROS2 ${{ matrix.distro }} Base (${{ matrix.arch }})
     strategy:
       matrix:
+        distro: [humble, jazzy, rolling]
+        arch: [amd64, arm64]
         include:
           - arch: amd64
             runner: ubuntu-24.04
@@ -84,7 +86,8 @@ jobs:
         with:
           context: .github/docker
           file: .github/docker/ci-base-ros2.Dockerfile
+          build-args: ROS_DISTRO=${{ matrix.distro }}
           push: true
-          tags: ghcr.io/${{ github.repository }}/ci-base-ros2:${{ matrix.arch }}
-          cache-from: type=gha,scope=ci-base-ros2-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=ci-base-ros2-${{ matrix.arch }}
+          tags: ghcr.io/${{ github.repository }}/ci-base-ros2-${{ matrix.distro }}:${{ matrix.arch }}
+          cache-from: type=gha,scope=ci-base-ros2-${{ matrix.distro }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=ci-base-ros2-${{ matrix.distro }}-${{ matrix.arch }}

@@ -2,34 +2,32 @@
 # only needs to compile mimosa itself (~3-5 min instead of 30+ min).
 #
 # Build: triggered by .github/workflows/docker.yml (manual or on Dockerfile changes)
-# Registry: ghcr.io/ntnu-arl/mimosa/ci-base-ros2:{amd64,arm64}
+# Registry: ghcr.io/ntnu-arl/mimosa/ci-base-ros2-<distro>:{amd64,arm64}
 
-FROM ros:jazzy-ros-base-noble
+ARG ROS_DISTRO=jazzy
+FROM ros:${ROS_DISTRO}-ros-base
 
+ARG ROS_DISTRO
 ENV DEBIAN_FRONTEND=noninteractive
 
-# System packages
+# System and ROS2 packages required by mimosa
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgoogle-glog-dev \
     libspdlog-dev \
     libyaml-cpp-dev \
     git \
-    && rm -rf /var/lib/apt/lists/*
-
-# ROS2 packages required by mimosa
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ros-jazzy-cv-bridge \
-    ros-jazzy-pcl-ros \
-    ros-jazzy-pcl-conversions \
-    ros-jazzy-rosbag2-cpp \
-    ros-jazzy-tf2-ros \
-    ros-jazzy-visualization-msgs \
-    ros-jazzy-geometry-msgs \
-    ros-jazzy-nav-msgs \
-    ros-jazzy-sensor-msgs \
-    ros-jazzy-std-msgs \
-    ros-jazzy-rosidl-default-generators \
-    ros-jazzy-rosidl-default-runtime \
+    ros-${ROS_DISTRO}-cv-bridge \
+    ros-${ROS_DISTRO}-pcl-ros \
+    ros-${ROS_DISTRO}-pcl-conversions \
+    ros-${ROS_DISTRO}-rosbag2-cpp \
+    ros-${ROS_DISTRO}-tf2-ros \
+    ros-${ROS_DISTRO}-visualization-msgs \
+    ros-${ROS_DISTRO}-geometry-msgs \
+    ros-${ROS_DISTRO}-nav-msgs \
+    ros-${ROS_DISTRO}-sensor-msgs \
+    ros-${ROS_DISTRO}-std-msgs \
+    ros-${ROS_DISTRO}-rosidl-default-generators \
+    ros-${ROS_DISTRO}-rosidl-default-runtime \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone dependency sources (mirrors README build procedure)
@@ -41,7 +39,7 @@ RUN git clone --depth 1 https://github.com/ntnu-arl/config_utilities.git -b dev/
 
 # Build the dependency workspace
 WORKDIR /colcon_ws
-RUN . /opt/ros/jazzy/setup.sh \
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
  && colcon build \
     --cmake-args \
     -DCMAKE_BUILD_TYPE=Release \
