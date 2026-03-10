@@ -54,7 +54,7 @@ jobs:
     name: ROS2 ${{ matrix.distro }} Base (${{ matrix.arch }})
     strategy:
       matrix:
-        distro: [humble, jazzy, rolling]
+        distro: [humble, jazzy]
         arch: [amd64, arm64]
         include:
           - arch: amd64
