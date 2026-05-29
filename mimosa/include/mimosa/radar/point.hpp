@@ -27,6 +27,7 @@ struct mmWavePoint
   PCL_ADD_POINT4D;  // position [m]
   float intensity;  // RCS?
   float velocity;   // Doppler speed [m/s]
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 struct mmWaveDopplerResidualPoint
@@ -35,7 +36,24 @@ struct mmWaveDopplerResidualPoint
   float intensity;  // RCS?
   float velocity;   // Doppler speed [m/s]
   float doppler_residual;
-  PCL_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+struct EIGEN_ALIGN16 zadarPoint
+{
+  PCL_ADD_POINT4D; // position [m]
+  float snr;
+  float range;
+  float noise;
+  float power;
+  float doppler;
+  float adjusted_doppler;
+  uint32_t frame_num;
+  uint8_t is_static;
+  uint8_t removed;
+  uint8_t subframe_index;
+  uint8_t fence_id;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 }  // namespace radar
 }  // namespace mimosa
@@ -52,3 +70,10 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
   mimosa::radar::mmWaveDopplerResidualPoint,
   (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, velocity, velocity)(
     float, doppler_residual, doppler_residual))
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+  mimosa::radar::zadarPoint,
+  (float, x, x)(float, y, y)(float, z, z)(float, snr, snr)(float, range, range)(float, noise, noise)
+  (float, power, power)(float, doppler, doppler)(float, adjusted_doppler, adjusted_doppler)
+  (std::uint32_t, frame_num, frame_num)(std::uint8_t, is_static, is_static)(std::uint8_t, removed, removed)
+  (std::uint8_t, subframe_index, subframe_index)(std::uint8_t, fence_id, fence_id))

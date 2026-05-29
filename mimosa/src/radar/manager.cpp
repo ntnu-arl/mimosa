@@ -48,6 +48,9 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
     case PType::mmWave:
       preprocess<mmWavePoint>(msg);
       break;
+    case PType::zadar:
+      preprocess<zadarPoint>(msg);
+      break;
     default:
       throw std::runtime_error("Unsupported point type");
   }
@@ -56,16 +59,20 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
   V3D angular_velocity_mean = V3D::Zero();
   ImuBuffer imu_measurements;
   try {
-    imu_manager_->getInterpolatedMeasurements(
-      corrected_ts_ - config_.frame_ms * 1e-3 / 2, corrected_ts_ + config_.frame_ms * 1e-3 / 2,
-      imu_measurements);
+    if (config_.is_exposure_compensated){
+      imu_manager_->getInterpolatedMeasurements(
+        corrected_ts_ - config_.frame_ms * 1e-3 / 2, corrected_ts_ + config_.frame_ms * 1e-3 / 2,
+        imu_measurements);
+    } else {
+      imu_manager_->getInterpolatedMeasurement(corrected_ts_, imu_measurements);
+    } 
   } catch (const std::exception & e) {
-    std::cerr << e.what() << '\n';
-    logger_->error(
-      "Failed to get interpolated IMU measurements for angular velocity calculation. "
-      "Skipping pointcloud processing.");
-    return;
-  }
+      std::cerr << e.what() << '\n';
+      logger_->error(
+        "Failed to get interpolated IMU measurements for angular velocity calculation. "
+        "Skipping pointcloud processing.");
+      return;
+    }
 
   size_t number_of_measurements = 0;
   for (auto it = imu_measurements.begin(); it != imu_measurements.end(); ++it) {
@@ -130,6 +137,18 @@ void Manager::preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg)
       points[i].intensity = temp[i].snr_db;
       points[i].velocity = temp[i].v_doppler_mps;
     }
+  } else if constexpr(std::is_same<PointT, zadarPoint>::value) {
+    pcl::PointCloud<zadarPoint> temp;
+    pcl::fromROSMsg(*msg, temp);
+
+    points.resize(temp.size());
+    for (size_t i = 0; i < temp.size(); i++){
+      points[i].x = temp[i].x;
+      points[i].y = temp[i].y;
+      points[i].z = temp[i].z;
+      points[i].intensity = temp[i].snr;
+      points[i].velocity = temp[i].doppler;
+    }
   } else {
     throw std::runtime_error("Unsupported point type");
   }
@@ -146,10 +165,6 @@ void Manager::preprocess(const sensor_msgs::PointCloud2::ConstPtr & msg)
       std::isnan(point.x) || std::isnan(point.y) || std::isnan(point.z) ||
       std::isnan(point.intensity) || std::isnan(point.velocity)) {
       logger_->trace("Point contains NaN values. Skipping this point.");
-      continue;
-    }
-
-    if (point.intensity < config_.filter_min_db) {
       continue;
     }
 

@@ -46,7 +46,8 @@ enum class PType
   Unknown,
   Rio,
   mmWave,
-  mmWaveDopplerResidual
+  mmWaveDopplerResidual,
+  zadar
 };
 
 inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields)
@@ -61,6 +62,10 @@ inline PType decodePointType(const std::vector<sensor_msgs::PointField> & fields
 
   if (fieldsMatch(fields, getFieldsFromPointType<mmWaveDopplerResidualPoint>())) {
     return PType::mmWaveDopplerResidual;
+  }
+
+  if (fieldsMatch(fields, getFieldsFromPointType<zadarPoint>())) {
+    return PType::zadar;
   }
 
   return PType::Unknown;

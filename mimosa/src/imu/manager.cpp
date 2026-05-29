@@ -272,6 +272,30 @@ V6D Manager::interpolateMeasurement(
   return meas1 + (meas2 - meas1) * ratio;
 }
 
+void Manager::getInterpolatedMeasurement(const double ts, ImuBuffer & measurement){
+  measurement.clear();
+
+  std::lock_guard<std::mutex> lock(buffer_mutex_);
+
+  auto it2 = std::lower_bound(buffer_.begin(), buffer_.end(), ts,
+                             [](const ImuMeasurement& m, const double t) { return m.first < t; });
+
+  // Check if it is first value in the buffer which means there is no value before to interpolate with
+  if (it2 == buffer_.begin()) {
+    logCriticalException<std::runtime_error>(
+      logger_,
+      fmt::format(
+        "IMU lookup requiring first message of the buffer ts: {}, "
+        "it2: {} . This should never happen. Check the ts that you are querying.",
+        ts, it2->first));
+  }
+
+  if (it2 == buffer_.end()) --it2;  // Make the iterator valid for interpolation
+  auto it1 = std::prev(it2);
+
+  measurement.emplace_back(ts, interpolateMeasurement(it1->first, it1->second, it2->first, it2->second, ts));
+}
+
 void Manager::getInterpolatedMeasurements(
   const double ts_start, const double ts_end, ImuBuffer & measurements,
   const bool dont_interpolate_first_measurement)

@@ -118,6 +118,7 @@ public:
   inline bool hasRecievedFirstMessage() const { return has_recieved_first_message_; }
   void callback(const sensor_msgs::Imu::ConstPtr & msg);
   bool estimateAttitude(gtsam::Rot3 & R_W_B, V3D & estimated_acc_bias, V3D & estimated_gyro_bias);
+  void getInterpolatedMeasurement(const double ts, ImuBuffer& measurement);
   void getInterpolatedMeasurements(
     const double ts_start, const double ts_end, ImuBuffer & measurements,
     const bool dont_interpolate_first_measurement = false);
