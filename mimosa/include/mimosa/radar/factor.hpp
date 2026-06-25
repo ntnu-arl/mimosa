@@ -118,8 +118,6 @@ private:
   gtsam::Vector3 angular_velocity_B_;   // angvel from IMU during radar exposure;
 
   double noise_sigma_;        // in m/s
-  double huber_threshold_;    // in std deviations
-  double outlier_threshold_;  // in std deviations
 
   mutable std::vector<Status> target_status_;  // classification of targets as static or non-static
   mutable TargetVector static_targets_;
@@ -135,15 +133,12 @@ public:
   DopplerHessianFactor(
     const TargetVector & targets, const gtsam::Pose3 & pose_R_B,
     const gtsam::Vector3 & angular_velocity_B, const gtsam::Key key0, const gtsam::Key key1,
-    const gtsam::Key key2, const double noise_sigma, const double huber_threshold,
-    const double outlier_threshold)
+    const gtsam::Key key2, const double noise_sigma)
   : Base(std::vector<gtsam::Key>{key0, key1, key2}),
     targets_(targets),
     pose_R_B_(pose_R_B),
     angular_velocity_B_(angular_velocity_B),
-    noise_sigma_(noise_sigma),
-    huber_threshold_(huber_threshold),
-    outlier_threshold_(outlier_threshold)
+    noise_sigma_(noise_sigma)
   {
     target_status_.resize(targets_.size());
   }
@@ -169,8 +164,6 @@ public:
               << keyFormatter(keys()[1]) << ", " << keyFormatter(keys()[2]) << ")\n"
               << "  Targets: " << targets_.size() << "\n"
               << "  Noise Sigma: " << noise_sigma_ << "\n"
-              << "  Huber Threshold: " << huber_threshold_ << "\n"
-              << "  Outlier Threshold: " << outlier_threshold_ << "\n"
               << "  Pose R_B: " << pose_R_B_ << "\n"
               << "  Angular Velocity B: " << angular_velocity_B_.transpose() << "\n";
   }

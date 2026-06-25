@@ -30,8 +30,6 @@ struct ManagerConfig
   float filter_min_db = 5;
   float frame_ms = 18.5;
   float noise_sigma = 0.1;
-  float huber_threshold = 1.345;
-  float outlier_threshold = 3.0;
 };
 
 void declare_config(ManagerConfig & config);

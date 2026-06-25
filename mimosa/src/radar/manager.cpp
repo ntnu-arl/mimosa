@@ -85,7 +85,7 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
   gtsam::NonlinearFactorGraph new_factors;
   auto dhf = std::make_shared<DopplerHessianFactor>(
     valid_targets_, config_.base.T_B_S, angular_velocity_mean, X(0), V(0), B(0),
-    config_.noise_sigma, config_.huber_threshold, config_.outlier_threshold);
+    config_.noise_sigma);
   new_factors.add(dhf);
 
   logger_->debug("Declaring (ts: {})", corrected_ts_);
@@ -204,8 +204,6 @@ void declare_config(ManagerConfig & config)
       field(config.filter_min_db, "filter_min_db", "dB");
       field(config.frame_ms, "frame_ms", "float");
       field(config.noise_sigma, "noise_sigma", "float");
-      field(config.huber_threshold, "huber_threshold", "float");
-      field(config.outlier_threshold, "outlier_threshold", "float");
     }
   }
 }
