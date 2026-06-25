@@ -154,9 +154,7 @@ radar:
     threshold_elevation_deg: 60
     filter_min_db: 5
     frame_ms: 18.5
-    huber_threshold: 1.345
     noise_sigma: 0.037527767
-    outlier_threshold: 3.0
 
 odometry:
   sensor_frame: mimosa_odometry

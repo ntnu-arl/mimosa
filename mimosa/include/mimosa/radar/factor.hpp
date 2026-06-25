@@ -19,85 +19,6 @@ namespace mimosa
 {
 namespace radar
 {
-class DopplerFactor
-: public gtsam::NoiseModelFactor3<gtsam::Pose3, gtsam::Vector3, gtsam::imuBias::ConstantBias>
-{
-  gtsam::Point3 point_measurement_;    // point in radar frame
-  double doppler_measurement_;         // doppler velocity of point
-  gtsam::Pose3 pose_R_B_;              // pose of radar in B
-  gtsam::Vector3 angular_velocity_B_;  // angvel from IMU during radar exposure
-public:
-  typedef NoiseModelFactor3<gtsam::Pose3, gtsam::Vector3, gtsam::imuBias::ConstantBias> Base;
-
-  DopplerFactor(
-    const gtsam::Point3 & point, const double doppler, const gtsam::Pose3 & pose_R_B,
-    const gtsam::Vector3 & angular_velocity_B, const gtsam::Key k0, const gtsam::Key k1,
-    const gtsam::Key k2, const gtsam::SharedNoiseModel & model)
-  : Base(model, k0, k1, k2),
-    point_measurement_(point),
-    doppler_measurement_(doppler),
-    pose_R_B_(pose_R_B),
-    angular_velocity_B_(angular_velocity_B)
-  {
-  }
-
-  virtual ~DopplerFactor() {}
-
-  // Evaluate error h(x)-z and optionally derivatives
-  gtsam::Vector evaluateError(
-    const gtsam::Pose3 & pose_B_W, const gtsam::Vector3 & linear_velocity_W,
-    const gtsam::imuBias::ConstantBias & imu_bias_B,
-    boost::optional<gtsam::Matrix &> H0 = boost::none,
-    boost::optional<gtsam::Matrix &> H1 = boost::none,
-    boost::optional<gtsam::Matrix &> H2 = boost::none) const
-  {
-    const gtsam::Point3 point_hat = point_measurement_.normalized();  // normalize point
-    const gtsam::Rot3 rot_R_B = pose_R_B_.rotation();                 // R from {R} to {B}
-    const gtsam::Point3 l_R_B = pose_R_B_.translation();  // translation of {R} expressed in {B}
-    const gtsam::Rot3 rot_B_W = pose_B_W.rotation();      // R from {B} to {W}
-
-    // calculate influence of angular velocity on linear velocity through l_R_B
-    const gtsam::Vector3 linear_velocity_from_angular_B =
-      (angular_velocity_B_ - imu_bias_B.gyroscope()).cross(l_R_B);
-    const gtsam::Vector3 linear_velocity_R =
-      rot_R_B.transpose() *
-      (rot_B_W.transpose() * linear_velocity_W + linear_velocity_from_angular_B);
-
-    // residual formulated as h(x) - z
-    const double doppler_estimate = -point_hat.dot(linear_velocity_R);
-    const gtsam::Vector residual =
-      (gtsam::Vector(1) << (doppler_estimate - doppler_measurement_)).finished();
-
-    // df/dtau
-    if (H0) {
-      H0->resize(1, 6);
-
-      (*H0).leftCols(3) = -point_hat.transpose() * rot_R_B.transpose() *
-                          (rot_B_W.transpose() * gtsam::skewSymmetric(linear_velocity_W) *
-                           rot_B_W.matrix());        // rotation
-      (*H0).rightCols(3) = gtsam::Matrix13::Zero();  // translation
-    }
-
-    // df/dv
-    if (H1) {
-      H1->resize(1, 3);
-
-      *H1 = -point_hat.transpose() * rot_R_B.transpose() * rot_B_W.transpose();
-    }
-
-    // df/dBias
-    if (H2) {
-      H2->resize(1, 6);
-
-      (*H2).leftCols(3) = gtsam::Matrix13::Zero();  // accelerometer
-      (*H2).rightCols(3) =
-        -point_hat.transpose() * rot_R_B.transpose() * gtsam::skewSymmetric(l_R_B);  // gyroscope
-    }
-
-    return residual;
-  }
-};
-
 // Unary factor which linearizes to a hessian
 class DopplerHessianFactor : public gtsam::NonlinearFactor
 {
@@ -117,9 +38,7 @@ private:
   gtsam::Pose3 pose_R_B_;               // pose of radar in B
   gtsam::Vector3 angular_velocity_B_;   // angvel from IMU during radar exposure;
 
-  double noise_sigma_;        // in m/s
-  double huber_threshold_;    // in std deviations
-  double outlier_threshold_;  // in std deviations
+  double noise_sigma_;  // in m/s
 
   mutable std::vector<Status> target_status_;  // classification of targets as static or non-static
   mutable TargetVector static_targets_;
@@ -135,15 +54,12 @@ public:
   DopplerHessianFactor(
     const TargetVector & targets, const gtsam::Pose3 & pose_R_B,
     const gtsam::Vector3 & angular_velocity_B, const gtsam::Key key0, const gtsam::Key key1,
-    const gtsam::Key key2, const double noise_sigma, const double huber_threshold,
-    const double outlier_threshold)
+    const gtsam::Key key2, const double noise_sigma)
   : Base(std::vector<gtsam::Key>{key0, key1, key2}),
     targets_(targets),
     pose_R_B_(pose_R_B),
     angular_velocity_B_(angular_velocity_B),
-    noise_sigma_(noise_sigma),
-    huber_threshold_(huber_threshold),
-    outlier_threshold_(outlier_threshold)
+    noise_sigma_(noise_sigma)
   {
     target_status_.resize(targets_.size());
   }
@@ -169,8 +85,6 @@ public:
               << keyFormatter(keys()[1]) << ", " << keyFormatter(keys()[2]) << ")\n"
               << "  Targets: " << targets_.size() << "\n"
               << "  Noise Sigma: " << noise_sigma_ << "\n"
-              << "  Huber Threshold: " << huber_threshold_ << "\n"
-              << "  Outlier Threshold: " << outlier_threshold_ << "\n"
               << "  Pose R_B: " << pose_R_B_ << "\n"
               << "  Angular Velocity B: " << angular_velocity_B_.transpose() << "\n";
   }
@@ -211,10 +125,10 @@ public:
     double f = 0.0;
 
     int i = -1;
-    static_targets_.clear();
-    static_targets_.reserve(targets_.size());
-    dynamic_targets_.clear();
-    dynamic_targets_.reserve(targets_.size());
+    // static_targets_.clear();
+    // static_targets_.reserve(targets_.size());
+    // dynamic_targets_.clear();
+    // dynamic_targets_.reserve(targets_.size());
     for (const TargetData & t : targets_) {
       i++;
 
