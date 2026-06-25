@@ -38,7 +38,7 @@ private:
   gtsam::Pose3 pose_R_B_;               // pose of radar in B
   gtsam::Vector3 angular_velocity_B_;   // angvel from IMU during radar exposure;
 
-  double noise_sigma_;        // in m/s
+  double noise_sigma_;  // in m/s
 
   mutable std::vector<Status> target_status_;  // classification of targets as static or non-static
   mutable TargetVector static_targets_;
