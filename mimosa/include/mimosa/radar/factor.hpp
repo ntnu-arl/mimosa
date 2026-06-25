@@ -125,10 +125,10 @@ public:
     double f = 0.0;
 
     int i = -1;
-    static_targets_.clear();
-    static_targets_.reserve(targets_.size());
-    dynamic_targets_.clear();
-    dynamic_targets_.reserve(targets_.size());
+    // static_targets_.clear();
+    // static_targets_.reserve(targets_.size());
+    // dynamic_targets_.clear();
+    // dynamic_targets_.reserve(targets_.size());
     for (const TargetData & t : targets_) {
       i++;
 

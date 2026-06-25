@@ -80,8 +80,6 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
   }
   debug_msg_.n_points_valid = valid_targets_.size();
 
-  // TODO: Zero velocity check
-
   gtsam::NonlinearFactorGraph new_factors;
   auto dhf = std::make_shared<DopplerHessianFactor>(
     valid_targets_, config_.base.T_B_S, angular_velocity_mean, X(0), V(0), B(0),
@@ -99,8 +97,9 @@ void Manager::callback(const sensor_msgs::PointCloud2::ConstPtr & msg)
   initialized_ = true;
   debug_msg_.t_graph_declare = sw_declare.elapsedMs();
 
-  debug_msg_.n_points_static = dhf->getStatic().size();
-  debug_msg_.n_points_dynamic = dhf->getDynamic().size();
+  // currently not updating static vs dynamic points
+  // debug_msg_.n_points_static = dhf->getStatic().size();
+  // debug_msg_.n_points_dynamic = dhf->getDynamic().size();
   debug_msg_.header.stamp.fromSec(corrected_ts_);
   debug_msg_.t_full = sw.elapsedMs();
   logger_->debug(
