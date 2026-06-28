@@ -2,6 +2,8 @@
 
 ![License: MIT](https://img.shields.io/badge/License-BSD-green.svg)
 ![ROS Version](https://img.shields.io/badge/ROS-Noetic-blue)
+[![DOI](https://zenodo.org/badge/962037441.svg)](https://doi.org/10.5281/zenodo.20991775)
+
 
 This package implements a tightly-coupled multi-modal fusion framework. It currently supports fusing LiDAR (Geometric, Photometric), Radar, any Odometry and IMU to provide robust state estimation in challenging environments. The framework is designed to be modular and easily extensible to add new sensors.
 
