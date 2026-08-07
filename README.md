@@ -43,7 +43,7 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
   mkdir catkin_ws/src && cd catkin_ws/src
 
   git clone git@github.com:ntnu-arl/config_utilities.git -b dev/mimosa
-  git clone git@github.com:ntnu-arl/gtsam.git -b feature/imu_factor_with_gravity
+  git clone git@github.com:ntnu-arl/gtsam.git -b imu_factor_with_gravity-pre-rebase
   git clone git@github.com:ntnu-arl/gtsam_points.git -b minimal_updated
 
   # get this code
