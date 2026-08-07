@@ -326,7 +326,11 @@ int main(int argc, char ** argv)
       }
 
       auto bag_msg = reader.read_next();
+#if defined(MIMOSA_ROS_DISTRO_HUMBLE)
+      int64_t msg_time_ns = bag_msg->time_stamp;
+#else
       int64_t msg_time_ns = bag_msg->recv_timestamp;
+#endif
 
       if ((msg_time_ns - start_time_ns) < static_cast<int64_t>(s_offset * 1e9)) {
         continue;

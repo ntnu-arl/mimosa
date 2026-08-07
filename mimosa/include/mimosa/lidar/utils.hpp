@@ -19,7 +19,7 @@
 #include <opencv2/imgproc.hpp>
 
 // cv_bridge
-#if DETECTED_ROS_VERSION == 1
+#if DETECTED_ROS_VERSION == 1 || defined(MIMOSA_ROS_DISTRO_HUMBLE)
 #include <cv_bridge/cv_bridge.h>
 #else
 #include <cv_bridge/cv_bridge.hpp>

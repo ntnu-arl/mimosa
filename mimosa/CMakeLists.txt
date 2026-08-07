@@ -155,6 +155,19 @@ function(configure_ros_target TARGET_NAME)
     )
   else()
     ament_target_dependencies(${TARGET_NAME} ${ROS2_DEPENDENCIES})
+    # Prefer ROS PCL conversion headers so their ROS message overloads are visible.
+    target_include_directories(
+      ${TARGET_NAME}
+      SYSTEM BEFORE PRIVATE
+      ${pcl_conversions_INCLUDE_DIRS}
+    )
+    # Expose the ROS distro to C++ for distro-specific API and header differences.
+    if(DEFINED ENV{ROS_DISTRO})
+      string(TOUPPER "$ENV{ROS_DISTRO}" ROS_DISTRO_UPPER)
+      target_compile_definitions(
+        ${TARGET_NAME} PRIVATE MIMOSA_ROS_DISTRO_${ROS_DISTRO_UPPER}=1
+      )
+    endif()
   endif()
 
   target_compile_features(
