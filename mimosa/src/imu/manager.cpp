@@ -146,7 +146,7 @@ void Manager::callback(const sensor_msgs::Imu::ConstPtr & msg)
     // Predict the state
     nav_state = propagation_preintegrator_->predict(
       propagation_base_state_.navState(), propagation_base_state_.imuBias(),
-      propagation_base_state_.gravity());
+      propagation_base_state_.gravity().unitVector() * config_.preintegration.gravity_magnitude);
   }
 
   // Publish propagated odometry
@@ -409,8 +409,9 @@ void Manager::addImuFactorNoLock(
   const gtsam::Key key_0, const gtsam::Key key_1, gtsam::NonlinearFactorGraph & graph)
 {
   updatePreintegrationTo(ts_0, ts_1, bias_0, preintegrator_);
-  graph.add(gtsam::ImuFactorWithGravity(
-    X(key_0), V(key_0), X(key_1), V(key_1), B(key_0), G(0), *preintegrator_));
+  graph.add(gtsam::ImuFactorWithGravityDirection(
+    X(key_0), V(key_0), X(key_1), V(key_1), B(key_0), G(0), *preintegrator_,
+    config_.preintegration.gravity_magnitude));
 
   const auto imu_bias_random_walk =
     (V6D() << config_.preintegration.acc_bias_random_walk,
@@ -440,7 +441,9 @@ void Manager::addImuFactorAndGetNavState(
   {
     std::lock_guard<std::mutex> lock(preintegrator_mutex_);
     addImuFactorNoLock(state_0.ts(), ts_1, state_0.imuBias(), state_0.key(), key_1, graph);
-    ns_1 = preintegrator_->predict(state_0.navState(), state_0.imuBias(), state_0.gravity());
+    ns_1 = preintegrator_->predict(
+      state_0.navState(), state_0.imuBias(),
+      state_0.gravity().unitVector() * config_.preintegration.gravity_magnitude);
     logger_->trace("predicted state");
   }
 

@@ -17,7 +17,7 @@
 #include <nav_msgs/Odometry.h>
 
 // GTSAM
-#include <gtsam_unstable/nonlinear/IncrementalFixedLagSmoother.h>
+#include <gtsam/nonlinear/IncrementalFixedLagSmoother.h>
 
 #define SMOOTHER_IFL true
 namespace mimosa

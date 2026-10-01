@@ -44,16 +44,23 @@ These instructions assume that `ros-noetic-desktop-full` is installed on your Ub
 
   git clone git@github.com:ntnu-arl/config_utilities.git -b dev/mimosa
   git clone git@github.com:ntnu-arl/gtsam.git -b imu_factor_with_gravity-pre-rebase
-  git clone git@github.com:ntnu-arl/gtsam_points.git -b minimal_updated
+  git clone git@github.com:ntnu-arl/gtsam_points.git -b dev/agentic_uas
 
   # get this code
-  git clone git@github.com:ntnu-arl/mimosa.git
+  git clone git@github.com:ntnu-arl/mimosa.git -b dev/agentic_uas
 
   # build it
   cd ..
-  catkin config -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=ON -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF
+  catkin config -DCMAKE_BUILD_TYPE=Release -DGTSAM_POSE3_EXPMAP=ON -DGTSAM_ROT3_EXPMAP=ON -DGTSAM_USE_QUATERNIONS=ON -DGTSAM_USE_SYSTEM_EIGEN=OFF -DGTSAM_BUILD_WITH_MARCH_NATIVE=OFF -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF -DGTSAM_WITH_TBB=OFF
   catkin build mimosa
   ```
+
+The `dev/agentic_uas` dependency branches use GTSAM 4.3 from
+`feature/imu_factor_with_gravity`. Use GTSAM's bundled Eigen 3.4 on ROS Noetic;
+the distribution's Eigen 3.3.7 cannot compile this GTSAM version. The exported
+GTSAM targets and MIMOSA's include order keep the same Eigen headers across the
+SLAM libraries. MIMOSA uses the gravity-direction IMU factor and scales its
+optimized gravity direction by the configured gravity magnitude for propagation.
 
 ## Usage
 

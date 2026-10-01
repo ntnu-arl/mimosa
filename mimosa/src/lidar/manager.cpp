@@ -452,6 +452,7 @@ void Manager::deskewPoints()
   auto next_itr = curr_itr;
   ++next_itr;
 
+  const V3D gravity = state.gravity().unitVector() * imu_preintegrator_->params()->n_gravity.norm();
   gtsam::NavState curr_state;
   propagated_state_ = state.navState();
 
@@ -463,7 +464,7 @@ void Manager::deskewPoints()
 
     curr_state = propagated_state_;
     propagated_state_ =
-      imu_preintegrator_->predict(state.navState(), state.imuBias(), state.gravity());
+      imu_preintegrator_->predict(state.navState(), state.imuBias(), gravity);
     // Propagated state is at the time of the next_itr
 
     while (true) {

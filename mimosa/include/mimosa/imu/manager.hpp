@@ -20,6 +20,7 @@
 
 // GTSAM
 #include <gtsam/navigation/ImuFactor.h>
+#include <gtsam/navigation/ImuFactorWithGravity.h>
 #include <gtsam/nonlinear/NonlinearFactorGraph.h>
 #include <gtsam/slam/BetweenFactor.h>
 

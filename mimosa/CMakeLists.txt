@@ -28,7 +28,7 @@ find_package(config_utilities REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(
   GTSAM
-  4.2.0
+  4.3.0
   REQUIRED
 )
 find_package(GTSAM_UNSTABLE REQUIRED)
@@ -66,6 +66,13 @@ include_directories(
   ${GTSAM_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
 )
+
+# GTSAM and PCL must see the same Eigen headers in this translation unit.
+# Prefer GTSAM's bundled Eigen when the ROS system copy is too old for GTSAM.
+if(TARGET gtsam_eigen3)
+  get_target_property(GTSAM_EIGEN_INCLUDE_DIRS gtsam_eigen3 INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(BEFORE SYSTEM ${GTSAM_EIGEN_INCLUDE_DIRS})
+endif()
 
 # Collect all source files from sensor folders
 set(SRC_CPP_FOLDERS
